@@ -6,4 +6,7 @@ class AppColors {
   static const accentLightBlue  = Color.fromARGB(255, 165, 181, 203); 
   static const accentLightGray = Color.fromARGB(255, 197, 216, 209);
   static const accentLightWhite = Color.fromARGB(255, 244, 237, 234);
+
+  static const darkCardsMain = Color.fromARGB(255, 18, 24, 31);
+  static const darkCardsSecodary = Color.fromARGB(255, 35, 43, 51);  
 }

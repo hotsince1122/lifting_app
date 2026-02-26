@@ -4,9 +4,8 @@ import 'package:lifting_tracker_app/models/split_days.dart';
 import 'package:path/path.dart' as path;
 
 import 'package:sqflite/sqflite.dart' as sql;
-import 'package:sqflite/sqlite_api.dart';
 
-Future<Database> _getDatabase() async {
+Future<sql.Database> _getDatabase() async {
   final dbPath = await sql.getDatabasesPath();
   final db = await sql.openDatabase(
     path.join(dbPath, 'split_plan.db'),

@@ -4,6 +4,7 @@ import 'package:google_fonts/google_fonts.dart';
 
 class AppTheme {
   static ThemeData dark = ThemeData(
+    useMaterial3: true,
     colorScheme:
         ColorScheme.fromSeed(
           seedColor: AppColors.bgMain,
@@ -58,5 +59,11 @@ class AppTheme {
       clipBehavior: Clip.antiAlias,
       elevation: 4,
     ), 
+
+    sliderTheme: SliderThemeData(
+      // ignore: deprecated_member_use
+      year2023: false,
+      valueIndicatorColor: AppColors.darkCardsMain,
+    ),
   );
 }

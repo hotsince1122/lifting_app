@@ -39,7 +39,7 @@ class WelcomePage extends StatelessWidget {
                 mainAxisAlignment: MainAxisAlignment.center,
                 crossAxisAlignment: CrossAxisAlignment.center,
                 children: [
-                  Image.asset("assets/dumbbell_logo.png", scale: 4, color: AppColors.accentLightWhite,),
+                  Image.asset("assets/dumbbell_logo.png", scale: 4, color: AppColors.darkCardsMain,),
                   const SizedBox(height: 8),
                   Text(
                     "Let's make every rep count, together",
