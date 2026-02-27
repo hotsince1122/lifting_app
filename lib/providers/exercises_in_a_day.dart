@@ -1,24 +1,9 @@
 import 'dart:async';
 
+import 'package:lifting_tracker_app/data/app_databases.dart';
+
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:lifting_tracker_app/models/exercise.dart';
-import 'package:path/path.dart' as path;
-
-import 'package:sqflite/sqflite.dart' as sql;
-
-Future<sql.Database> _getDatabase() async {
-  final dbPath = await sql.getDatabasesPath();
-  final db = await sql.openDatabase(
-    path.join(dbPath, 'exercises.db'),
-    onCreate: (db, version) {
-      return db.execute(
-        'CREATE TABLE exercises(id TEXT PRIMARY KEY, name TEXT, muscle_group TEXT)',
-      );
-    },
-    version: 1,
-  );
-  return db;
-}
 
 Future<List<Exercise>> _loadExercisesFromADay(
   List<String> exercisesIdsInOrder,
@@ -27,7 +12,7 @@ Future<List<Exercise>> _loadExercisesFromADay(
     return [];
   }
 
-  final db = await _getDatabase();
+  final db = await AppDatabases.getDatabase();
 
   String placeholders = '';
   for (int i = 0; i < exercisesIdsInOrder.length; i++) {
@@ -57,10 +42,10 @@ Future<List<Exercise>> _loadExercisesFromADay(
   for (var exercise in unorderedExercises) {
     dictionary[exercise.id] = exercise;
   }
-   
+
   final List<Exercise> orderedExercises = [];
-  for(var id in exercisesIdsInOrder) {
-    if(dictionary[id] == null) {
+  for (var id in exercisesIdsInOrder) {
+    if (dictionary[id] == null) {
       continue;
     }
 
@@ -72,7 +57,7 @@ Future<List<Exercise>> _loadExercisesFromADay(
 
 //provider diferit pentru chei diferite, practic fiecare exercitiu e atribuit unei zile, al treila camp "List<String>", fiind entry-ul
 //pentru fiecare provider, adica id-urile exercitilor dintr-o zi, returnata de day_exercises.db
-final exercisesProvider =
+final exercisesInADayProvider =
     AsyncNotifierProvider.family<
       ExercisesInADayNotifier,
       List<Exercise>,
@@ -87,5 +72,25 @@ class ExercisesInADayNotifier extends AsyncNotifier<List<Exercise>> {
   @override
   FutureOr<List<Exercise>> build() {
     return _loadExercisesFromADay(exercisesIds);
+  }
+
+  Future<void> addExerciseToDay (String dayId, String exerciseId, int orderIdx) async {
+    final db = await AppDatabases.getDatabase();
+
+    await db.transaction((txn) async {
+      await txn.insert('day_exercises', {
+        'day_id' : dayId,
+        'exercise_id' : exerciseId,
+        'order_idx' : orderIdx
+      });
+    });
+  }
+
+  Future<void> deleteExerciseFromDay (String dayId, String exerciseId, int orderIdx) async {
+    final db = await AppDatabases.getDatabase();
+
+    await db.transaction((txn) async {
+      await txn.delete('day_exercises', where: 'day_id = ? AND  = exercise_id ?', whereArgs: [dayId, exerciseId]);
+    });
   }
 }

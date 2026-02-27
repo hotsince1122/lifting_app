@@ -1,26 +1,9 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:lifting_tracker_app/data/app_databases.dart';
 import 'package:lifting_tracker_app/models/split_days.dart';
 
-import 'package:path/path.dart' as path;
-
-import 'package:sqflite/sqflite.dart' as sql;
-
-Future<sql.Database> _getDatabase() async {
-  final dbPath = await sql.getDatabasesPath();
-  final db = await sql.openDatabase(
-    path.join(dbPath, 'split_plan.db'),
-    onCreate: (db, version) {
-      return db.execute(
-        'CREATE TABLE split_plan(id TEXT PRIMARY KEY, name TEXT, order_idx INT, is_selected_preset TEXT)',
-      );
-    },
-    version: 1,
-  );
-  return db;
-}
-
 Future<List<SplitDay>> _loadSplitFromDb() async {
-  final db = await _getDatabase();
+  final db = await AppDatabases.getDatabase();
   final data = await db.query('split_plan', orderBy: 'order_idx ASC');
 
   return data
@@ -47,7 +30,7 @@ class SplitPlanNotifier extends AsyncNotifier<List<SplitDay>> {
   }
 
   Future<void> changeSplit(List<SplitDay> newSplit) async {
-    final db = await _getDatabase();
+    final db = await AppDatabases.getDatabase();
 
     await db.transaction((txn) async {
       await txn.delete('split_plan');
