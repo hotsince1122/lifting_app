@@ -75,7 +75,7 @@ class PickExercisesPage extends ConsumerWidget {
                           controlAffinity: ListTileControlAffinity.leading,
 
                           iconColor: AppColors.accentLightGray,
-                          backgroundColor: AppColors.bgSecondary,
+                          // backgroundColor: AppColors.bgSecondary,
 
                           collapsedShape: RoundedRectangleBorder(
                             borderRadius: BorderRadius.circular(20),
@@ -87,7 +87,9 @@ class PickExercisesPage extends ConsumerWidget {
                             side: BorderSide.none,
                           ),
 
-                          
+                          children: [
+
+                          ],
                         ),
                       ),
                       const SizedBox(height: 8),
