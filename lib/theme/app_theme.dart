@@ -53,7 +53,7 @@ class AppTheme {
 
     cardTheme: CardThemeData(
       shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(20),
+        borderRadius: BorderRadius.circular(24),
       ),
       color: Colors.transparent,
       clipBehavior: Clip.antiAlias,

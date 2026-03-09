@@ -1,12 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:lifting_tracker_app/theme/app_colors.dart';
 
-enum GradientVariant { darkOne, darkTwo, darkThree, lightOne }
+enum AppGradients { darkOne, darkTwo, darkThree, lightOne }
 
 class Gradients {
-  static LinearGradient of(GradientVariant variant) {
+  static LinearGradient of(AppGradients variant) {
     switch (variant) {
-      case GradientVariant.darkOne:
+      case AppGradients.darkOne:
         return const LinearGradient(
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
@@ -18,7 +18,7 @@ class Gradients {
           stops: [0.0, 0.45, 1.0],
         );
 
-      case GradientVariant.darkTwo:
+      case AppGradients.darkTwo:
         return const LinearGradient(
           begin: Alignment.topLeft,
           end: Alignment.bottomCenter,
@@ -30,7 +30,7 @@ class Gradients {
           stops: [0.0, 0.45, 1.0],
         );
 
-      case GradientVariant.darkThree:
+      case AppGradients.darkThree:
         return const LinearGradient(
           begin: Alignment.centerLeft,
           end: Alignment.bottomRight,
@@ -43,7 +43,7 @@ class Gradients {
           stops: [0.0, 0.35, 0.75, 1.0],
         );
 
-      case GradientVariant.lightOne:
+      case AppGradients.lightOne:
         return const LinearGradient(
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,

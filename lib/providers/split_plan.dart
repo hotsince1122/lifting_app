@@ -1,6 +1,6 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:lifting_tracker_app/data/app_databases.dart';
-import 'package:lifting_tracker_app/models/split_days.dart';
+import 'package:lifting_tracker_app/models/entity/split_days.dart';
 
 Future<List<SplitDay>> _loadSplitFromDb() async {
   final db = await AppDatabases.getDatabase();

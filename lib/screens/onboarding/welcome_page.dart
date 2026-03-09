@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
-import 'package:lifting_tracker_app/models/gradient_variants.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:lifting_tracker_app/providers/workouts_per_week.dart';
 import 'package:lifting_tracker_app/theme/app_colors.dart';
+import 'package:lifting_tracker_app/theme/app_gradients.dart';
 import 'package:lifting_tracker_app/widgets/gradient_button.dart';
 
 import 'package:lifting_tracker_app/widgets/gradient_cards.dart';
@@ -17,35 +19,46 @@ class WelcomePage extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
-          SizedBox(
-            height: 80,
-            child: GradientCard(
-              gradientVariant: Gradients.of(GradientVariant.darkOne),
-              child: Center(
-                child: Text(
-                  'Welcome to Focus Lifts',
-                  style: Theme.of(context).textTheme.displayMedium,
-                  textAlign: TextAlign.center,
-                ),
+          GradientCard(
+            gradientVariant: Gradients.of(AppGradients.darkOne),
+            child: Center(
+              child: Column(
+                children: [
+                  Text(
+                    'Welcome to Focus Lifts',
+                    style: Theme.of(context).textTheme.displaySmall,
+                  ),
+                  const SizedBox(height: 16),
+                  Text(
+                    "Let's get you set up.",
+                    style: Theme.of(context).textTheme.headlineSmall!.copyWith(
+                      color: AppColors.accentLightGray,
+                    ),
+                  ),
+                ],
               ),
             ),
           ),
-          const SizedBox(height: 16),
-          SizedBox(
-            height: 240,
-            child: GradientCard(
-              gradientVariant: Gradients.of(GradientVariant.darkThree),
+          const SizedBox(height: 12),
+          Text(
+            'Anything you choose now can be\n changed later.',
+            style: Theme.of(context).textTheme.bodyLarge!.copyWith(
+              color: AppColors.accentLightBlue.withAlpha(180),
+            ),
+            textAlign: TextAlign.center,
+          ),
+          const SizedBox(height: 12),
+          GradientCard(
+            gradientVariant: Gradients.of(AppGradients.darkThree),
+            child: Center(
               child: Column(
-                mainAxisAlignment: MainAxisAlignment.center,
-                crossAxisAlignment: CrossAxisAlignment.center,
                 children: [
-                  Image.asset("assets/dumbbell_logo.png", scale: 4, color: AppColors.darkCardsMain,),
-                  const SizedBox(height: 8),
                   Text(
-                    "Let's make every rep count, together",
-                    style: Theme.of(context).textTheme.displaySmall,
-                    textAlign: TextAlign.center,
+                    "How many days do you train per week?",
+                    style: Theme.of(context).textTheme.titleLarge,
                   ),
+                  const SizedBox(height: 20),
+                  _WorkoutsPerWeekSlider(),
                 ],
               ),
             ),
@@ -58,24 +71,48 @@ class WelcomePage extends StatelessWidget {
               duration: Duration(milliseconds: 300),
               curve: Curves.easeIn,
             ),
-            gradientVariant: Gradients.of(GradientVariant.lightOne),
+            gradientVariant: Gradients.of(AppGradients.lightOne),
             child: Row(
               mainAxisSize: MainAxisSize.min,
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
-                Text(
-                  'Get Started',
-                  style: Theme.of(context).textTheme.titleLarge,
-                ),
+                Text('Next', style: Theme.of(context).textTheme.titleLarge),
                 SizedBox(width: 8),
-                Icon(
-                  Icons.arrow_forward_rounded,
-                ),
+                Icon(Icons.arrow_forward_rounded),
               ],
             ),
           ),
         ],
       ),
+    );
+  }
+}
+
+class _WorkoutsPerWeekSlider extends ConsumerWidget {
+  const _WorkoutsPerWeekSlider();
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final workoutsPerWeekAsync = ref.watch(workoutsPerWeekProvider);
+
+    return workoutsPerWeekAsync.when(
+      loading: () => const Center(child: CircularProgressIndicator()),
+      error: (error, stack) => Center(child: Text('Error: $error')),
+      data: (workoutsPerWeek) {
+        return Slider(
+          value: workoutsPerWeek.toDouble(),
+          max: 7,
+          min: 1,
+          divisions: 6,
+          activeColor: AppColors.accentLightWhite,
+          inactiveColor: AppColors.darkCardsSecodary,
+          label: '$workoutsPerWeek day${workoutsPerWeek > 1 ? 's' : ''}',
+          thumbColor: AppColors.accentLightBlue,
+          onChanged: (value) {
+            ref.read(workoutsPerWeekProvider.notifier).save(value.toInt());
+          },
+        );
+      },
     );
   }
 }

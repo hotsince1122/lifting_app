@@ -1,12 +1,13 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:lifting_tracker_app/data/preset_split_config.dart';
 // import 'package:animations/animations.dart';
 
-import 'package:lifting_tracker_app/models/gradient_variants.dart';
-import 'package:lifting_tracker_app/models/split_days.dart';
+import 'package:lifting_tracker_app/theme/app_gradients.dart';
+import 'package:lifting_tracker_app/models/entity/split_days.dart';
 import 'package:lifting_tracker_app/providers/split_plan.dart';
 import 'package:lifting_tracker_app/theme/app_colors.dart';
-import 'package:lifting_tracker_app/widgets/custom_split_selector.dart';
+import 'package:lifting_tracker_app/widgets/profile_setup/custom_split_selector.dart';
 import 'package:lifting_tracker_app/widgets/gradient_button.dart';
 import 'package:lifting_tracker_app/widgets/gradient_cards.dart';
 
@@ -49,16 +50,16 @@ class SelectSplitPage extends ConsumerWidget {
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
               GradientCard(
-                gradientVariant: Gradients.of(GradientVariant.darkThree),
+                gradientVariant: Gradients.of(AppGradients.darkThree),
                 child: Column(
                   children: [
                     Text(
-                      "Let's set up your traning split:",
+                      "Choose your training split",
                       style: Theme.of(context).textTheme.headlineMedium,
                     ),
                     const SizedBox(height: 8,),
                     Text(
-                      "You can change it later.",
+                      "Set up your workout week with:",
                       style: Theme.of(context).textTheme.titleMedium!.copyWith(
                         color: AppColors.accentLightGray,
                       ),
@@ -66,13 +67,13 @@ class SelectSplitPage extends ConsumerWidget {
                   ],
                 ),
               ),
-              const SizedBox(height: 24),
+              const SizedBox(height: 20),
               Text(
-                'Presets:',
+                'Presets',
                 style: Theme.of(context).textTheme.titleLarge,
                 textAlign: TextAlign.center,
               ),
-              const SizedBox(height: 24),
+              const SizedBox(height: 20),
 
               //Preset Splits Buttons
               PresetSplits(onSelect: onSelect, currentSplit: splitPlan),
@@ -123,7 +124,7 @@ class SelectSplitPage extends ConsumerWidget {
                     onSelect(customSplit);
                   }
                 },
-                gradientVariant: Gradients.of(GradientVariant.darkOne),
+                gradientVariant: Gradients.of(AppGradients.darkOne),
                 buttonWidth: screenWidth - 172,
                 buttonHight: 46,
                 child: Row(
@@ -142,9 +143,9 @@ class SelectSplitPage extends ConsumerWidget {
                   ],
                 ),
               ),
-              const SizedBox(height: 6),
+              const SizedBox(height: 8),
               Text(
-                'Build your own schedule.',
+                'Pick how many days it has, then name each one.',
                 textAlign: TextAlign.center,
                 style: Theme.of(context).textTheme.bodyMedium!.copyWith(
                   color: AppColors.accentLightBlue.withAlpha(180),
@@ -152,7 +153,7 @@ class SelectSplitPage extends ConsumerWidget {
               ),
               const Spacer(),
               GradientButton(
-                isActive: false,
+                isActive: splitPlan.isEmpty,
                 buttonHight: 48,
                 onPressed: splitPlan.isEmpty
                     ? () {}
@@ -160,12 +161,12 @@ class SelectSplitPage extends ConsumerWidget {
                         duration: Duration(milliseconds: 300),
                         curve: Curves.easeIn,
                       ),
-                gradientVariant: Gradients.of(GradientVariant.lightOne),
+                gradientVariant: Gradients.of(AppGradients.lightOne),
                 child: Row(
                   mainAxisSize: MainAxisSize.min,
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
-                    Text('Next', style: Theme.of(context).textTheme.titleLarge),
+                    Text('Continue', style: Theme.of(context).textTheme.titleLarge),
                     SizedBox(width: 8),
                     Icon(Icons.arrow_forward_rounded),
                   ],

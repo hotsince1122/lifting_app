@@ -2,7 +2,7 @@ import 'dart:async';
 
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:lifting_tracker_app/data/app_databases.dart';
-import 'package:lifting_tracker_app/models/exercise.dart';
+import 'package:lifting_tracker_app/models/entity/exercise.dart';
 
 Future<List<Exercise>> _loadAllExercisesInAMuscleGroupFromDb(
   String muscleGroup,
@@ -52,6 +52,8 @@ class ExercisesFromAMuscleGroupNotifier extends AsyncNotifier<List<Exercise>> {
         'muscle_group': newExercise.muscleGroup,
       });
     });
+
+    state = AsyncData(await _loadAllExercisesInAMuscleGroupFromDb(muscleGroup));
   }
 
   Future<void> removeExercise(String exerciseId) async {
@@ -60,5 +62,7 @@ class ExercisesFromAMuscleGroupNotifier extends AsyncNotifier<List<Exercise>> {
     await db.transaction((txn) async {
       await txn.delete('exercises', where: 'id = ?', whereArgs: [exerciseId]);
     });
+
+    state = AsyncData(await _loadAllExercisesInAMuscleGroupFromDb(muscleGroup));
   }
 }

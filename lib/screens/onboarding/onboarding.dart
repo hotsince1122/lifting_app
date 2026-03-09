@@ -66,10 +66,10 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
             alignment: Alignment.topCenter,
             child: SmoothPageIndicator(
               controller: controller,
-              count: 4,
+              count: 3,
               effect: SlideEffect(
-                dotWidth: (screenWidth / 4) - 12,
-                dotHeight: 8,
+                dotWidth: (screenWidth / 3) - 12,
+                dotHeight: 6,
                 spacing: 8,
                 dotColor: AppColors.bgSecondary,
                 activeDotColor: AppColors.accentLightBlue,

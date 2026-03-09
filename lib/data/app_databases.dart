@@ -73,6 +73,9 @@ class AppDatabases {
 
     final dbPath = await sql.getDatabasesPath();
 
+    // final fullPath = path.join(dbPath, 'lifting.db');
+    // await sql.deleteDatabase(fullPath);
+
     _db = await sql.openDatabase(
       path.join(dbPath, 'lifting.db'),
       version: 1,
@@ -84,7 +87,7 @@ class AppDatabases {
           'CREATE TABLE exercises(id TEXT PRIMARY KEY, name TEXT, muscle_group TEXT)',
         );
         await db.execute(
-          'CREATE TABLE day_exercises(day_id TEXT, exercise_id TEXT, order_idx INT)',
+          'CREATE TABLE day_exercises(id INTEGER PRIMARY KEY, day_id TEXT, exercise_id TEXT, order_idx INT)',
         );
 
         final batch = db.batch();
