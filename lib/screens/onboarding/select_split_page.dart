@@ -5,7 +5,7 @@ import 'package:lifting_tracker_app/data/preset_split_config.dart';
 
 import 'package:lifting_tracker_app/theme/app_gradients.dart';
 import 'package:lifting_tracker_app/models/entity/split_days.dart';
-import 'package:lifting_tracker_app/providers/split_plan.dart';
+import 'package:lifting_tracker_app/providers/persisted/split_plan.dart';
 import 'package:lifting_tracker_app/theme/app_colors.dart';
 import 'package:lifting_tracker_app/widgets/profile_setup/custom_split_selector.dart';
 import 'package:lifting_tracker_app/widgets/gradient_button.dart';

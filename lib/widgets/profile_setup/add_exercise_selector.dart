@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:lifting_tracker_app/data/muscle_groups.dart';
-import 'package:lifting_tracker_app/providers/all_exercises_from_a_muscle_group.dart';
+import 'package:lifting_tracker_app/providers/persisted/all_exercises_from_a_muscle_group.dart';
 import 'package:lifting_tracker_app/theme/app_colors.dart';
 
 class AddExerciseSelector extends ConsumerStatefulWidget {

@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:lifting_tracker_app/providers/workouts_per_week.dart';
+import 'package:lifting_tracker_app/providers/persisted/week_progress.dart';
 import 'package:lifting_tracker_app/theme/app_colors.dart';
 import 'package:lifting_tracker_app/theme/app_gradients.dart';
 import 'package:lifting_tracker_app/widgets/gradient_button.dart';
@@ -99,17 +99,19 @@ class _WorkoutsPerWeekSlider extends ConsumerWidget {
       loading: () => const Center(child: CircularProgressIndicator()),
       error: (error, stack) => Center(child: Text('Error: $error')),
       data: (workoutsPerWeek) {
+        final target = workoutsPerWeek.target;
+
         return Slider(
-          value: workoutsPerWeek.toDouble(),
+          value: target.toDouble(),
           max: 7,
           min: 1,
           divisions: 6,
           activeColor: AppColors.accentLightWhite,
           inactiveColor: AppColors.darkCardsSecodary,
-          label: '$workoutsPerWeek day${workoutsPerWeek > 1 ? 's' : ''}',
+          label: '$target day${target > 1 ? 's' : ''}',
           thumbColor: AppColors.accentLightBlue,
           onChanged: (value) {
-            ref.read(workoutsPerWeekProvider.notifier).save(value.toInt());
+            ref.read(workoutsPerWeekProvider.notifier).saveNewTarget(value.toInt());
           },
         );
       },

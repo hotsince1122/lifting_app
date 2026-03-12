@@ -1,8 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:lifting_tracker_app/providers/can_user_finish_setup.dart';
+import 'package:lifting_tracker_app/providers/presentation/can_user_finish_setup.dart';
+import 'package:lifting_tracker_app/screens/home.dart';
 import 'package:lifting_tracker_app/theme/app_gradients.dart';
-import 'package:lifting_tracker_app/providers/split_plan.dart';
+import 'package:lifting_tracker_app/providers/persisted/split_plan.dart';
 import 'package:lifting_tracker_app/theme/app_colors.dart';
 import 'package:lifting_tracker_app/widgets/gradient_button.dart';
 import 'package:lifting_tracker_app/widgets/gradient_cards.dart';
@@ -89,7 +90,7 @@ class PickExercisesPage extends ConsumerWidget {
                 ),
               ),
               const Spacer(),
-              _FinishOnboardingButton(dayIds, controller),
+              _FinishOnboardingButton(dayIds),
             ],
           ),
         );
@@ -99,10 +100,9 @@ class PickExercisesPage extends ConsumerWidget {
 }
 
 class _FinishOnboardingButton extends ConsumerWidget {
-  const _FinishOnboardingButton(this.dayIds, this.controller);
+  const _FinishOnboardingButton(this.dayIds);
 
   final List<String> dayIds;
-  final PageController controller;
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -116,10 +116,9 @@ class _FinishOnboardingButton extends ConsumerWidget {
         Widget skipButton = SizedBox(
           height: 20,
           child: TextButton(
-            onPressed: () => controller.nextPage(
-              duration: Duration(milliseconds: 300),
-              curve: Curves.easeIn,
-            ),
+            onPressed: () => Navigator.of(
+              context,
+            ).pushReplacement(MaterialPageRoute(builder: (context) => Home())),
             style: TextButton.styleFrom(padding: EdgeInsets.zero),
             child: Text(
               'Skip',
@@ -140,9 +139,8 @@ class _FinishOnboardingButton extends ConsumerWidget {
               buttonHight: 48,
               onPressed: !canUserFinishSetup
                   ? () {}
-                  : () => controller.nextPage(
-                      duration: Duration(milliseconds: 300),
-                      curve: Curves.easeIn,
+                  : () => Navigator.of(context).pushReplacement(
+                      MaterialPageRoute(builder: (context) => Home()),
                     ),
               gradientVariant: Gradients.of(AppGradients.lightOne),
               child: Row(
