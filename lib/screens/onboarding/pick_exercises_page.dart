@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:lifting_tracker_app/providers/persisted/active_split_days.dart';
 import 'package:lifting_tracker_app/providers/presentation/can_user_finish_setup.dart';
 import 'package:lifting_tracker_app/screens/home.dart';
 import 'package:lifting_tracker_app/theme/app_gradients.dart';
-import 'package:lifting_tracker_app/providers/persisted/split_plan.dart';
 import 'package:lifting_tracker_app/theme/app_colors.dart';
 import 'package:lifting_tracker_app/widgets/gradient_button.dart';
 import 'package:lifting_tracker_app/widgets/gradient_cards.dart';
@@ -18,13 +18,13 @@ class PickExercisesPage extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final screenWidth = MediaQuery.of(context).size.width;
 
-    final splitPlanAsync = ref.watch(splitPlanProvider);
+    final activeSplitDaysAsync = ref.watch(activeSplitDaysProvider);
 
-    return splitPlanAsync.when(
+    return activeSplitDaysAsync.when(
       loading: () => Center(child: CircularProgressIndicator()),
       error: (error, stackTrace) => Center(child: Text(error.toString())),
-      data: (splitPlan) {
-        final dayIds = splitPlan.map((splitDay) => splitDay.id).toList();
+      data: (activeSplitDays) {
+        final dayIds = activeSplitDays.map((splitDay) => splitDay.id).toList();
 
         return Padding(
           padding: const EdgeInsets.fromLTRB(12, 24, 12, 46),
@@ -74,7 +74,7 @@ class PickExercisesPage extends ConsumerWidget {
                 child: SingleChildScrollView(
                   child: Column(
                     children: [
-                      for (final workoutDay in splitPlan) ...[
+                      for (final workoutDay in activeSplitDays) ...[
                         GradientCard(
                           padding: EdgeInsets.all(0),
                           gradientVariant: Gradients.of(AppGradients.darkThree),

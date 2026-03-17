@@ -45,38 +45,41 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
                 icon: Icon(Icons.arrow_back_ios_new),
               ),
       ),
-      body: Stack(
-        children: [
-          PageView(
-            physics: NeverScrollableScrollPhysics(),
-            controller: controller,
-            onPageChanged: (index) {
-              setState(() {
-                _currentPage = index;
-              });
-            },
-            children: [
-              WelcomePage(controller),
-              SelectSplitPage(controller),
-              PickExercisesPage(controller),
-            ],
-          ),
-
-          Container(
-            alignment: Alignment.topCenter,
-            child: SmoothPageIndicator(
+      body: SafeArea(
+        bottom: false,
+        child: Stack(
+          children: [
+            PageView(
+              physics: NeverScrollableScrollPhysics(),
               controller: controller,
-              count: 3,
-              effect: SlideEffect(
-                dotWidth: (screenWidth / 3) - 12,
-                dotHeight: 6,
-                spacing: 8,
-                dotColor: AppColors.bgSecondary,
-                activeDotColor: AppColors.accentLightBlue,
+              onPageChanged: (index) {
+                setState(() {
+                  _currentPage = index;
+                });
+              },
+              children: [
+                WelcomePage(controller),
+                SelectSplitPage(controller),
+                PickExercisesPage(controller),
+              ],
+            ),
+
+            Container(
+              alignment: Alignment.topCenter,
+              child: SmoothPageIndicator(
+                controller: controller,
+                count: 3,
+                effect: SlideEffect(
+                  dotWidth: (screenWidth / 3) - 12,
+                  dotHeight: 6,
+                  spacing: 8,
+                  dotColor: AppColors.bgSecondary,
+                  activeDotColor: AppColors.accentLightBlue,
+                ),
               ),
             ),
-          ),
-        ],
+          ],
+        ),
       ),
     );
   }

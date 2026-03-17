@@ -1,3 +1,5 @@
+import 'dart:ui';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:lifting_tracker_app/data/muscle_groups.dart';
@@ -21,51 +23,54 @@ class AddExerciseSelectorState extends ConsumerState<AddExerciseSelector> {
 
   @override
   Widget build(BuildContext context) {
-    return Padding(
-      padding: EdgeInsets.symmetric(horizontal: 16, vertical: 32),
-      child: ClipRRect(
-        borderRadius: BorderRadius.circular(24),
-        child: Container(
-          height: MediaQuery.of(context).size.height * 0.72,
-          width: widget.screenWidth,
-          decoration: BoxDecoration(
-            borderRadius: BorderRadius.circular(24),
-            color: AppColors.darkCardsMain.withAlpha(253),
-          ),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.stretch,
-            children: [
-              Padding(
-                padding: const EdgeInsets.fromLTRB(8, 8, 8, 0),
-                child: _Header(
-                  canGoBack: _title == null ? false : true,
-                  onBack: () {
-                    setState(() {
-                      _title = null;
-                    });
-                    _navKey.currentState?.maybePop();
-                  },
-                  onClose: () => Navigator.of(context).pop(),
-                  title: _title,
+    return BackdropFilter(
+      filter: ImageFilter.blur(sigmaX: 2.5, sigmaY: 2.5),
+      child: Padding(
+        padding: EdgeInsets.symmetric(horizontal: 16, vertical: 32),
+        child: ClipRRect(
+          borderRadius: BorderRadius.circular(24),
+          child: Container(
+            height: MediaQuery.of(context).size.height * 0.72,
+            width: widget.screenWidth,
+            decoration: BoxDecoration(
+              borderRadius: BorderRadius.circular(24),
+              color: AppColors.darkCardsMain.withAlpha(253),
+            ),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              children: [
+                Padding(
+                  padding: const EdgeInsets.fromLTRB(8, 8, 8, 0),
+                  child: _Header(
+                    canGoBack: _title == null ? false : true,
+                    onBack: () {
+                      setState(() {
+                        _title = null;
+                      });
+                      _navKey.currentState?.maybePop();
+                    },
+                    onClose: () => Navigator.of(context).pop(),
+                    title: _title,
+                  ),
                 ),
-              ),
-              const SizedBox(height: 6),
-              Expanded(
-                child: Navigator(
-                  clipBehavior: Clip.hardEdge,
-                  key: _navKey,
-                  onGenerateRoute: (_) => _sheetParallaxRoute(
-                    _MuscleGroupList(
-                      onSelectGroup: (label) {
-                        setState(() {
-                          _title = label;
-                        });
-                      },
+                const SizedBox(height: 6),
+                Expanded(
+                  child: Navigator(
+                    clipBehavior: Clip.hardEdge,
+                    key: _navKey,
+                    onGenerateRoute: (_) => _sheetParallaxRoute(
+                      _MuscleGroupList(
+                        onSelectGroup: (label) {
+                          setState(() {
+                            _title = label;
+                          });
+                        },
+                      ),
                     ),
                   ),
                 ),
-              ),
-            ],
+              ],
+            ),
           ),
         ),
       ),

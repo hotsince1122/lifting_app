@@ -93,13 +93,13 @@ class _WorkoutsPerWeekSlider extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final workoutsPerWeekAsync = ref.watch(workoutsPerWeekProvider);
+    final workoutsPerWeekAsync = ref.watch(weeklyWorkoutProgressProvider);
 
     return workoutsPerWeekAsync.when(
       loading: () => const Center(child: CircularProgressIndicator()),
       error: (error, stack) => Center(child: Text('Error: $error')),
-      data: (workoutsPerWeek) {
-        final target = workoutsPerWeek.target;
+      data: (weeklyWorkoutProgress) {
+        final target = weeklyWorkoutProgress.target;
 
         return Slider(
           value: target.toDouble(),
@@ -111,7 +111,7 @@ class _WorkoutsPerWeekSlider extends ConsumerWidget {
           label: '$target day${target > 1 ? 's' : ''}',
           thumbColor: AppColors.accentLightBlue,
           onChanged: (value) {
-            ref.read(workoutsPerWeekProvider.notifier).saveNewTarget(value.toInt());
+            ref.read(weeklyWorkoutProgressProvider.notifier).saveNewTarget(value.toInt());
           },
         );
       },

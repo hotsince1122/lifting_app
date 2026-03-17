@@ -1,11 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:lifting_tracker_app/data/preset_split_config.dart';
-// import 'package:animations/animations.dart';
+import 'package:lifting_tracker_app/widgets/profile_setup/preset_splits.dart';
 
 import 'package:lifting_tracker_app/theme/app_gradients.dart';
-import 'package:lifting_tracker_app/models/entity/split_days.dart';
-import 'package:lifting_tracker_app/providers/persisted/split_plan.dart';
+import 'package:lifting_tracker_app/models/entity/split_day.dart';
+import 'package:lifting_tracker_app/providers/persisted/active_split_plan.dart';
 import 'package:lifting_tracker_app/theme/app_colors.dart';
 import 'package:lifting_tracker_app/widgets/profile_setup/custom_split_selector.dart';
 import 'package:lifting_tracker_app/widgets/gradient_button.dart';
@@ -34,15 +33,12 @@ class SelectSplitPage extends ConsumerWidget {
     }
 
     final screenWidth = MediaQuery.of(context).size.width;
-    final splitPlanAsync = ref.watch(splitPlanProvider);
+    final splitPlanAsync = ref.watch(activeSplitPlanProvider);
 
     return splitPlanAsync.when(
       loading: () => Center(child: CircularProgressIndicator()),
       error: (error, stackTrace) => Center(child: Text(error.toString())),
-      data: (splitPlan) {
-        void onSelect(List<SplitDay> newSplit) {
-          ref.read(splitPlanProvider.notifier).changeSplit(newSplit);
-        }
+      data: (activeSplitPlan) {
 
         return Padding(
           padding: const EdgeInsets.fromLTRB(12, 24, 12, 46),
@@ -76,7 +72,7 @@ class SelectSplitPage extends ConsumerWidget {
               const SizedBox(height: 20),
 
               //Preset Splits Buttons
-              PresetSplits(onSelect: onSelect, currentSplit: splitPlan),
+              PresetSplits(currentSplit: activeSplitPlan),
 
               const SizedBox(height: 16),
 
@@ -113,15 +109,13 @@ class SelectSplitPage extends ConsumerWidget {
               //Custom Split button
               GradientButton(
                 isActive:
-                    (splitPlan.isNotEmpty &&
-                    splitPlan.any(
-                      (splitDay) => splitDay.selectedPreset == null,
-                    )),
+                    (activeSplitPlan != null &&
+                    !activeSplitPlan.isPreset),
                 onPressed: () async {
                   final List<SplitDay>? customSplit =
                       await openCustomSplitSelector(context, screenWidth);
                   if (customSplit != null) {
-                    onSelect(customSplit);
+                    ref.read(activeSplitPlanProvider.notifier).addAndChangeToCustom(customSplit);
                   }
                 },
                 gradientVariant: Gradients.of(AppGradients.darkOne),
@@ -153,9 +147,9 @@ class SelectSplitPage extends ConsumerWidget {
               ),
               const Spacer(),
               GradientButton(
-                isActive: splitPlan.isEmpty,
+                isActive: activeSplitPlan == null,
                 buttonHight: 48,
-                onPressed: splitPlan.isEmpty
+                onPressed: activeSplitPlan == null
                     ? () {}
                     : () => controller.nextPage(
                         duration: Duration(milliseconds: 300),
@@ -176,63 +170,6 @@ class SelectSplitPage extends ConsumerWidget {
           ),
         );
       },
-    );
-  }
-}
-
-class PresetSplits extends StatelessWidget {
-  const PresetSplits({
-    super.key,
-    required this.onSelect,
-    required this.currentSplit,
-  });
-
-  final void Function(List<SplitDay>) onSelect;
-  final List<SplitDay> currentSplit;
-
-  @override
-  Widget build(BuildContext context) {
-    final String? selectedPreset = currentSplit.isNotEmpty
-        ? currentSplit.first.selectedPreset
-        : null;
-
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.stretch,
-      spacing: 12,
-      children: [
-        for (final cfg in PresetSplitConfig.presetConfigs)
-          GradientButton(
-            gradientVariant: cfg.gradient,
-            isActive: selectedPreset == cfg.key,
-            onPressed: () => onSelect(SplitDay.presetSplits[cfg.key]!),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.stretch,
-              children: [
-                Row(
-                  children: [
-                    Text(
-                      cfg.title,
-                      style: Theme.of(context).textTheme.titleMedium,
-                    ),
-                    const Spacer(),
-                    Text(
-                      cfg.nrOfDays,
-                      style: Theme.of(context).textTheme.bodyMedium!.copyWith(
-                        color: AppColors.accentLightGray,
-                      ),
-                    ),
-                  ],
-                ),
-                Text(
-                  cfg.subtitle,
-                  style: Theme.of(context).textTheme.bodyMedium!.copyWith(
-                    color: AppColors.accentLightGray,
-                  ),
-                ),
-              ],
-            ),
-          ),
-      ],
     );
   }
 }

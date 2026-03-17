@@ -8,8 +8,10 @@ Future<bool> _loadIfUserCanFinishSetup() async {
   
   var rows = await db.rawQuery(
     '''
-    SELECT id
-    FROM split_plan
+    SELECT sd.id
+    FROM split_plans sp
+    JOIN split_days sd ON sp.id = sd.split_id
+    WHERE sp.is_active = 1
     '''
   );
 

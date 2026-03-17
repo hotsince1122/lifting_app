@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:lifting_tracker_app/models/entity/exercise.dart';
-import 'package:lifting_tracker_app/models/entity/split_days.dart';
+import 'package:lifting_tracker_app/models/entity/split_day.dart';
 import 'package:lifting_tracker_app/providers/presentation/can_user_finish_setup.dart';
 import 'package:lifting_tracker_app/providers/persisted/exercises_in_a_day.dart';
 import 'package:lifting_tracker_app/providers/presentation/split_day_summary_tile.dart';
