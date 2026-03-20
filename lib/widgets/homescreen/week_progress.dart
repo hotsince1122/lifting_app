@@ -60,6 +60,12 @@ class WeekProgress extends ConsumerWidget {
       error: (_, _) =>
           const Center(child: Text('An error has occured! Try again.')),
       data: (weeklyWorkoutProgress) {
+        final progress =
+            ref
+                .read(weeklyWorkoutProgressProvider.notifier)
+                .returnCurrentProgress() /
+            weeklyWorkoutProgress.target;
+
         return Column(
           children: [
             Row(
@@ -111,16 +117,33 @@ class WeekProgress extends ConsumerWidget {
                   Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
-                      Text('Weekly goal'),
+                      Text(
+                        'Weekly goal',
+                        style: Theme.of(context).textTheme.titleSmall,
+                      ),
                       Text(
                         '${ref.read(weeklyWorkoutProgressProvider.notifier).returnCurrentProgress()}/${weeklyWorkoutProgress.target}',
+                        style: Theme.of(context).textTheme.titleMedium,
                       ),
                     ],
                   ),
-                  const SizedBox(height: 2),
+                  const SizedBox(height: 8),
+                  TweenAnimationBuilder(
+                    tween: Tween<double>(begin: 0, end: progress),
+                    duration: Duration(milliseconds: 500),
+                    builder: (context, progress, child) {
+                      return LinearProgressIndicator(
+                        value: progress,
+                        backgroundColor: AppColors.darkCardsMain,
+                        borderRadius: BorderRadius.all(Radius.circular(8)),
+                        minHeight: 8,
+                      );
+                    },
+                  ),
+                  const SizedBox(height: 8),
                   Text(
                     'One more workout to reach your goal',
-                    style: Theme.of(context).textTheme.bodyMedium!.copyWith(
+                    style: Theme.of(context).textTheme.bodySmall!.copyWith(
                       color: AppColors.accentLightBlue,
                     ),
                     textAlign: TextAlign.start,

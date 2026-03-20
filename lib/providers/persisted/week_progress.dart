@@ -17,7 +17,7 @@ class WorkoutsPerWeekNotifier extends AsyncNotifier<WeeklyWorkoutProgress> {
     final attendanceEncoded =
         prefs.getString('weekly_gym_attendance') ?? '1101000';
     return WeeklyWorkoutProgress(
-      target ?? 1,
+      target ?? 4,
       _decodeAttendance(attendanceEncoded),
     );
   }

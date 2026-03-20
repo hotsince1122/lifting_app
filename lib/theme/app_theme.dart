@@ -29,26 +29,26 @@ class AppTheme {
     //aparent se poate da copyWith la fontWeight doar in sus, nu in jos,
     //deci era bine daca fontWeight-ul era lasat normal in theme
 
-    textTheme: GoogleFonts.latoTextTheme().copyWith(
-      displayLarge: GoogleFonts.lato(fontSize: 34, fontWeight: FontWeight.w700),
-      displayMedium: GoogleFonts.lato(fontSize: 30, fontWeight: FontWeight.w700),
-      displaySmall: GoogleFonts.lato(fontSize: 26, fontWeight: FontWeight.w700),
+    textTheme: GoogleFonts.interTextTheme().copyWith(
+      displayLarge: GoogleFonts.inter(fontSize: 34, fontWeight: FontWeight.w700),
+      displayMedium: GoogleFonts.inter(fontSize: 30, fontWeight: FontWeight.w700),
+      displaySmall: GoogleFonts.inter(fontSize: 26, fontWeight: FontWeight.w700),
 
-      headlineLarge: GoogleFonts.lato(fontSize: 24, fontWeight: FontWeight.w700),
-      headlineMedium: GoogleFonts.lato(fontSize: 22, fontWeight: FontWeight.w600), //Pentru: titluri de ecran și secțiuni importante
-      headlineSmall: GoogleFonts.lato(fontSize: 20, fontWeight: FontWeight.w600),
+      headlineLarge: GoogleFonts.inter(fontSize: 24, fontWeight: FontWeight.w700),
+      headlineMedium: GoogleFonts.inter(fontSize: 22, fontWeight: FontWeight.w600), //Pentru: titluri de ecran și secțiuni importante
+      headlineSmall: GoogleFonts.inter(fontSize: 20, fontWeight: FontWeight.w600),
 
-      titleLarge: GoogleFonts.lato(fontSize: 18, fontWeight: FontWeight.w600),  //Pentru: titluri de card, titlu de exercițiu, elemente principale într-un card
-      titleMedium: GoogleFonts.lato(fontSize: 16, fontWeight: FontWeight.w600),
-      titleSmall: GoogleFonts.lato(fontSize: 14, fontWeight: FontWeight.w600),
+      titleLarge: GoogleFonts.inter(fontSize: 18, fontWeight: FontWeight.w600),  //Pentru: titluri de card, titlu de exercițiu, elemente principale într-un card
+      titleMedium: GoogleFonts.inter(fontSize: 16, fontWeight: FontWeight.w600),
+      titleSmall: GoogleFonts.inter(fontSize: 14, fontWeight: FontWeight.w600),
 
-      bodyLarge: GoogleFonts.lato(fontSize: 16, height: 1.3), //Pentru: text normal important, descrieri scurte, value text
-      bodyMedium: GoogleFonts.lato(fontSize: 14, height: 1.3),  //Pentru: text normal secundar, liste, rânduri
-      bodySmall: GoogleFonts.lato(fontSize: 12, height: 1.3), //Pentru: hint-uri, micro-copy, subtext, note
+      bodyLarge: GoogleFonts.inter(fontSize: 16, height: 1.3), //Pentru: text normal important, descrieri scurte, value text
+      bodyMedium: GoogleFonts.inter(fontSize: 14, height: 1.3),  //Pentru: text normal secundar, liste, rânduri
+      bodySmall: GoogleFonts.inter(fontSize: 12, height: 1.3), //Pentru: hint-uri, micro-copy, subtext, note
 
-      labelLarge: GoogleFonts.lato(fontSize: 14, fontWeight: FontWeight.w600),  //Pentru: butoane, chip-uri, CTA text
-      labelMedium: GoogleFonts.lato(fontSize: 12, fontWeight: FontWeight.w600),
-      labelSmall: GoogleFonts.lato(fontSize: 11, fontWeight: FontWeight.w600),
+      labelLarge: GoogleFonts.inter(fontSize: 14, fontWeight: FontWeight.w600),  //Pentru: butoane, chip-uri, CTA text
+      labelMedium: GoogleFonts.inter(fontSize: 12, fontWeight: FontWeight.w600),
+      labelSmall: GoogleFonts.inter(fontSize: 11, fontWeight: FontWeight.w600),
     ),
 
     cardTheme: CardThemeData(

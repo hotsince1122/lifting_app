@@ -3,6 +3,7 @@ import 'dart:async';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:lifting_tracker_app/data/app_databases.dart';
 import 'package:lifting_tracker_app/models/entity/split_day.dart';
+import 'package:lifting_tracker_app/providers/persisted/active_split_plan.dart';
 
 Future<List<SplitDay>> _loadDaysFromActiveSplit() async {
   final db = await AppDatabases.getDatabase();
@@ -33,7 +34,8 @@ final activeSplitDaysProvider =
 
 class ActiveSplitDaysProvider extends AsyncNotifier<List<SplitDay>> {
   @override
-  FutureOr<List<SplitDay>> build() {
+  FutureOr<List<SplitDay>> build() async {  
+    ref.watch(activeSplitPlanProvider);
     return _loadDaysFromActiveSplit();
   }
 }

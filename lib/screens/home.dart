@@ -30,8 +30,8 @@ class Home extends ConsumerWidget {
                 color: AppColors.accentLightBlue,
               ),
             ),
-            const SizedBox(height: 2),
-            Text(weekdayLabel, style: Theme.of(context).textTheme.titleMedium),
+            const SizedBox(height: 4),
+            Text(weekdayLabel, style: Theme.of(context).textTheme.headlineLarge!.copyWith(fontWeight: FontWeight.w900)),
           ],
         ),
         actions: [
@@ -64,7 +64,7 @@ class Home extends ConsumerWidget {
       body: SafeArea(
         bottom: false,
         child: Padding(
-          padding: const EdgeInsets.fromLTRB(12, 12, 12, 24),
+          padding: const EdgeInsets.fromLTRB(12, 24, 12, 24),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
@@ -73,13 +73,13 @@ class Home extends ConsumerWidget {
               Row(
                 children: [
                   Expanded(child: LastSessionSection()),
-                  const SizedBox(width: 6),
+                  const SizedBox(width: 8),
                   Expanded(child: NextInCycleSection()),
                 ],
               ),
-              const SizedBox(height: 6),
+              const SizedBox(height: 8),
               ProgressSpotlight(),
-              const SizedBox(height: 7), //optic ilussion,
+              const SizedBox(height: 12), //optic ilussion,
               StartSession(),
             ],
           ),

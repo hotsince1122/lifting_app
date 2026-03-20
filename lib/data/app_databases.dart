@@ -218,9 +218,10 @@ class AppDatabases {
           CREATE TABLE completed_workouts(
             id INTEGER PRIMARY KEY,
             day_id TEXT NOT NULL,
-            performed_at TEXT NOT NULL,
+            performed_at INTEGER NOT NULL,
             cycle_index INTEGER NOT NULL,
-            duration_seconds INTEGER,
+            duration_seconds INTEGER NOT NULL,
+            performed_exercises INTEGER NOT NULL,
             FOREIGN KEY (day_id) REFERENCES split_days(id)
           )
         ''');
