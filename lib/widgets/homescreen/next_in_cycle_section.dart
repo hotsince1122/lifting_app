@@ -12,9 +12,9 @@ class NextInCycleSection extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     return AspectRatio(
-      aspectRatio: 1.2,
+      aspectRatio: 1.15,
       child: GradientCard(
-        gradientVariant: Gradients.of(AppGradients.darkThree),
+        gradientVariant: AppGradients.card,
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
@@ -22,18 +22,18 @@ class NextInCycleSection extends ConsumerWidget {
               children: [
                 Icon(
                   Icons.navigate_next_rounded,
-                  size: 22,
-                  color: AppColors.accentLightBlue,
+                  size: 20,
+                  color: AppColors.primary,
                 ),
                 const SizedBox(width: 4),
                 Text(
                   'Next in cycle',
                   textAlign: TextAlign.left,
-                  style: Theme.of(context).textTheme.titleMedium,
+                  style: Theme.of(context).textTheme.titleSmall,
                 ),
               ],
             ),
-            const SizedBox(height: 18,),
+            const SizedBox(height: 16),
             _NextSessionInfoAsync(),
             const Spacer(),
           ],
@@ -50,13 +50,40 @@ class _NextSessionInfoAsync extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final nextInCycleAsync = ref.watch(nextInCycleProvider);
 
+    Widget emptyState = Column(
+      children: [
+        Text(
+          'No exercises added yet. Start now and build as you go.',
+          style: Theme.of(
+            context,
+          ).textTheme.labelMedium!.copyWith(color: AppColors.onSurfaceMuted),
+        ),
+      ],
+    );
+
     return nextInCycleAsync.when(
       loading: () => const Center(child: CircularProgressIndicator()),
       error: (_, _) =>
           const Center(child: Text('An error has occured! Try again.')),
       data: (nextInCycle) {
+        if (nextInCycle.muscleGroups == null) {
+          return Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                nextInCycle.workoutName,
+                style: Theme.of(
+                  context,
+                ).textTheme.titleMedium!.copyWith(fontWeight: FontWeight.w900),
+              ),
+              const SizedBox(height: 6),
+              emptyState,
+            ],
+          );
+        }
+
         final String nrOfExercisesLabel =
-            '${nextInCycle.nrOfExercises} exercise${nextInCycle.nrOfExercises == 1 ? 's' : ''} planned.';
+            '${nextInCycle.nrOfExercises} exercise${nextInCycle.nrOfExercises == 1 ? '' : 's'} planned.';
 
         return Column(
           crossAxisAlignment: CrossAxisAlignment.start,
@@ -65,25 +92,34 @@ class _NextSessionInfoAsync extends ConsumerWidget {
               nextInCycle.workoutName,
               style: Theme.of(
                 context,
-              ).textTheme.titleLarge!.copyWith(fontWeight: FontWeight.w900),
+              ).textTheme.titleMedium!.copyWith(fontWeight: FontWeight.w900),
             ),
-            const SizedBox(height: 2),
-            Text(
-              nextInCycle.muscleGroups == null
-                  ? 'No exercises added yet.'
-                  : nextInCycle.muscleGroups!,
-                style: Theme.of(context).textTheme.bodySmall!.copyWith(color: AppColors.accentLightBlue),
-            ),
-            const SizedBox(height: 8),
-            Row(
+            const SizedBox(height: 6),
+            Column(
               children: [
-                PhosphorIcon(PhosphorIcons.barbell(), size: 14, color: AppColors.accentLightBlue,),
-                const SizedBox(width: 4,),
                 Text(
-                  nextInCycle.muscleGroups == null
-                      ? 'Start now and build as you go.'
-                      : nrOfExercisesLabel,
-                    style: Theme.of(context).textTheme.bodySmall!.copyWith(color: AppColors.accentLightBlue),
+                  nextInCycle.muscleGroups!,
+                  style: Theme.of(
+                    context,
+                  ).textTheme.bodySmall!.copyWith(color: AppColors.secondary),
+                ),
+                const SizedBox(height: 6),
+                Row(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    PhosphorIcon(
+                      PhosphorIcons.barbell(),
+                      size: 14,
+                      color: AppColors.primary,
+                    ),
+                    const SizedBox(width: 4),
+                    Text(
+                      nrOfExercisesLabel,
+                      style: Theme.of(context).textTheme.labelMedium!.copyWith(
+                        color: AppColors.primary,
+                      ),
+                    ),
+                  ],
                 ),
               ],
             ),

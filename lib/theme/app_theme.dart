@@ -7,24 +7,24 @@ class AppTheme {
     useMaterial3: true,
     colorScheme:
         ColorScheme.fromSeed(
-          seedColor: AppColors.bgMain,
+          seedColor: AppColors.background,
           brightness: Brightness.dark,
         ).copyWith(
-          surface: AppColors.bgMain,
-          onSurface: AppColors.accentLightWhite,
+          surface: AppColors.background,
+          onSurface: AppColors.onSurface,
 
-          surfaceDim: AppColors.bgSecondary,
-          surfaceContainerLow: AppColors.bgSecondary,
+          surfaceDim: AppColors.onSurfaceMuted,
+          surfaceContainerLow: AppColors.background,
 
           // surfaceContainer: AppColors.bgMain,
-          primary: AppColors.accentLightWhite,
-          secondary: AppColors.accentLightGray,
+          primary: AppColors.primary,
+          secondary: AppColors.secondary,
 
-          onPrimary: AppColors.accentLightWhite,
+          onPrimary: AppColors.onSurface,
           onSecondary: Colors.black,
         ),
 
-    scaffoldBackgroundColor: AppColors.bgMain,
+    scaffoldBackgroundColor: AppColors.background,
 
     //aparent se poate da copyWith la fontWeight doar in sus, nu in jos,
     //deci era bine daca fontWeight-ul era lasat normal in theme
@@ -46,9 +46,9 @@ class AppTheme {
       bodyMedium: GoogleFonts.inter(fontSize: 14, height: 1.3),  //Pentru: text normal secundar, liste, rânduri
       bodySmall: GoogleFonts.inter(fontSize: 12, height: 1.3), //Pentru: hint-uri, micro-copy, subtext, note
 
-      labelLarge: GoogleFonts.inter(fontSize: 14, fontWeight: FontWeight.w600),  //Pentru: butoane, chip-uri, CTA text
-      labelMedium: GoogleFonts.inter(fontSize: 12, fontWeight: FontWeight.w600),
-      labelSmall: GoogleFonts.inter(fontSize: 11, fontWeight: FontWeight.w600),
+      labelLarge: GoogleFonts.inter(fontSize: 12, fontWeight: FontWeight.w600),  //Pentru: butoane, chip-uri, CTA text
+      labelMedium: GoogleFonts.inter(fontSize: 10, fontWeight: FontWeight.w600),
+      labelSmall: GoogleFonts.inter(fontSize: 8, fontWeight: FontWeight.w600),
     ),
 
     cardTheme: CardThemeData(
@@ -57,13 +57,14 @@ class AppTheme {
       ),
       color: Colors.transparent,
       clipBehavior: Clip.antiAlias,
-      elevation: 4,
-    ), 
+      elevation: 3,
+      margin: EdgeInsets.zero,
+    ),
 
     sliderTheme: SliderThemeData(
       // ignore: deprecated_member_use
       year2023: false,
-      valueIndicatorColor: AppColors.darkCardsMain,
+      valueIndicatorColor: AppColors.background,
     ),
   );
 }

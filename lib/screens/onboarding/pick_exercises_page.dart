@@ -5,9 +5,9 @@ import 'package:lifting_tracker_app/providers/presentation/can_user_finish_setup
 import 'package:lifting_tracker_app/screens/home.dart';
 import 'package:lifting_tracker_app/theme/app_gradients.dart';
 import 'package:lifting_tracker_app/theme/app_colors.dart';
-import 'package:lifting_tracker_app/widgets/gradient_button.dart';
 import 'package:lifting_tracker_app/widgets/gradient_cards.dart';
 import 'package:lifting_tracker_app/widgets/profile_setup/workout_day_expansion_tile.dart';
+import 'package:lifting_tracker_app/widgets/solid_button.dart';
 
 class PickExercisesPage extends ConsumerWidget {
   const PickExercisesPage(this.controller, {super.key});
@@ -27,12 +27,12 @@ class PickExercisesPage extends ConsumerWidget {
         final dayIds = activeSplitDays.map((splitDay) => splitDay.id).toList();
 
         return Padding(
-          padding: const EdgeInsets.fromLTRB(12, 24, 12, 46),
+          padding: const EdgeInsets.fromLTRB(18, 32, 18, 46),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
               GradientCard(
-                gradientVariant: Gradients.of(AppGradients.darkTwo),
+                gradientVariant: AppGradients.card,
                 child: Column(
                   children: [
                     Text(
@@ -44,14 +44,14 @@ class PickExercisesPage extends ConsumerWidget {
                       "For each workout day.",
                       textAlign: TextAlign.center,
                       style: Theme.of(context).textTheme.titleMedium!.copyWith(
-                        color: AppColors.accentLightGray,
+                        color: AppColors.primary,
                       ),
                     ),
                   ],
                 ),
               ),
 
-              const SizedBox(height: 16),
+              const SizedBox(height: 24),
 
               Text(
                 'Workout days:',
@@ -62,12 +62,12 @@ class PickExercisesPage extends ConsumerWidget {
               Text(
                 'Tap a day to get started.',
                 style: Theme.of(context).textTheme.bodyMedium!.copyWith(
-                  color: AppColors.accentLightBlue.withAlpha(180),
+                  color: AppColors.onSurfaceMuted,
                 ),
                 textAlign: TextAlign.center,
               ),
 
-              const SizedBox(height: 16),
+              const SizedBox(height: 24),
 
               SizedBox(
                 height: 480,
@@ -77,13 +77,13 @@ class PickExercisesPage extends ConsumerWidget {
                       for (final workoutDay in activeSplitDays) ...[
                         GradientCard(
                           padding: EdgeInsets.all(0),
-                          gradientVariant: Gradients.of(AppGradients.darkThree),
+                          gradientVariant: AppGradients.card,
                           child: WorkoutDayExpansionTile(
                             screenWidth,
                             workoutDay,
                           ),
                         ),
-                        const SizedBox(height: 8),
+                        const SizedBox(height: 16),
                       ],
                     ],
                   ),
@@ -123,9 +123,9 @@ class _FinishOnboardingButton extends ConsumerWidget {
             child: Text(
               'Skip',
               style: Theme.of(context).textTheme.labelLarge!.copyWith(
-                color: AppColors.accentLightBlue.withAlpha(180),
+                color: AppColors.onSurfaceMuted,
                 decoration: TextDecoration.underline,
-                decorationColor: AppColors.accentLightBlue.withAlpha(180),
+                decorationColor: AppColors.onSurfaceMuted,
                 decorationThickness: 1,
               ),
             ),
@@ -134,22 +134,21 @@ class _FinishOnboardingButton extends ConsumerWidget {
 
         return Column(
           children: [
-            GradientButton(
+            SolidButton(
               isActive: !canUserFinishSetup,
-              buttonHight: 48,
+              buttonHeight: 54,
               onPressed: !canUserFinishSetup
                   ? () {}
                   : () => Navigator.of(context).pushReplacement(
                       MaterialPageRoute(builder: (context) => Home()),
                     ),
-              gradientVariant: Gradients.of(AppGradients.lightOne),
               child: Row(
                 mainAxisSize: MainAxisSize.min,
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
-                  Text('Finish', style: Theme.of(context).textTheme.titleLarge),
+                  Text('Finish', style: Theme.of(context).textTheme.titleLarge!.copyWith(color: AppColors.background)),
                   SizedBox(width: 8),
-                  Icon(Icons.arrow_forward_rounded),
+                  Icon(Icons.arrow_forward_rounded, color: AppColors.background,),
                 ],
               ),
             ),

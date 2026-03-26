@@ -24,7 +24,7 @@ class WorkoutDayExpansionTile extends ConsumerWidget {
       isDismissible: false,
       enableDrag: false,
       backgroundColor: Colors.transparent,
-      barrierColor: Colors.black38,
+      barrierColor: Colors.black12,
       isScrollControlled: true,
       builder: (context) => AddExerciseSelector(screenWidth),
     );
@@ -54,7 +54,7 @@ class WorkoutDayExpansionTile extends ConsumerWidget {
               Text(
                 '$exerciseCount selected',
                 style: Theme.of(context).textTheme.bodyMedium!.copyWith(
-                  color: AppColors.accentLightGray,
+                  color: AppColors.secondary,
                 ),
               ),
             ],
@@ -66,12 +66,12 @@ class WorkoutDayExpansionTile extends ConsumerWidget {
                 : "Muscle groups will appear here",
             style: Theme.of(
               context,
-            ).textTheme.bodyMedium!.copyWith(color: AppColors.accentLightGray),
+            ).textTheme.bodyMedium!.copyWith(color: AppColors.secondary),
           ),
 
           controlAffinity: ListTileControlAffinity.leading,
 
-          iconColor: AppColors.accentLightGray,
+          iconColor: AppColors.secondary,
 
           // backgroundColor: AppColors.bgSecondary,
           collapsedShape: RoundedRectangleBorder(
@@ -87,14 +87,14 @@ class WorkoutDayExpansionTile extends ConsumerWidget {
           children: [
             Divider(
                       height: 0.5,
-                      color: AppColors.accentLightGray,
+                      color: AppColors.secondary,
                       indent: 16,
                       endIndent: 16,
                     ),
             AddedExercises(workoutDay.id),
             Divider(
                       height: 0.5,
-                      color: AppColors.accentLightGray,
+                      color: AppColors.secondary,
                       indent: 16,
                       endIndent: 16,
                     ),

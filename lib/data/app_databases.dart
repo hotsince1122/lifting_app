@@ -243,3 +243,27 @@ class AppDatabases {
     return _db!;
   }
 }
+
+
+// CREATE TABLE logged_sets(
+//   id INTEGER PRIMARY KEY,
+//   ex_id TEXT NOT NULL,
+//   session_id INTEGER NOT NULL,
+//   weight REAL NOT NULL,
+//   repetitions INTEGER NOT NULL, 
+//   FOREIGN KEY (ex_id) REFERENCES exercises(id),
+//   FOREIGN KEY (session_id) REFERENCES workout_sessions(id)
+// )
+
+// await db.execute('''
+//           CREATE TABLE workout_sessions(
+//             id INTEGER PRIMARY KEY,
+//             day_id TEXT NOT NULL,
+//             started_at INTEGER NOT NULL,
+//             finished_at INTEGER
+//             duration_seconds INTEGER NOT NULL,
+//             cycle_index INTEGER NOT NULL,
+//             status TEXT NOT NULL,
+//             FOREIGN KEY (day_id) REFERENCES split_days(id)
+//           )
+//         ''');

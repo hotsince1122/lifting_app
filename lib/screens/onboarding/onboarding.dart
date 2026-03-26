@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:lifting_tracker_app/screens/onboarding/pick_exercises_page.dart';
 import 'package:lifting_tracker_app/screens/onboarding/select_split_page.dart';
-import 'package:lifting_tracker_app/screens/onboarding/welcome_page.dart';
+import 'package:lifting_tracker_app/screens/onboarding/workouts_per_week_page.dart';
 import 'package:lifting_tracker_app/theme/app_colors.dart';
 import 'package:smooth_page_indicator/smooth_page_indicator.dart';
 
@@ -58,7 +58,7 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
                 });
               },
               children: [
-                WelcomePage(controller),
+                WorkoutsPerWeekPage(controller),
                 SelectSplitPage(controller),
                 PickExercisesPage(controller),
               ],
@@ -70,11 +70,11 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
                 controller: controller,
                 count: 3,
                 effect: SlideEffect(
-                  dotWidth: (screenWidth / 3) - 12,
+                  dotWidth: (screenWidth / 3) - 18,
                   dotHeight: 6,
                   spacing: 8,
-                  dotColor: AppColors.bgSecondary,
-                  activeDotColor: AppColors.accentLightBlue,
+                  dotColor: AppColors.surface,
+                  activeDotColor: AppColors.secondary,
                 ),
               ),
             ),

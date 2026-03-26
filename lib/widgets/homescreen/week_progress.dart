@@ -3,7 +3,6 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:intl/intl.dart';
 import 'package:lifting_tracker_app/providers/persisted/week_progress.dart';
 import 'package:lifting_tracker_app/theme/app_colors.dart';
-import 'package:lifting_tracker_app/theme/app_gradients.dart';
 
 class WeekProgress extends ConsumerWidget {
   const WeekProgress({super.key});
@@ -22,37 +21,45 @@ class WeekProgress extends ConsumerWidget {
 
     final weeklyWorkoutProgressAsync = ref.watch(weeklyWorkoutProgressProvider);
 
-    Widget wrapWithContainerIfToday(Widget child, bool isToday) {
-      return isToday
-          ? Container(
-              height: 68,
-              alignment: Alignment.center,
-              decoration: BoxDecoration(
-                gradient: Gradients.of(AppGradients.lightOne),
-                borderRadius: BorderRadius.circular(24),
-              ),
-              child: child,
-            )
-          : child;
-    }
+    Widget buildDayBadge(String calendarDay, bool didAttend, bool isToday) {
+      final backgroundColor = isToday
+          ? AppColors.primary
+          : didAttend
+          ? AppColors.surface
+          : AppColors.background;
 
-    Widget wrapWithContainerIfAttendedGym(
-      Widget child,
-      bool didAttend,
-      bool isToday,
-    ) {
-      return didAttend && !isToday
-          ? Container(
-              height: 32,
-              width: 32,
-              alignment: Alignment.center,
-              decoration: BoxDecoration(
-                gradient: Gradients.of(AppGradients.lightOne),
-                shape: BoxShape.circle,
-              ),
-              child: child,
-            )
-          : child;
+      final textColor = isToday
+          ? AppColors.background
+          : didAttend
+          ? null
+          : AppColors.primary;
+
+      final borderColor = isToday ? AppColors.surface : Colors.transparent;
+
+      return Container(
+        height: 44,
+        width: 44,
+        decoration: BoxDecoration(
+          shape: BoxShape.circle,
+          border: Border.all(color: borderColor, width: 2),
+        ),
+        child: Padding(
+          padding: EdgeInsets.all(2),
+          child: Container(
+            alignment: Alignment.center,
+            decoration: BoxDecoration(
+              color: backgroundColor,
+              shape: BoxShape.circle,
+            ),
+            child: Text(
+              calendarDay,
+              style: Theme.of(
+                context,
+              ).textTheme.titleSmall!.copyWith(color: textColor),
+            ),
+          ),
+        ),
+      );
     }
 
     return weeklyWorkoutProgressAsync.when(
@@ -68,45 +75,40 @@ class WeekProgress extends ConsumerWidget {
 
         return Column(
           children: [
-            Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                for (final weekday in weekdays)
-                  Builder(
-                    builder: (context) {
-                      final isToday = DateUtils.isSameDay(weekday, today);
-                      final label = dayFormatter.format(weekday);
+            SizedBox(
+              height: 64,
+              width: double.infinity,
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  for (final weekday in weekdays)
+                    Builder(
+                      builder: (context) {
+                        final isToday = DateUtils.isSameDay(weekday, today);
+                        final didUserAttendGym = weeklyWorkoutProgress
+                            .weeklyGymAttendance[weekday.weekday - 1];
+                        final weekDayLabel = dayFormatter.format(weekday);
+                        final calendarDayLabel = weekday.day.toString();
 
-                      return wrapWithContainerIfToday(
-                        SizedBox(
-                          height: 68,
-                          width: 48,
-                          child: Column(
-                            mainAxisAlignment: MainAxisAlignment.spaceAround,
-                            children: [
-                              Text(
-                                label,
-                                style: Theme.of(context).textTheme.bodyMedium,
-                              ),
-                              wrapWithContainerIfAttendedGym(
-                                Text(
-                                  weekday.day.toString(),
-                                  style: Theme.of(
-                                    context,
-                                  ).textTheme.titleMedium,
-                                ),
-                                weeklyWorkoutProgress
-                                    .weeklyGymAttendance[weekday.weekday - 1],
-                                isToday,
-                              ),
-                            ],
-                          ),
-                        ),
-                        isToday,
-                      );
-                    },
-                  ),
-              ],
+                        return Column(
+                          children: [
+                            Text(
+                              weekDayLabel,
+                              style: Theme.of(context).textTheme.bodySmall!
+                                  .copyWith(color: AppColors.primary),
+                            ),
+                            const Spacer(),
+                            buildDayBadge(
+                              calendarDayLabel,
+                              didUserAttendGym,
+                              isToday,
+                            ),
+                          ],
+                        );
+                      },
+                    ),
+                ],
+              ),
             ),
             const SizedBox(height: 12),
             Padding(
@@ -119,11 +121,13 @@ class WeekProgress extends ConsumerWidget {
                     children: [
                       Text(
                         'Weekly goal',
-                        style: Theme.of(context).textTheme.titleSmall,
+                        style: Theme.of(context).textTheme.titleSmall!.copyWith(
+                          color: AppColors.primary,
+                        ),
                       ),
                       Text(
                         '${ref.read(weeklyWorkoutProgressProvider.notifier).returnCurrentProgress()}/${weeklyWorkoutProgress.target}',
-                        style: Theme.of(context).textTheme.titleMedium,
+                        style: Theme.of(context).textTheme.titleSmall!.copyWith(fontWeight: FontWeight.w900),
                       ),
                     ],
                   ),
@@ -134,18 +138,19 @@ class WeekProgress extends ConsumerWidget {
                     builder: (context, progress, child) {
                       return LinearProgressIndicator(
                         value: progress,
-                        backgroundColor: AppColors.darkCardsMain,
+                        backgroundColor: AppColors.card,
+                        color: AppColors.secondary,
                         borderRadius: BorderRadius.all(Radius.circular(8)),
-                        minHeight: 8,
+                        minHeight: 6,
                       );
                     },
                   ),
                   const SizedBox(height: 8),
                   Text(
                     'One more workout to reach your goal',
-                    style: Theme.of(context).textTheme.bodySmall!.copyWith(
-                      color: AppColors.accentLightBlue,
-                    ),
+                    style: Theme.of(
+                      context,
+                    ).textTheme.bodySmall!.copyWith(color: AppColors.primary),
                     textAlign: TextAlign.start,
                   ),
                 ],

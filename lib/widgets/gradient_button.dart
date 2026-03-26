@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:lifting_tracker_app/theme/app_colors.dart';
+import 'package:lifting_tracker_app/theme/app_gradients.dart';
 
 class GradientButton extends StatelessWidget {
   const GradientButton({
@@ -7,23 +9,27 @@ class GradientButton extends StatelessWidget {
     required this.onPressed,
     required this.gradientVariant,
     this.buttonWidth = double.infinity,
-    this.buttonHight,
+    this.buttonHeight,
     required this.child,
+    this.borderColor = AppColors.cardBorder,
   });
 
   final Widget child;
   final bool isActive;
-  final void Function() onPressed;
-  final LinearGradient gradientVariant;
+  final VoidCallback onPressed;
+  final AppGradients gradientVariant;
   final double buttonWidth;
-  final double? buttonHight;
+  final double? buttonHeight;
+  final Color borderColor;
 
   @override
   Widget build(BuildContext context) {
+    const radius = BorderRadius.all(Radius.circular(24));
+
     return Align(
       alignment: Alignment.center,
       child: SizedBox(
-        height: buttonHight,
+        height: buttonHeight,
         width: buttonWidth,
         child: AnimatedScale(
           scale: isActive ? 0.95 : 1.0,
@@ -33,23 +39,30 @@ class GradientButton extends StatelessWidget {
             duration: const Duration(milliseconds: 120),
             child: ElevatedButton(
               clipBehavior: Clip.antiAlias,
-              onPressed: () {
-                onPressed();
-              },
-              style: ElevatedButton.styleFrom(
-                padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 8),
-                elevation: 4,
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(24),
-                ),
-                backgroundBuilder: (context, states, child) => Ink(
-                  decoration: BoxDecoration(
-                    gradient: gradientVariant,
-                    borderRadius: BorderRadius.circular(24),
+              onPressed: onPressed,
+              style:
+                  ElevatedButton.styleFrom(
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 24,
+                      vertical: 8,
+                    ),
+                    elevation: 3,
+                    shadowColor: AppColors.cardShadow,
+                    backgroundColor: Colors.transparent,
+                    surfaceTintColor: Colors.transparent,
+                    shape: const RoundedRectangleBorder(borderRadius: radius),
+                  ).copyWith(
+                    backgroundBuilder: (context, states, child) {
+                      return Ink(
+                        decoration: BoxDecoration(
+                          borderRadius: radius,
+                          gradient: AppThemeGradients.of(gradientVariant),
+                          border: Border.all(color: borderColor, width: 1),
+                        ),
+                        child: child,
+                      );
+                    },
                   ),
-                  child: child,
-                ),
-              ),
               child: child,
             ),
           ),

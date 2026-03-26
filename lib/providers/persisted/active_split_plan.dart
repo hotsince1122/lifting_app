@@ -2,7 +2,7 @@ import 'dart:async';
 
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:lifting_tracker_app/data/app_databases.dart';
-import 'package:lifting_tracker_app/models/entity/split_day.dart';
+import 'package:lifting_tracker_app/models/entity/custom_split.dart';
 import 'package:lifting_tracker_app/models/entity/split_plan.dart';
 
 Future<SplitPlan?> _loadSplitFromDb() async {
@@ -39,19 +39,19 @@ class ActiveSplitPlanNotifier extends AsyncNotifier<SplitPlan?> {
     return _loadSplitFromDb();
   }
 
-  Future<void> addAndChangeToCustom(List<SplitDay> newSplit) async {
+  Future<void> addAndChangeToCustom(CustomSplit newSplit) async {
     final db = await AppDatabases.getDatabase();
 
     await db.transaction((txn) async {
       await txn.update('split_plans', {'is_active': 0});
 
       final newSplitPlanId = await txn.insert('split_plans', {
-        'name': 'Custom',
+        'name': newSplit.splitName,
         'is_preset': 0,
         'is_active': 1,
       });
 
-      for (final splitDay in newSplit) {
+      for (final splitDay in newSplit.splitDays) {
         await txn.insert('split_days', {
           'id': splitDay.id,
           'split_id': newSplitPlanId,

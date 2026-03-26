@@ -31,7 +31,7 @@ class PresetSplits extends ConsumerWidget {
           children: [
             for (final preset in presetSplitVm)
               GradientButton(
-                gradientVariant: _gradientForSplit(preset.splitId),
+                gradientVariant: AppGradients.card,
                 isActive: currentSplit != null && preset.splitId == currentSplit!.id,
                 onPressed: () => ref.read(activeSplitPlanProvider.notifier).changeToExisting(preset.splitId),
                 child: Column(
@@ -47,14 +47,14 @@ class PresetSplits extends ConsumerWidget {
                         Text(
                           '${preset.nrOfDays}-day cycle',
                           style: Theme.of(context).textTheme.bodyMedium!
-                              .copyWith(color: AppColors.accentLightGray),
+                              .copyWith(color: AppColors.secondary),
                         ),
                       ],
                     ),
                     Text(
                       preset.splitDaysNames,
                       style: Theme.of(context).textTheme.bodyMedium!.copyWith(
-                        color: AppColors.accentLightGray,
+                        color: AppColors.secondary,
                       ),
                     ),
                   ],
@@ -67,12 +67,12 @@ class PresetSplits extends ConsumerWidget {
   }
 }
 
-LinearGradient _gradientForSplit(int splitId) {
-  const variants = [
-    AppGradients.darkOne,
-    AppGradients.darkTwo,
-    AppGradients.darkThree,
-  ];
+// AppGradients _gradientForSplit(int splitId) {
+//   const variants = [
+//     AppGradients.card,
+//     AppGradients.deepCard,
+//     AppGradients.softCard,
+//   ];
 
-  return Gradients.of(variants[(splitId - 1) % variants.length]);
-}
+//   return variants[(splitId - 1) % variants.length];
+// }

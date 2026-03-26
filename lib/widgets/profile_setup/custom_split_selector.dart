@@ -1,6 +1,7 @@
 import 'dart:ui';
 
 import 'package:flutter/material.dart';
+import 'package:lifting_tracker_app/models/entity/custom_split.dart';
 import 'package:lifting_tracker_app/models/entity/split_day.dart';
 import 'package:lifting_tracker_app/theme/app_colors.dart';
 
@@ -17,6 +18,7 @@ class _CustomSplitSelectorState extends State<CustomSplitSelector> {
   double _daysSplitSliderValue = 3;
 
   final List<TextEditingController> _dayNames = [];
+  final TextEditingController _splitName = TextEditingController();
   bool _userTriedToSave = false;
 
   void _syncControllersWithDays(int days) {
@@ -39,6 +41,7 @@ class _CustomSplitSelectorState extends State<CustomSplitSelector> {
     for (final controller in _dayNames) {
       controller.dispose();
     }
+    _splitName.dispose();
     super.dispose();
   }
 
@@ -51,11 +54,11 @@ class _CustomSplitSelectorState extends State<CustomSplitSelector> {
       child: Padding(
         padding: EdgeInsets.symmetric(horizontal: 16, vertical: 32),
         child: Container(
-          height: MediaQuery.of(context).size.height * 0.72,
+          height: MediaQuery.of(context).size.height * 0.8,
           width: widget.screenWidth,
           decoration: BoxDecoration(
             borderRadius: BorderRadius.circular(24),
-            color: AppColors.darkCardsMain.withAlpha(253),
+            color: AppColors.card.withAlpha(253),
           ),
           child: Padding(
             padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 8),
@@ -76,6 +79,13 @@ class _CustomSplitSelectorState extends State<CustomSplitSelector> {
                     ),
                     TextButton(
                       onPressed: () {
+                        if (_splitName.text.trim().isEmpty) {
+                          setState(() {
+                            _userTriedToSave = true;
+                          });
+                          return;
+                        }
+
                         final List<SplitDay> customSplit = [];
                         for (int i = 0; i < days; i++) {
                           if (_dayNames[i].text.trim().isEmpty) {
@@ -91,7 +101,7 @@ class _CustomSplitSelectorState extends State<CustomSplitSelector> {
                             ),
                           );
                         }
-                        Navigator.of(context).pop(customSplit);
+                        Navigator.of(context).pop((CustomSplit(_splitName.text.trim(), customSplit)));
                       },
                       child: Text(
                         'Save',
@@ -102,12 +112,53 @@ class _CustomSplitSelectorState extends State<CustomSplitSelector> {
                     ),
                   ],
                 ),
-      
+
                 Padding(
                   padding: EdgeInsets.symmetric(horizontal: 8),
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.stretch,
                     children: [
+                      const SizedBox(height: 6,),
+                      Text(
+                        'Name your split:',
+                        style: Theme.of(context).textTheme.titleMedium,
+                      ),
+                      TextField(
+                        controller: _splitName,
+                        onChanged: (_) {
+                          if (_userTriedToSave) {
+                            setState(() {});
+                          }
+                        },
+                        decoration: InputDecoration(
+                          helperText: '',
+                          enabledBorder: UnderlineInputBorder(
+                            borderSide: BorderSide(
+                              color: AppColors.secondary,
+                              width: 1.5,
+                            ),
+                          ),
+                          focusedBorder: UnderlineInputBorder(
+                            borderSide: BorderSide(
+                              color: AppColors.secondary,
+                              width: 2,
+                            ),
+                          ),
+                          errorText:
+                              (_userTriedToSave &&
+                                  _splitName.text.trim().isEmpty)
+                              ? 'Required'
+                              : null,
+                          errorBorder: UnderlineInputBorder(
+                            borderSide: BorderSide(
+                              color: const Color.fromARGB(255, 194, 138, 131),
+                              width: 2,
+                            ),
+                          ),
+                          label: Text('Split name...'),
+                        ),
+                      ),
+
                       const SizedBox(height: 6),
                       Text(
                         'How many training days per cycle?',
@@ -117,7 +168,7 @@ class _CustomSplitSelectorState extends State<CustomSplitSelector> {
                       Text(
                         'This will repeat after the last day.',
                         style: Theme.of(context).textTheme.bodyMedium!.copyWith(
-                          color: AppColors.accentLightBlue,
+                          color: AppColors.primary,
                         ),
                       ),
                       const SizedBox(height: 12),
@@ -129,11 +180,11 @@ class _CustomSplitSelectorState extends State<CustomSplitSelector> {
                           max: 7,
                           min: 1,
                           divisions: 6,
-                          activeColor: AppColors.accentLightWhite,
-                          inactiveColor: AppColors.darkCardsSecodary,
+                          activeColor: AppColors.onSurface,
+                          inactiveColor: AppColors.surface,
                           label:
                               '${_daysSplitSliderValue.toInt().toString()}-day cycle',
-                          thumbColor: AppColors.accentLightBlue,
+                          thumbColor: AppColors.primary,
                           onChanged: (value) {
                             setState(() {
                               _userTriedToSave = false;
@@ -152,7 +203,7 @@ class _CustomSplitSelectorState extends State<CustomSplitSelector> {
                       Text(
                         'You can edit names later.',
                         style: Theme.of(context).textTheme.bodyMedium!.copyWith(
-                          color: AppColors.accentLightBlue,
+                          color: AppColors.primary,
                         ),
                       ),
                       const SizedBox(height: 12),
@@ -174,7 +225,7 @@ class _CustomSplitSelectorState extends State<CustomSplitSelector> {
                                       alignment: Alignment.center,
                                       decoration: BoxDecoration(
                                         shape: BoxShape.circle,
-                                        color: AppColors.accentLightBlue,
+                                        color: AppColors.primary,
                                       ),
                                       child: Text(
                                         (i + 1).toString(),
@@ -182,7 +233,7 @@ class _CustomSplitSelectorState extends State<CustomSplitSelector> {
                                             .textTheme
                                             .bodyMedium!
                                             .copyWith(
-                                              color: AppColors.darkCardsMain,
+                                              color: AppColors.card,
                                               fontWeight: FontWeight.bold,
                                             ),
                                       ),
@@ -200,13 +251,13 @@ class _CustomSplitSelectorState extends State<CustomSplitSelector> {
                                           helperText: '',
                                           enabledBorder: UnderlineInputBorder(
                                             borderSide: BorderSide(
-                                              color: AppColors.accentLightGray,
+                                              color: AppColors.secondary,
                                               width: 1.5,
                                             ),
                                           ),
                                           focusedBorder: UnderlineInputBorder(
                                             borderSide: BorderSide(
-                                              color: AppColors.accentLightGray,
+                                              color: AppColors.secondary,
                                               width: 2,
                                             ),
                                           ),

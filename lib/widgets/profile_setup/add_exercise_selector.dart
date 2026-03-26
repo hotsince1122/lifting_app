@@ -34,7 +34,7 @@ class AddExerciseSelectorState extends ConsumerState<AddExerciseSelector> {
             width: widget.screenWidth,
             decoration: BoxDecoration(
               borderRadius: BorderRadius.circular(24),
-              color: AppColors.darkCardsMain.withAlpha(253),
+              color: AppColors.card.withAlpha(253),
             ),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -124,7 +124,7 @@ class _MuscleGroupList extends StatelessWidget {
         padding: EdgeInsets.zero,
         itemCount: MuscleGroups.names.length,
         separatorBuilder: (_, _) =>
-            const Divider(height: 1, color: AppColors.darkCardsSecodary),
+            const Divider(height: 1, color: AppColors.cardGradient),
         itemBuilder: (context, i) {
           final muscleGroup = MuscleGroups.names[i];
           final label = muscleGroup[0].toUpperCase() + muscleGroup.substring(1);
@@ -138,7 +138,7 @@ class _MuscleGroupList extends StatelessWidget {
             trailing: const Icon(
               Icons.arrow_forward_ios,
               size: 16,
-              color: AppColors.darkCardsSecodary,
+              color: AppColors.cardGradient,
             ),
             onTap: () {
               onSelectGroup(label);
@@ -168,14 +168,14 @@ class _ExercisesForGroupPage extends ConsumerWidget {
       data: (exercises) => Container(
         height: double.infinity,
         width: double.infinity,
-        color: AppColors.darkCardsMain.withAlpha(253),
+        color: AppColors.card.withAlpha(253),
         child: Padding(
           padding: const EdgeInsets.symmetric(horizontal: 8.0),
           child: ListView.separated(
             padding: EdgeInsets.zero,
             itemCount: exercises.length,
             separatorBuilder: (_, _) =>
-                const Divider(height: 1, color: AppColors.darkCardsSecodary),
+                const Divider(height: 1, color: AppColors.cardGradient),
             itemBuilder: (context, i) {
               final exercise = exercises[i];
 

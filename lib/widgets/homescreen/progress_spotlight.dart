@@ -10,9 +10,9 @@ class ProgressSpotlight extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     return AspectRatio(
-      aspectRatio: 1.6,
+      aspectRatio: 1.55,
       child: GradientCard(
-        gradientVariant: Gradients.of(AppGradients.darkThree),
+        gradientVariant: AppGradients.card,
         child: Padding(
           padding: EdgeInsetsGeometry.all(4),
           child: Column(
@@ -23,7 +23,7 @@ class ProgressSpotlight extends ConsumerWidget {
                   Icon(
                     Icons.trending_up_outlined,
                     size: 20,
-                    color: AppColors.accentLightBlue,
+                    color: AppColors.primary,
                   ),
                   const SizedBox(width: 6),
                   Text(
@@ -40,11 +40,11 @@ class ProgressSpotlight extends ConsumerWidget {
                   height: 52,
                   decoration: BoxDecoration(
                     shape: BoxShape.circle,
-                    color: AppColors.accentLightBlue.withAlpha(80),
+                    color: AppColors.primary.withAlpha(60),
                   ),
                   child: Icon(
                     Icons.trending_up,
-                    color: AppColors.accentLightBlue,
+                    color: AppColors.primary,
                   ),
                 ),
               ),
@@ -53,7 +53,7 @@ class ProgressSpotlight extends ConsumerWidget {
                 child: Text(
                   'Complete your first session to\nsee your progress here',
                   style: Theme.of(context).textTheme.bodySmall!.copyWith(
-                    color: AppColors.accentLightBlue,
+                    color: AppColors.primary,
                   ),
                   textAlign: TextAlign.center,
                 ),

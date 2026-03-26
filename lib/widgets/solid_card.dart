@@ -1,11 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:lifting_tracker_app/theme/app_colors.dart';
-import 'package:lifting_tracker_app/theme/app_gradients.dart';
 
-class GradientCard extends StatelessWidget {
-  const GradientCard({
+class SolidCard extends StatelessWidget {
+  const SolidCard({
     super.key,
-    required this.gradientVariant,
+    this.color = AppColors.card,
     this.padding = const EdgeInsets.all(18),
     required this.child,
     this.borderColor = AppColors.cardBorder,
@@ -13,7 +12,7 @@ class GradientCard extends StatelessWidget {
 
   final Widget child;
   final EdgeInsets padding;
-  final AppGradients gradientVariant;
+  final Color color;
   final Color borderColor;
 
   @override
@@ -26,7 +25,7 @@ class GradientCard extends StatelessWidget {
       child: Ink(
         decoration: BoxDecoration(
           borderRadius: radius,
-          gradient: AppThemeGradients.of(gradientVariant),
+          color: color,
           border: Border.all(
             color: borderColor,
             width: 1,

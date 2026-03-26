@@ -5,7 +5,6 @@ import 'package:lifting_tracker_app/theme/app_colors.dart';
 import 'package:lifting_tracker_app/theme/app_gradients.dart';
 import 'package:lifting_tracker_app/widgets/gradient_cards.dart';
 import 'package:phosphor_flutter/phosphor_flutter.dart';
-// import 'package:phosphor_flutter/phosphor_flutter.dart';
 
 class LastSessionSection extends StatelessWidget {
   const LastSessionSection({super.key});
@@ -13,24 +12,24 @@ class LastSessionSection extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return AspectRatio(
-      aspectRatio: 1.2,
+      aspectRatio: 1.15,
       child: GradientCard(
-        gradientVariant: Gradients.of(AppGradients.darkOne),
+        gradientVariant: AppGradients.card,
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
             Row(
               children: [
-                PhosphorIcon(PhosphorIcons.clockCounterClockwise(), size: 20, color: AppColors.accentLightBlue,),
-                const SizedBox(width: 4,),
+                PhosphorIcon(PhosphorIcons.clockCounterClockwise(), size: 20, color: AppColors.primary,),
+                const SizedBox(width: 6,),
                 Text(
                   'Last session',
                   textAlign: TextAlign.left,
-                  style: Theme.of(context).textTheme.titleMedium,
+                  style: Theme.of(context).textTheme.titleSmall,
                 ),
               ],
             ),
-            const SizedBox(height: 20,),
+            const SizedBox(height: 22,),
             _LastSessionInfoAsync(),
             const Spacer(),
           ],
@@ -58,21 +57,17 @@ class _LastSessionInfoAsync extends ConsumerWidget {
             children: [
               Text(
                 'No sessions yet.',
-                style: Theme.of(context).textTheme.bodyMedium!.copyWith(
-                  color: AppColors.accentLightBlue,
+                style: Theme.of(context).textTheme.bodySmall!.copyWith(
+                  color: AppColors.primary,
                 ),
               ),
-              const SizedBox(height: 8),
+              const SizedBox(height: 10),
               Text(
                 'Your latest workout will appear here.',
-                style: Theme.of(context).textTheme.bodySmall!.copyWith(
-                  color: AppColors.accentLightWhite.withAlpha(120),
+                style: Theme.of(context).textTheme.labelMedium!.copyWith(
+                  color: AppColors.onSurfaceMuted,
                 ),
               ),
-              // Align(
-              //   alignment: Alignment.bottomRight,
-              //   child: PhosphorIcon(PhosphorIcons.clockCounterClockwise(), size: 24, color: AppColors.accentLightGray,),
-              // ),
             ],
           );
         }

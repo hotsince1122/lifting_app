@@ -2,6 +2,9 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:intl/intl.dart';
 import 'package:lifting_tracker_app/theme/app_colors.dart';
+import 'package:lifting_tracker_app/theme/app_gradients.dart';
+import 'package:lifting_tracker_app/widgets/bottom_nav_bar.dart';
+import 'package:lifting_tracker_app/widgets/gradient_cards.dart';
 import 'package:lifting_tracker_app/widgets/homescreen/last_session_section.dart';
 import 'package:lifting_tracker_app/widgets/homescreen/next_in_cycle_section.dart';
 import 'package:lifting_tracker_app/widgets/homescreen/progress_spotlight.dart';
@@ -26,45 +29,41 @@ class Home extends ConsumerWidget {
             const SizedBox(height: 6),
             Text(
               '$monthLabel ${now.day},',
-              style: Theme.of(context).textTheme.bodyMedium!.copyWith(
-                color: AppColors.accentLightBlue,
-              ),
+              style: Theme.of(
+                context,
+              ).textTheme.bodyMedium!.copyWith(color: AppColors.primary),
             ),
             const SizedBox(height: 4),
-            Text(weekdayLabel, style: Theme.of(context).textTheme.headlineLarge!.copyWith(fontWeight: FontWeight.w900)),
+            Text(
+              weekdayLabel,
+              style: Theme.of(
+                context,
+              ).textTheme.headlineLarge!.copyWith(fontWeight: FontWeight.w900),
+            ),
           ],
         ),
         actions: [
           Padding(
-            padding: const EdgeInsets.only(right: 12),
-            child: Row(
-              children: [
-                Image.asset('assets/fire.png', height: 18, width: 18),
-                const SizedBox(width: 4),
-                Text('7', style: Theme.of(context).textTheme.titleSmall),
-              ],
+            padding: const EdgeInsets.only(right: 12, top: 6),
+            child: GradientCard(
+              padding: EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+              gradientVariant: AppGradients.card,
+              child: Row(
+                children: [
+                  Image.asset('assets/fire.png', height: 16, width: 16),
+                  const SizedBox(width: 8),
+                  Text('7', style: Theme.of(context).textTheme.titleSmall),
+                ],
+              ),
             ),
           ),
         ],
       ),
-      bottomNavigationBar: BottomAppBar(
-        color: AppColors.bgMain,
-        child: Row(
-          mainAxisAlignment: MainAxisAlignment.spaceAround,
-          children: [
-            IconButton(onPressed: () {}, icon: Icon(Icons.home), iconSize: 28),
-            IconButton(
-              onPressed: () {},
-              icon: Icon(Icons.settings),
-              iconSize: 28,
-            ),
-          ],
-        ),
-      ),
+      bottomNavigationBar: CustomBottomNavBar(),
       body: SafeArea(
         bottom: false,
         child: Padding(
-          padding: const EdgeInsets.fromLTRB(12, 24, 12, 24),
+          padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 32),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
@@ -73,13 +72,13 @@ class Home extends ConsumerWidget {
               Row(
                 children: [
                   Expanded(child: LastSessionSection()),
-                  const SizedBox(width: 8),
+                  const SizedBox(width: 16),
                   Expanded(child: NextInCycleSection()),
                 ],
               ),
-              const SizedBox(height: 8),
+              const SizedBox(height: 16),
               ProgressSpotlight(),
-              const SizedBox(height: 12), //optic ilussion,
+              const SizedBox(height: 18), //optic ilussion,
               StartSession(),
             ],
           ),
@@ -88,3 +87,4 @@ class Home extends ConsumerWidget {
     );
   }
 }
+
