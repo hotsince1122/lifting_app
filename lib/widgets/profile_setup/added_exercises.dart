@@ -68,7 +68,7 @@ class AddedExercises extends ConsumerWidget {
                   children: [
                     Divider(
                       height: 0.5,
-                      color: AppColors.secondary,
+                      color: AppColors.cardBorder,
                       indent: 16,
                       endIndent: 16,
                     ),
@@ -93,7 +93,7 @@ class AddedExercises extends ConsumerWidget {
                     ),
                     Divider(
                       height: 0.5,
-                      color: AppColors.secondary,
+                      color: AppColors.cardBorder,
                       indent: 16,
                       endIndent: 16,
                     ),

@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:lifting_tracker_app/providers/persisted/active_split_days.dart';
 import 'package:lifting_tracker_app/providers/presentation/can_user_finish_setup.dart';
-import 'package:lifting_tracker_app/screens/home.dart';
+import 'package:lifting_tracker_app/screens/main_shell.dart';
 import 'package:lifting_tracker_app/theme/app_gradients.dart';
 import 'package:lifting_tracker_app/theme/app_colors.dart';
 import 'package:lifting_tracker_app/widgets/gradient_cards.dart';
@@ -118,7 +118,7 @@ class _FinishOnboardingButton extends ConsumerWidget {
           child: TextButton(
             onPressed: () => Navigator.of(
               context,
-            ).pushReplacement(MaterialPageRoute(builder: (context) => Home())),
+            ).pushReplacement(MaterialPageRoute(builder: (context) => MainShell())),
             style: TextButton.styleFrom(padding: EdgeInsets.zero),
             child: Text(
               'Skip',
@@ -140,7 +140,7 @@ class _FinishOnboardingButton extends ConsumerWidget {
               onPressed: !canUserFinishSetup
                   ? () {}
                   : () => Navigator.of(context).pushReplacement(
-                      MaterialPageRoute(builder: (context) => Home()),
+                      MaterialPageRoute(builder: (context) => MainShell()),
                     ),
               child: Row(
                 mainAxisSize: MainAxisSize.min,

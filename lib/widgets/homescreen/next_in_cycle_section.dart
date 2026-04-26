@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:lifting_tracker_app/providers/persisted/current_session_status.dart';
 import 'package:lifting_tracker_app/providers/presentation/next_in_cycle.dart';
 import 'package:lifting_tracker_app/theme/app_colors.dart';
 import 'package:lifting_tracker_app/theme/app_gradients.dart';
@@ -11,6 +12,18 @@ class NextInCycleSection extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    final sessionStatusAsync = ref.watch(currentSessionStatusProvider);
+    Widget cardTitle = sessionStatusAsync.when(
+      loading: () => const Center(child: CircularProgressIndicator()),
+      error: (_, _) =>
+          const Center(child: Text('An error has occured! Try again.')),
+      data: (isSessionActive) => Text(
+        isSessionActive ? 'Current session' : 'Next in cycle',
+        textAlign: TextAlign.left,
+        style: Theme.of(context).textTheme.titleSmall,
+      ),
+    );
+
     return AspectRatio(
       aspectRatio: 1.15,
       child: GradientCard(
@@ -25,17 +38,12 @@ class NextInCycleSection extends ConsumerWidget {
                   size: 20,
                   color: AppColors.primary,
                 ),
-                const SizedBox(width: 4),
-                Text(
-                  'Next in cycle',
-                  textAlign: TextAlign.left,
-                  style: Theme.of(context).textTheme.titleSmall,
-                ),
+                const SizedBox(width: 2),
+                cardTitle,
               ],
             ),
             const SizedBox(height: 16),
             _NextSessionInfoAsync(),
-            const Spacer(),
           ],
         ),
       ),
@@ -85,25 +93,29 @@ class _NextSessionInfoAsync extends ConsumerWidget {
         final String nrOfExercisesLabel =
             '${nextInCycle.nrOfExercises} exercise${nextInCycle.nrOfExercises == 1 ? '' : 's'} planned.';
 
-        return Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text(
-              nextInCycle.workoutName,
-              style: Theme.of(
-                context,
-              ).textTheme.titleMedium!.copyWith(fontWeight: FontWeight.w900),
-            ),
-            const SizedBox(height: 6),
-            Column(
+        return Expanded(
+          child: Column(
+              // mainAxisAlignment: MainAxisAlignment.spaceAround,
+              crossAxisAlignment: CrossAxisAlignment.start,
               children: [
+                Text(
+                  nextInCycle.workoutName,
+                  style: Theme.of(
+                    context,
+                  ).textTheme.titleMedium!.copyWith(fontWeight: FontWeight.w900),
+                ),
+          
+                const SizedBox(height: 6,),
+          
                 Text(
                   nextInCycle.muscleGroups!,
                   style: Theme.of(
                     context,
                   ).textTheme.bodySmall!.copyWith(color: AppColors.secondary),
                 ),
-                const SizedBox(height: 6),
+          
+                const SizedBox(height: 6,),
+
                 Row(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
@@ -115,15 +127,14 @@ class _NextSessionInfoAsync extends ConsumerWidget {
                     const SizedBox(width: 4),
                     Text(
                       nrOfExercisesLabel,
-                      style: Theme.of(context).textTheme.labelMedium!.copyWith(
-                        color: AppColors.primary,
-                      ),
+                      style: Theme.of(
+                        context,
+                      ).textTheme.labelMedium!.copyWith(color: AppColors.primary),
                     ),
                   ],
                 ),
               ],
             ),
-          ],
         );
       },
     );

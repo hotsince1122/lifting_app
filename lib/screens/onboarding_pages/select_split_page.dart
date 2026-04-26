@@ -84,7 +84,7 @@ class SelectSplitPage extends ConsumerWidget {
                   children: [
                     Expanded(
                       child: const Divider(
-                        color: AppColors.surface,
+                        color: AppColors.cardBorder,
                         thickness: 1.5,
                       ),
                     ),
@@ -97,7 +97,7 @@ class SelectSplitPage extends ConsumerWidget {
                     ),
                     Expanded(
                       child: const Divider(
-                        color: AppColors.surface,
+                        color: AppColors.cardBorder,
                         thickness: 1.5,
                       ),
                     ),

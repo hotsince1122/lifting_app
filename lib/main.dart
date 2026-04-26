@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:lifting_tracker_app/screens/onboarding/onboarding.dart';
+import 'package:lifting_tracker_app/screens/onboarding.dart';
 import 'package:lifting_tracker_app/theme/app_theme.dart';
 
 void main() async {

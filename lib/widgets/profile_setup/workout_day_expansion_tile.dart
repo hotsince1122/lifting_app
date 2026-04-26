@@ -1,12 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:lifting_tracker_app/models/entity/exercise.dart';
 import 'package:lifting_tracker_app/models/entity/split_day.dart';
 import 'package:lifting_tracker_app/providers/presentation/can_user_finish_setup.dart';
 import 'package:lifting_tracker_app/providers/persisted/exercises_in_a_day.dart';
 import 'package:lifting_tracker_app/providers/presentation/split_day_summary_tile.dart';
 import 'package:lifting_tracker_app/theme/app_colors.dart';
-import 'package:lifting_tracker_app/widgets/profile_setup/add_exercise_selector.dart';
+import 'package:lifting_tracker_app/widgets/add_exercise_selector.dart';
 import 'package:lifting_tracker_app/widgets/profile_setup/added_exercises.dart';
 
 class WorkoutDayExpansionTile extends ConsumerWidget {
@@ -15,20 +14,7 @@ class WorkoutDayExpansionTile extends ConsumerWidget {
   final double screenWidth;
   final SplitDay workoutDay;
 
-  Future<Exercise?> openExercisePickerSheet(
-    BuildContext context,
-    double screenWidth,
-  ) {
-    return showModalBottomSheet<Exercise>(
-      context: context,
-      isDismissible: false,
-      enableDrag: false,
-      backgroundColor: Colors.transparent,
-      barrierColor: Colors.black12,
-      isScrollControlled: true,
-      builder: (context) => AddExerciseSelector(screenWidth),
-    );
-  }
+  
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -87,14 +73,14 @@ class WorkoutDayExpansionTile extends ConsumerWidget {
           children: [
             Divider(
                       height: 0.5,
-                      color: AppColors.secondary,
+                      color: AppColors.cardBorder,
                       indent: 16,
                       endIndent: 16,
                     ),
             AddedExercises(workoutDay.id),
             Divider(
                       height: 0.5,
-                      color: AppColors.secondary,
+                      color: AppColors.cardBorder,
                       indent: 16,
                       endIndent: 16,
                     ),
@@ -105,7 +91,7 @@ class WorkoutDayExpansionTile extends ConsumerWidget {
                 alignment: Alignment.centerLeft,
                 child: TextButton.icon(
                   onPressed: () async {
-                    final addedExercise = await openExercisePickerSheet(
+                    final addedExercise = await AddExerciseSelector.openExercisePickerSheet(
                       context,
                       screenWidth,
                     );

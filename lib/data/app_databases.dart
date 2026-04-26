@@ -215,16 +215,57 @@ class AppDatabases {
           )
         ''');
         await db.execute('''
-          CREATE TABLE completed_workouts(
+          CREATE TABLE workout_sessions(
             id INTEGER PRIMARY KEY,
             day_id TEXT NOT NULL,
-            performed_at INTEGER NOT NULL,
+            started_at INTEGER NOT NULL,
+            finished_at INTEGER,
+            duration_seconds INTEGER,
             cycle_index INTEGER NOT NULL,
-            duration_seconds INTEGER NOT NULL,
-            performed_exercises INTEGER NOT NULL,
+            status TEXT NOT NULL,
             FOREIGN KEY (day_id) REFERENCES split_days(id)
           )
         ''');
+        await db.execute('''
+          CREATE TABLE logged_sets(
+            id INTEGER PRIMARY KEY,
+            ex_id TEXT NOT NULL,
+            session_id INTEGER NOT NULL,
+            weight REAL NOT NULL,
+            repetitions INTEGER NOT NULL,
+            notes TEXT,
+            set_index INTEGER NOT NULL,
+            order_index INTEGER NOT NULL,
+            FOREIGN KEY (ex_id) REFERENCES exercises(id),
+            FOREIGN KEY (session_id) REFERENCES workout_sessions(id)
+          )
+        ''');
+        await db.execute('''
+          CREATE TABLE active_session_sets(
+            id INTEGER PRIMARY KEY,
+            workout_session_id INTEGER NOT NULL,
+            exercise_id TEXT NOT NULL,
+            exercise_order_index INTEGER NOT NULL,
+            set_index INTEGER NOT NULL,
+
+            hint_weight REAL,
+            hint_repetitions INTEGER,
+            hint_notes TEXT,
+
+            actual_weight REAL,
+            actual_repetitions INTEGER,
+            actual_notes TEXT,
+
+            is_completed INTEGER NOT NULL DEFAULT 0,
+            is_deleted INTEGER NOT NULL DEFAULT 0,
+
+            FOREIGN KEY (workout_session_id) REFERENCES workout_sessions(id),
+            FOREIGN KEY (exercise_id) REFERENCES exercises(id),
+
+            UNIQUE(workout_session_id, exercise_order_index, set_index)
+          )
+        '''
+        );
 
         final batch = db.batch();
         for (final splitPlan in _presetSplitPlans) {
@@ -243,27 +284,3 @@ class AppDatabases {
     return _db!;
   }
 }
-
-
-// CREATE TABLE logged_sets(
-//   id INTEGER PRIMARY KEY,
-//   ex_id TEXT NOT NULL,
-//   session_id INTEGER NOT NULL,
-//   weight REAL NOT NULL,
-//   repetitions INTEGER NOT NULL, 
-//   FOREIGN KEY (ex_id) REFERENCES exercises(id),
-//   FOREIGN KEY (session_id) REFERENCES workout_sessions(id)
-// )
-
-// await db.execute('''
-//           CREATE TABLE workout_sessions(
-//             id INTEGER PRIMARY KEY,
-//             day_id TEXT NOT NULL,
-//             started_at INTEGER NOT NULL,
-//             finished_at INTEGER
-//             duration_seconds INTEGER NOT NULL,
-//             cycle_index INTEGER NOT NULL,
-//             status TEXT NOT NULL,
-//             FOREIGN KEY (day_id) REFERENCES split_days(id)
-//           )
-//         ''');

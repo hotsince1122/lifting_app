@@ -20,8 +20,12 @@ class LastSessionSection extends StatelessWidget {
           children: [
             Row(
               children: [
-                PhosphorIcon(PhosphorIcons.clockCounterClockwise(), size: 20, color: AppColors.primary,),
-                const SizedBox(width: 6,),
+                PhosphorIcon(
+                  PhosphorIcons.clockCounterClockwise(),
+                  size: 20,
+                  color: AppColors.primary,
+                ),
+                const SizedBox(width: 6),
                 Text(
                   'Last session',
                   textAlign: TextAlign.left,
@@ -29,7 +33,7 @@ class LastSessionSection extends StatelessWidget {
                 ),
               ],
             ),
-            const SizedBox(height: 22,),
+            const SizedBox(height: 16),
             _LastSessionInfoAsync(),
             const Spacer(),
           ],
@@ -46,7 +50,6 @@ class _LastSessionInfoAsync extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final lastWorkoutCompletedAsync = ref.watch(lastWorkoutCompletedProvider);
 
-
     return lastWorkoutCompletedAsync.when(
       loading: () => const Center(child: CircularProgressIndicator()),
       error: (_, _) => const Center(child: Text('An error has occured.')),
@@ -57,9 +60,9 @@ class _LastSessionInfoAsync extends ConsumerWidget {
             children: [
               Text(
                 'No sessions yet.',
-                style: Theme.of(context).textTheme.bodySmall!.copyWith(
-                  color: AppColors.primary,
-                ),
+                style: Theme.of(
+                  context,
+                ).textTheme.bodySmall!.copyWith(color: AppColors.primary),
               ),
               const SizedBox(height: 10),
               Text(
@@ -71,7 +74,37 @@ class _LastSessionInfoAsync extends ConsumerWidget {
             ],
           );
         }
-        return SizedBox();
+
+        final String workoutDurationLabel =
+            '${(lastWorkoutCompleted.workoutDuration / 60).toInt().toString()} min workout';
+        final String nrOfExercisesFinishedLabel =
+            '${lastWorkoutCompleted.nrOfExercises} exercise${lastWorkoutCompleted.nrOfExercises == 1 ? '' : 's'} finished';
+
+        return Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(
+              lastWorkoutCompleted.workoutName,
+              style: Theme.of(
+                context,
+              ).textTheme.titleMedium!.copyWith(fontWeight: FontWeight.w900),
+            ),
+            const SizedBox(height: 6),
+            Text(
+              workoutDurationLabel,
+              style: Theme.of(
+                context,
+              ).textTheme.bodySmall!.copyWith(color: AppColors.secondary),
+            ),
+            const SizedBox(height: 6),
+            Text(
+              nrOfExercisesFinishedLabel,
+              style: Theme.of(
+                context,
+              ).textTheme.labelMedium!.copyWith(color: AppColors.primary),
+            ),
+          ],
+        );
       },
     );
   }

@@ -1,19 +1,36 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:intl/intl.dart';
+import 'package:lifting_tracker_app/providers/persisted/current_session_status.dart';
+import 'package:lifting_tracker_app/providers/persisted/exercise_and_sets/exercises_and_sets.dart';
 import 'package:lifting_tracker_app/theme/app_colors.dart';
 import 'package:lifting_tracker_app/widgets/solid_button.dart';
 import 'package:lifting_tracker_app/widgets/solid_card.dart';
 import 'package:phosphor_flutter/phosphor_flutter.dart';
 
-class ActiveSessionAppBar extends StatelessWidget
+class ActiveSessionAppBar extends ConsumerWidget
     implements PreferredSizeWidget {
-  const ActiveSessionAppBar({super.key});
+  const ActiveSessionAppBar(this.activeSessionId, {super.key});
+
+  final int activeSessionId;
+
+  Future<void> _handleFinish(BuildContext context, WidgetRef ref, int activeSessionId) async {
+    final sessionStatusNotifier = ref.read(
+      currentSessionStatusProvider.notifier,
+    );
+
+    final exercisesAndSetsNotifier = ref.read(exercisesAndSetsProvider(activeSessionId).notifier);
+
+    Navigator.of(context).pop();
+    await exercisesAndSetsNotifier.saveCurrentSessionProgress();
+    await sessionStatusNotifier.endSession();
+  }
 
   @override
   Size get preferredSize => const Size.fromHeight(90);
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
     final now = DateTime.now();
 
     final dayLabel = now.day.toString();
@@ -41,7 +58,9 @@ class ActiveSessionAppBar extends StatelessWidget
           ),
 
           SolidButton(
-            onPressed: () => Navigator.of(context).pop(),
+            onPressed: () {
+              _handleFinish(context, ref, activeSessionId);
+            },
             buttonHeight: buttonHeight,
             buttonWidth: 92,
             padding: EdgeInsets.zero,

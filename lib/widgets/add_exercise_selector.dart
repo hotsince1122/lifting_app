@@ -3,6 +3,7 @@ import 'dart:ui';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:lifting_tracker_app/data/muscle_groups.dart';
+import 'package:lifting_tracker_app/models/entity/exercise.dart';
 import 'package:lifting_tracker_app/providers/persisted/all_exercises_from_a_muscle_group.dart';
 import 'package:lifting_tracker_app/theme/app_colors.dart';
 
@@ -10,6 +11,21 @@ class AddExerciseSelector extends ConsumerStatefulWidget {
   const AddExerciseSelector(this.screenWidth, {super.key});
 
   final double screenWidth;
+
+  static Future<Exercise?> openExercisePickerSheet(
+    BuildContext context,
+    double screenWidth,
+  ) {
+    return showModalBottomSheet<Exercise>(
+      context: context,
+      isDismissible: false,
+      enableDrag: false,
+      backgroundColor: Colors.transparent,
+      barrierColor: Colors.black12,
+      isScrollControlled: true,
+      builder: (context) => AddExerciseSelector(screenWidth),
+    );
+  }
 
   @override
   ConsumerState<AddExerciseSelector> createState() =>
@@ -124,28 +140,35 @@ class _MuscleGroupList extends StatelessWidget {
         padding: EdgeInsets.zero,
         itemCount: MuscleGroups.names.length,
         separatorBuilder: (_, _) =>
-            const Divider(height: 1, color: AppColors.cardGradient),
+            const Divider(height: 1, color: AppColors.cardBorder),
         itemBuilder: (context, i) {
           final muscleGroup = MuscleGroups.names[i];
           final label = muscleGroup[0].toUpperCase() + muscleGroup.substring(1);
 
-          return ListTile(
-            dense: true,
-            visualDensity: const VisualDensity(horizontal: 0, vertical: 0),
-            minVerticalPadding: 0,
-            contentPadding: const EdgeInsets.symmetric(horizontal: 6),
-            title: Text(label, style: Theme.of(context).textTheme.bodyLarge),
-            trailing: const Icon(
-              Icons.arrow_forward_ios,
-              size: 16,
-              color: AppColors.cardGradient,
+          return Theme(
+            data: Theme.of(context).copyWith(
+              splashColor: Colors.transparent,
+              splashFactory: NoSplash.splashFactory,
             ),
-            onTap: () {
-              onSelectGroup(label);
-              Navigator.of(
-                context,
-              ).push(_sheetParallaxRoute(_ExercisesForGroupPage(muscleGroup)));
-            },
+            child: ListTile(
+              dense: true,
+              visualDensity: const VisualDensity(horizontal: 0, vertical: 0),
+              minVerticalPadding: 0,
+              contentPadding: const EdgeInsets.symmetric(horizontal: 6),
+              title: Text(label, style: Theme.of(context).textTheme.bodyLarge),
+              trailing: const Icon(
+                Icons.arrow_forward_ios,
+                size: 16,
+                color: AppColors.cardBorder,
+              ),
+              onTap: () {
+                onSelectGroup(label);
+                Navigator.of(context).push(
+                  _sheetParallaxRoute(_ExercisesForGroupPage(muscleGroup)),
+                );
+              },
+              splashColor: Colors.transparent,
+            ),
           );
         },
       ),
@@ -180,17 +203,20 @@ class _ExercisesForGroupPage extends ConsumerWidget {
               final exercise = exercises[i];
 
               final label =
-                  exercise.name[0].toUpperCase() +
-                  exercise.name.substring(1);
-          
+                  exercise.name[0].toUpperCase() + exercise.name.substring(1);
+
               return ListTile(
                 dense: true,
                 visualDensity: const VisualDensity(horizontal: 0, vertical: 0),
                 minVerticalPadding: 0,
                 contentPadding: const EdgeInsets.symmetric(horizontal: 6),
-                trailing: Icon(Icons.info_outline, size: 21,),
-                title: Text(label, style: Theme.of(context).textTheme.bodyLarge),
-                onTap: () => Navigator.of(context, rootNavigator: true).pop(exercise),
+                trailing: Icon(Icons.info_outline, size: 21),
+                title: Text(
+                  label,
+                  style: Theme.of(context).textTheme.bodyLarge,
+                ),
+                onTap: () =>
+                    Navigator.of(context, rootNavigator: true).pop(exercise),
               );
             },
           ),
