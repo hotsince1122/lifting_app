@@ -4,6 +4,7 @@ import 'package:lifting_tracker_app/data/queries/interact_with_active_session/au
 import 'package:lifting_tracker_app/data/queries/populate_active_sessions_table.dart';
 import 'package:lifting_tracker_app/models/entity/exercise.dart';
 import 'package:lifting_tracker_app/models/entity/training_set.dart';
+import 'package:sqflite/sqflite.dart';
 
 Future<Exercise?> addNewExerciseToDb(
   int workoutSessionId,
@@ -13,6 +14,11 @@ Future<Exercise?> addNewExerciseToDb(
 
   try {
     final exerciseToAddToUI = await db.transaction((txn) async {
+      final nextExerciseOccurrenceIndex = await loadNextExerciseOccurrenceIndex(
+        txn,
+        workoutSessionId,
+        newExercise.id,
+      );
       final nextExerciseOrderIndex = await loadNextExerciseOrderIndex(
         txn,
         workoutSessionId,
@@ -32,10 +38,10 @@ Future<Exercise?> addNewExerciseToDb(
           repetitions AS hintRepetitions,
           notes AS hintNotes
         FROM logged_sets
-        WHERE session_id = ? AND ex_id = ? AND order_index = ?
+        WHERE session_id = ? AND ex_id = ? AND exercise_occurrence_index = ?
         ORDER BY set_index
         ''',
-          [lastCompletedWorkoutId, newExercise.id, nextExerciseOrderIndex],
+          [lastCompletedWorkoutId, newExercise.id, nextExerciseOccurrenceIndex],
         );
 
         setsToInsert = dataPreviousWorkoutSets
@@ -66,6 +72,7 @@ Future<Exercise?> addNewExerciseToDb(
         ],
         txn,
         workoutSessionId,
+        exerciseOccurrenceIndexOverride: nextExerciseOccurrenceIndex,
       );
 
       final activeSets = await loadActiveSessionSetsForExercise(
@@ -115,6 +122,13 @@ Future<TrainingSet?> addSetToExerciseInDb(
 
       TrainingSet? setToInsert;
 
+      final occurrenceIndex = await retriveExerciseOccurrenceIndex(
+        txn,
+        exercise.id,
+        exerciseOrderIndex,
+        workoutSessionId,
+      );
+
       if (lastCompletedWorkoutId != null) {
         final dataPreviousWorkoutSet = await txn.rawQuery(
           '''
@@ -122,15 +136,10 @@ Future<TrainingSet?> addSetToExerciseInDb(
           repetitions AS hintRepetitions,
           notes AS hintNotes
         FROM logged_sets
-        WHERE session_id = ? AND ex_id = ? AND order_index = ? AND set_index = ?
+        WHERE session_id = ? AND ex_id = ? AND exercise_occurrence_index = ? AND set_index = ?
         LIMIT 1
         ''',
-          [
-            lastCompletedWorkoutId,
-            exercise.id,
-            exerciseOrderIndex,
-            nextSetIndex,
-          ],
+          [lastCompletedWorkoutId, exercise.id, occurrenceIndex, nextSetIndex],
         );
 
         if (dataPreviousWorkoutSet.isNotEmpty) {
@@ -150,6 +159,7 @@ Future<TrainingSet?> addSetToExerciseInDb(
         'workout_session_id': workoutSessionId,
         'exercise_id': exercise.id,
         'exercise_order_index': exerciseOrderIndex,
+        'exercise_occurrence_index': occurrenceIndex,
         'set_index': setToInsert.setIndex ?? nextSetIndex,
         'hint_weight': setToInsert.hintWeight,
         'hint_repetitions': setToInsert.hintRepetitions,
@@ -176,4 +186,24 @@ Future<TrainingSet?> addSetToExerciseInDb(
     debugPrintStack(stackTrace: st);
     return null;
   }
+}
+
+Future<int> retriveExerciseOccurrenceIndex(
+  Transaction db,
+  String exerciseId,
+  int exerciseOrderIndex,
+  int workoutSessionId,
+) async {
+  final data = await db.rawQuery(
+    '''
+    SELECT exercise_occurrence_index
+    FROM active_session_sets
+    WHERE exercise_id = ?
+      AND exercise_order_index = ?
+      AND workout_session_id = ?
+    ''',
+    [exerciseId, exerciseOrderIndex, workoutSessionId],
+  );
+
+  return data[0]['exercise_occurrence_index'] as int;
 }

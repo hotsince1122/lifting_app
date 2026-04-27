@@ -31,10 +31,12 @@ List<Exercise> _addSetsToExerciseFromDbData(
 }) {
   if (data.isEmpty) return exercisesPlanned;
 
+  final occurrenceIndexes = _buildExerciseOccurrenceIndexes(exercisesPlanned);
+
   for (final set in data) {
     for (int i = 0; i < exercisesPlanned.length; i++) {
       if (exercisesPlanned[i].id == set['exerciseId'] as String &&
-          exercisesPlanned[i].orderIndex == set['orderIndex'] as int) {
+          occurrenceIndexes[i] == set['occurrenceIndex'] as int) {
         exercisesPlanned[i].sets.add(
           TrainingSet(
             activeSessionSetId: set['activeSessionSetId'] as int?,
@@ -61,14 +63,38 @@ List<Exercise> _addSetsToExerciseFromDbData(
   return exercisesPlanned;
 }
 
+List<int> _buildExerciseOccurrenceIndexes(List<Exercise> exercises) {
+  final occurrenceCounts = <String, int>{};
+  final occurrenceIndexes = <int>[];
+
+  for (final exercise in exercises) {
+    final occurrenceIndex = occurrenceCounts[exercise.id] ?? 0;
+    occurrenceIndexes.add(occurrenceIndex);
+    occurrenceCounts[exercise.id] = occurrenceIndex + 1;
+  }
+
+  return occurrenceIndexes;
+}
+
 Future<void> populateActiveSessionSets(
   List<Exercise> exercisesPlanned,
   DatabaseExecutor db,
-  int sessionId,
-) async {
+  int sessionId, {
+  int? exerciseOccurrenceIndexOverride,
+}) async {
   final batch = db.batch();
 
-  for (final exercise in exercisesPlanned) {
+  final exerciseOccurrenceIndexes = exerciseOccurrenceIndexOverride == null
+      ? _buildExerciseOccurrenceIndexes(exercisesPlanned)
+      : List<int>.filled(
+          exercisesPlanned.length,
+          exerciseOccurrenceIndexOverride,
+        );
+
+  for (var exerciseIndex = 0;
+      exerciseIndex < exercisesPlanned.length;
+      exerciseIndex++) {
+    final exercise = exercisesPlanned[exerciseIndex];
     for (int i = 0; i < exercise.sets.length; i++) {
       final set = exercise.sets[i];
 
@@ -76,6 +102,7 @@ Future<void> populateActiveSessionSets(
         'workout_session_id': sessionId,
         'exercise_id': exercise.id,
         'exercise_order_index': exercise.orderIndex,
+        'exercise_occurrence_index': exerciseOccurrenceIndexes[exerciseIndex],
         'set_index': set.setIndex ?? i + 1,
         'hint_weight': set.hintWeight,
         'hint_repetitions': set.hintRepetitions,
@@ -161,6 +188,7 @@ Future<List<Exercise>> _ifSessionIsAlreadyActiveReturnSets(
     SELECT exercise_id AS exerciseId,
       id AS activeSessionSetId,
       exercise_order_index AS orderIndex,
+      exercise_occurrence_index AS occurrenceIndex,
       set_index AS setIndex,
       hint_weight AS hintWeight,
       hint_repetitions AS hintRepetitions,
@@ -245,7 +273,8 @@ Future<List<Exercise>> _loadRepetedWorkoutHints(
       ls.notes AS hintNotes,
       ls.set_index AS setIndex,
       ls.order_index AS orderIndex,
-      ls.notes AS notes
+      ls.notes AS notes,
+      ls.exercise_occurrence_index AS occurrenceIndex
     FROM workout_sessions ws
     JOIN logged_sets ls ON ws.id = ls.session_id
     WHERE ws.id = ? AND ls.ex_id IN ($placeholder)

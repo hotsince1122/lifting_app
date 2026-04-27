@@ -17,6 +17,24 @@ Future<int> loadNextExerciseOrderIndex(
   return data.first['nextExerciseOrderIndex'] as int;
 }
 
+Future<int> loadNextExerciseOccurrenceIndex(
+  DatabaseExecutor db,
+  int workoutSessionId,
+  String exerciseId
+) async {
+  final data = await db.rawQuery(
+    '''
+    SELECT COALESCE(MAX(exercise_occurrence_index) + 1, 0) AS nextExerciseOccurrenceIndex
+    FROM active_session_sets
+    WHERE workout_session_id = ?
+      AND exercise_id = ?
+    ''',
+    [workoutSessionId, exerciseId],
+  );
+
+  return data.first['nextExerciseOccurrenceIndex'] as int;
+}
+
 Future<List<TrainingSet>> loadActiveSessionSetsForExercise(
   DatabaseExecutor db,
   int workoutSessionId,

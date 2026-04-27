@@ -236,6 +236,7 @@ class AppDatabases {
             notes TEXT,
             set_index INTEGER NOT NULL,
             order_index INTEGER NOT NULL,
+            exercise_occurrence_index INTEGER NOT NULL,
             FOREIGN KEY (ex_id) REFERENCES exercises(id),
             FOREIGN KEY (session_id) REFERENCES workout_sessions(id)
           )
@@ -246,6 +247,7 @@ class AppDatabases {
             workout_session_id INTEGER NOT NULL,
             exercise_id TEXT NOT NULL,
             exercise_order_index INTEGER NOT NULL,
+            exercise_occurrence_index INTEGER NOT NULL,
             set_index INTEGER NOT NULL,
 
             hint_weight REAL,

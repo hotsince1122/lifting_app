@@ -123,10 +123,4 @@ class ExercisesAndSetsProvider extends AsyncNotifier<List<Exercise>> {
       state = saveSetCellToState(currentState, exerciseId, exerciseOrderIndex, activeSessionSetId, reps, weight, notes);
     }
   }
-
-  Future<void> saveCurrentSessionProgress () async {
-    if (state.value == null) return;
-
-    await saveCurrentSessionProgressDb(state.value!, workoutSessionId);
-  }
 }

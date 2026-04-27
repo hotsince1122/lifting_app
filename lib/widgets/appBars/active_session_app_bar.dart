@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:intl/intl.dart';
 import 'package:lifting_tracker_app/providers/persisted/current_session_status.dart';
-import 'package:lifting_tracker_app/providers/persisted/exercise_and_sets/exercises_and_sets.dart';
 import 'package:lifting_tracker_app/theme/app_colors.dart';
 import 'package:lifting_tracker_app/widgets/solid_button.dart';
 import 'package:lifting_tracker_app/widgets/solid_card.dart';
@@ -19,11 +18,8 @@ class ActiveSessionAppBar extends ConsumerWidget
       currentSessionStatusProvider.notifier,
     );
 
-    final exercisesAndSetsNotifier = ref.read(exercisesAndSetsProvider(activeSessionId).notifier);
-
     Navigator.of(context).pop();
-    await exercisesAndSetsNotifier.saveCurrentSessionProgress();
-    await sessionStatusNotifier.endSession();
+    await sessionStatusNotifier.endSession(activeSessionId);
   }
 
   @override

@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:lifting_tracker_app/data/app_databases.dart';
-import 'package:lifting_tracker_app/models/entity/exercise.dart';
 
 Future<bool> saveSetCellToDb(
   int activeSessionSetId,
@@ -35,33 +34,5 @@ Future<bool> saveSetCellToDb(
     debugPrint('Transaction failed: $e');
     debugPrintStack(stackTrace: st);
     return false;
-  }
-}
-
-Future<void> saveCurrentSessionProgressDb(
-  List<Exercise> exercises,
-  int workoutSessionId,
-) async {
-  final db = await AppDatabases.getDatabase();
-
-  try {
-    await db.transaction((txn) async {
-      for (final exercise in exercises) {
-        for (final set in exercise.sets) {
-          await txn.insert('logged_sets', {
-            'ex_id': exercise.id,
-            'session_id': workoutSessionId,
-            'weight': set.actualWeight,
-            'repetitions': set.actualRepetitions,
-            'notes': set.actualNotes,
-            'set_index': set.setIndex,
-            'order_index': exercise.orderIndex,
-          });
-        }
-      }
-    });
-  } catch (e, st) {
-    debugPrint('Transaction failed: $e');
-    debugPrintStack(stackTrace: st);
   }
 }

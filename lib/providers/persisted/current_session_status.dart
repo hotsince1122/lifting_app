@@ -90,39 +90,70 @@ class CurrentSessionStatusNotifier extends AsyncNotifier<bool> {
     return sessionId;
   }
 
-  Future<void> endSession() async {
+  Future<void> endSession(int activeSessionId) async {
     final db = await AppDatabases.getDatabase();
     final finishedWeekday = DateTime.now().weekday;
 
-    await db.transaction((txn) async {
+    final didEndSession = await db.transaction<bool>((txn) async {
       final data = await txn.rawQuery(
         '''
         SELECT started_at
         FROM workout_sessions
-        WHERE status = ?
+        WHERE id = ? AND status = ?
         ''',
-        [WorkoutSessionStatuses.activeStatus],
+        [activeSessionId, WorkoutSessionStatuses.activeStatus],
       );
 
-      final row = data.first;
-      final workoutStartedAt = row['started_at'] as int;
+      if (data.isEmpty) return false;
 
-      await txn.rawUpdate(
+      final workoutStartedAt = data[0]['started_at'] as int;
+
+      final setsData = await txn.rawQuery(
+        '''
+        SELECT exercise_id AS ex_id,
+          workout_session_id AS session_id,
+          actual_weight AS weight,
+          actual_repetitions AS repetitions,
+          actual_notes AS notes,
+          set_index AS set_index,
+          exercise_order_index AS order_index,
+          exercise_occurrence_index AS exercise_occurrence_index
+        FROM active_session_sets
+        WHERE is_deleted = 0
+          AND actual_weight IS NOT NULL
+          AND actual_repetitions IS NOT NULL
+          AND workout_session_id = ?
+        ''',
+        [activeSessionId],
+      );
+
+      final batch = txn.batch();
+      for (final setData in setsData) {
+        batch.insert('logged_sets', setData);
+      }
+      await batch.commit(noResult: true);
+
+      final rowsUpdated = await txn.rawUpdate(
         '''
         UPDATE workout_sessions
         SET finished_at = ?,
             duration_seconds = ?,
             status = ?
-        WHERE status = ?
+        WHERE id = ? AND status = ?
         ''',
         [
           DateTime.now().millisecondsSinceEpoch ~/ 1000,
           DateTime.now().millisecondsSinceEpoch ~/ 1000 - workoutStartedAt,
           WorkoutSessionStatuses.completedStatus,
+          activeSessionId,
           WorkoutSessionStatuses.activeStatus,
         ],
       );
+
+      return rowsUpdated == 1;
     });
+
+    if (!didEndSession) return;
 
     await ref
         .read(weeklyWorkoutProgressProvider.notifier)
