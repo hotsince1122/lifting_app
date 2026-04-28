@@ -1,3 +1,4 @@
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:intl/intl.dart';
@@ -13,13 +14,54 @@ class ActiveSessionAppBar extends ConsumerWidget
 
   final int activeSessionId;
 
-  Future<void> _handleFinish(BuildContext context, WidgetRef ref, int activeSessionId) async {
+  Future<void> _handleFinish(
+    BuildContext context,
+    WidgetRef ref,
+    int activeSessionId,
+  ) async {
     final sessionStatusNotifier = ref.read(
       currentSessionStatusProvider.notifier,
     );
 
-    Navigator.of(context).pop();
+    final hasEmptySet = await sessionStatusNotifier.checkIfAnySetEmpty(
+      activeSessionId,
+    );
+
+    if (!context.mounted) return;
+
+    if (hasEmptySet) {
+      await showDialog(
+        context: context,
+        builder: (context) {
+          return CupertinoAlertDialog(
+            title: const Text('Weight or reps missing'),
+            content: const Text(
+              'Do you want to autofill them using last time weight and reps?',
+            ),
+            actions: [
+              CupertinoDialogAction(
+                child: const Text('Yes, Autofill'),
+                onPressed: () async {
+                  await sessionStatusNotifier.saveEmptySetsWithHints(activeSessionId);
+                  if (!context.mounted) return;
+                  Navigator.of(context).pop();
+                },
+              ),
+              CupertinoDialogAction(
+                child: const Text('No Thanks'),
+                onPressed: () async {
+                  Navigator.of(context).pop();
+                },
+              ),
+            ],
+          );
+        },
+      );
+    }
+
     await sessionStatusNotifier.endSession(activeSessionId);
+    if (!context.mounted) return;
+    Navigator.of(context).pop();
   }
 
   @override

@@ -90,6 +90,61 @@ class CurrentSessionStatusNotifier extends AsyncNotifier<bool> {
     return sessionId;
   }
 
+  Future<bool> checkIfAnySetEmpty(int activeSessionId) async {
+    final db = await AppDatabases.getDatabase();
+
+    return db.transaction((txn) async {
+      final data = await txn.rawQuery(
+        '''
+      SELECT id
+      FROM active_session_sets
+      WHERE workout_session_id = ?
+        AND (
+          actual_weight IS NULL
+          OR actual_repetitions IS NULL
+        )
+      LIMIT 1;
+      ''',
+        [activeSessionId],
+      );
+
+      return data.isNotEmpty;
+    });
+  }
+
+  Future<void> saveEmptySetsWithHints(int activeSessionId) async {
+    final db = await AppDatabases.getDatabase();
+
+    await db.transaction((txn) async {
+      final setsData = await txn.rawQuery(
+        '''
+      SELECT exercise_id AS ex_id,
+          workout_session_id AS session_id,
+          hint_weight AS weight,
+          hint_repetitions AS repetitions,
+          hint_notes AS notes,
+          set_index AS set_index,
+          exercise_order_index AS order_index,
+          exercise_occurrence_index AS exercise_occurrence_index
+        FROM active_session_sets
+        WHERE is_deleted = 0
+          AND workout_session_id = ?
+          AND (
+            actual_weight IS NULL
+            OR actual_repetitions IS NULL
+          )
+        ''',
+        [activeSessionId],
+      );
+
+      final batch = txn.batch();
+      for (final setData in setsData) {
+        batch.insert('logged_sets', setData);
+      }
+      await batch.commit(noResult: true);
+    });
+  }
+
   Future<void> endSession(int activeSessionId) async {
     final db = await AppDatabases.getDatabase();
     final finishedWeekday = DateTime.now().weekday;
