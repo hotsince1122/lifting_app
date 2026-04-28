@@ -27,41 +27,88 @@ class ActiveSessionAppBar extends ConsumerWidget
       activeSessionId,
     );
 
-    if (!context.mounted) return;
+    final userModifiedPlannedExercises = await sessionStatusNotifier
+        .checkIfUserModifiedExercisesPlanned(activeSessionId);
 
-    if (hasEmptySet) {
-      await showDialog(
-        context: context,
-        builder: (context) {
-          return CupertinoAlertDialog(
-            title: const Text('Weight or reps missing'),
-            content: const Text(
-              'Do you want to autofill them using last time weight and reps?',
-            ),
-            actions: [
-              CupertinoDialogAction(
-                child: const Text('Yes, Autofill'),
-                onPressed: () async {
-                  await sessionStatusNotifier.saveEmptySetsWithHints(activeSessionId);
-                  if (!context.mounted) return;
-                  Navigator.of(context).pop();
-                },
-              ),
-              CupertinoDialogAction(
-                child: const Text('No Thanks'),
-                onPressed: () async {
-                  Navigator.of(context).pop();
-                },
-              ),
-            ],
-          );
-        },
-      );
+    if (hasEmptySet && context.mounted) {
+      await _handleEmptySets(context, sessionStatusNotifier);
+    }
+
+    if (userModifiedPlannedExercises && context.mounted) {
+      await _handleUpdatePlan(context, sessionStatusNotifier);
     }
 
     await sessionStatusNotifier.endSession(activeSessionId);
     if (!context.mounted) return;
     Navigator.of(context).pop();
+  }
+
+  Future<void> _handleEmptySets(
+    BuildContext context,
+    CurrentSessionStatusNotifier sessionStatusNotifier,
+  ) async {
+    await showDialog(
+      context: context,
+      builder: (context) {
+        return CupertinoAlertDialog(
+          title: const Text('Weight or reps missing'),
+          content: const Text(
+            'Do you want to autofill them using last time weight and reps?',
+          ),
+          actions: [
+            CupertinoDialogAction(
+              child: const Text('Yes, Autofill'),
+              onPressed: () async {
+                await sessionStatusNotifier.saveEmptySetsWithHints(
+                  activeSessionId,
+                );
+                if (!context.mounted) return;
+                Navigator.of(context).pop();
+              },
+            ),
+            CupertinoDialogAction(
+              child: const Text('No Thanks'),
+              onPressed: () async {
+                Navigator.of(context).pop();
+              },
+            ),
+          ],
+        );
+      },
+    );
+  }
+
+  Future<void> _handleUpdatePlan(
+    BuildContext context,
+    CurrentSessionStatusNotifier sessionStatusNotifier,
+  ) async {
+    await showDialog(
+      context: context,
+      builder: (context) {
+        return CupertinoAlertDialog(
+          title: const Text('Update plan?'),
+          content: const Text(
+            'You changed the exercises in this session. Save this order and exercise list for future sessions?',
+          ),
+          actions: [
+            CupertinoDialogAction(
+              child: const Text('Update plan'),
+              onPressed: () async {
+                await sessionStatusNotifier.updateCurrentPlan(activeSessionId);
+                if (!context.mounted) return;
+                Navigator.of(context).pop();
+              },
+            ),
+            CupertinoDialogAction(
+              child: const Text('This session only'),
+              onPressed: () async {
+                Navigator.of(context).pop();
+              },
+            ),
+          ],
+        );
+      },
+    );
   }
 
   @override

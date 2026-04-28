@@ -212,7 +212,7 @@ Future<List<Exercise>> _ifSessionIsAlreadyActiveReturnSets(
   return currentExercises;
 }
 
-Future<List<Exercise>> _loadPlannedExercises(
+Future<List<Exercise>> loadPlannedExercises(
   Database db,
   int workoutSessionId,
 ) async {
@@ -243,6 +243,27 @@ Future<List<Exercise>> _loadPlannedExercises(
         ),
       )
       .toList();
+}
+
+Future<List<String>> loadExercisesExecutedIds (Database db, int workoutSessionId) async {
+
+  final exercisesExecutedIdsData = await db.rawQuery(
+    '''
+    SELECT exercise_id
+    FROM active_session_sets
+    WHERE workout_session_id = ?
+      AND is_deleted = 0
+    GROUP BY exercise_order_index
+    ORDER BY exercise_order_index
+    ''',
+    [workoutSessionId]
+  );
+
+  if(exercisesExecutedIdsData.isEmpty) return [];
+
+  return exercisesExecutedIdsData.map((exercise) {
+    return exercise['exercise_id'] as String;
+  }).toList();
 }
 
 Future<List<Exercise>> _loadRepetedWorkoutHints(
@@ -301,7 +322,7 @@ Future<List<Exercise>> resumeOrStartRepetedWorkout(int workoutSessionId) async {
   );
   if (currentExercises.isNotEmpty) return currentExercises;
 
-  List<Exercise> exercisesPlanned = await _loadPlannedExercises(
+  List<Exercise> exercisesPlanned = await loadPlannedExercises(
     db,
     workoutSessionId,
   );

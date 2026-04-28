@@ -3,7 +3,9 @@ import 'dart:async';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:lifting_tracker_app/data/app_databases.dart';
 import 'package:lifting_tracker_app/data/queries/aux_functions_for_pop.dart';
+import 'package:lifting_tracker_app/data/queries/populate_active_sessions_table.dart';
 import 'package:lifting_tracker_app/data/workout_session_statuses.dart';
+import 'package:lifting_tracker_app/models/entity/exercise.dart';
 import 'package:lifting_tracker_app/providers/persisted/week_progress.dart';
 import 'package:sqflite/sqflite.dart';
 
@@ -99,6 +101,7 @@ class CurrentSessionStatusNotifier extends AsyncNotifier<bool> {
       SELECT id
       FROM active_session_sets
       WHERE workout_session_id = ?
+        AND is_deleted = 0
         AND (
           actual_weight IS NULL
           OR actual_repetitions IS NULL
@@ -112,34 +115,83 @@ class CurrentSessionStatusNotifier extends AsyncNotifier<bool> {
     });
   }
 
+  Future<bool> checkIfUserModifiedExercisesPlanned(int activeSessionId) async {
+    final db = await AppDatabases.getDatabase();
+
+    final List<Exercise> exercisesPlanned = await loadPlannedExercises(
+      db,
+      activeSessionId,
+    );
+
+    final List<String> exercisesExecutedIds = await loadExercisesExecutedIds(
+      db,
+      activeSessionId,
+    );
+
+    if (exercisesPlanned.length != exercisesExecutedIds.length) return true;
+
+    for (int i = 0; i < exercisesExecutedIds.length; i++) {
+      if (exercisesExecutedIds[i] != exercisesPlanned[i].id) return true;
+    }
+
+    return false;
+  }
+
   Future<void> saveEmptySetsWithHints(int activeSessionId) async {
     final db = await AppDatabases.getDatabase();
 
     await db.transaction((txn) async {
-      final setsData = await txn.rawQuery(
+      await txn.rawUpdate(
         '''
-      SELECT exercise_id AS ex_id,
-          workout_session_id AS session_id,
-          hint_weight AS weight,
-          hint_repetitions AS repetitions,
-          hint_notes AS notes,
-          set_index AS set_index,
-          exercise_order_index AS order_index,
-          exercise_occurrence_index AS exercise_occurrence_index
-        FROM active_session_sets
-        WHERE is_deleted = 0
-          AND workout_session_id = ?
-          AND (
-            actual_weight IS NULL
-            OR actual_repetitions IS NULL
-          )
+        UPDATE active_session_sets
+        SET actual_weight = COALESCE(actual_weight, hint_weight),
+            actual_repetitions = COALESCE(actual_repetitions, hint_repetitions),
+            actual_notes = COALESCE(actual_notes, hint_notes)
+        WHERE workout_session_id = ?
+          AND is_deleted = 0
+          AND (actual_weight IS NULL OR actual_repetitions IS NULL)
+        ''',
+        [activeSessionId],
+      );
+    });
+  }
+
+  Future<void> updateCurrentPlan(int activeSessionId) async {
+    final db = await AppDatabases.getDatabase();
+
+    final List<String> exercisesExecutedIdsInOrder = await loadExercisesExecutedIds(
+      db,
+      activeSessionId,
+    );
+
+    await db.transaction((txn) async {
+      final data = await txn.rawQuery(
+        '''
+        SELECT day_id
+        FROM workout_sessions
+        WHERE id = ?
         ''',
         [activeSessionId],
       );
 
+      if (data.isEmpty) return;
+
+      final dayId = data[0]['day_id'] as String;
+
+      await txn.rawDelete(
+        '''
+        DELETE FROM day_exercises
+        WHERE day_id = ?
+        ''', [dayId]
+      );
+
       final batch = txn.batch();
-      for (final setData in setsData) {
-        batch.insert('logged_sets', setData);
+      for (int i = 0; i < exercisesExecutedIdsInOrder.length; i++) {
+        batch.insert('day_exercises', {
+          'day_id' : dayId,
+          'exercise_id' : exercisesExecutedIdsInOrder[i],
+          'order_idx' : i
+        });
       }
       await batch.commit(noResult: true);
     });
