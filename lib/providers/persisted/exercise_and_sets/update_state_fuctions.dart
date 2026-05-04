@@ -74,21 +74,27 @@ AsyncValue<List<Exercise>> deleteExerciseFromState(
 
 AsyncValue<List<Exercise>> deleteExerciseSetFromState(
   List<Exercise> currentState,
-  String exerciseId,
-  int exerciseOrderIndex,
-  int setIndex,
+  int activeSessionSetId,
 ) {
   final updated = currentState.map((exercise) {
-    if (exercise.id == exerciseId &&
-        exercise.orderIndex == exerciseOrderIndex) {
+    int? setIndex;
+    for (final set in exercise.sets) {
+      if (set.activeSessionSetId == activeSessionSetId) {
+        setIndex = set.setIndex;
+        break;
+      }
+    }
+
+    if (setIndex != null) {
       final updatedSets = exercise.sets
-          .where((set) => set.setIndex != setIndex)
+          .where((set) => set.activeSessionSetId != activeSessionSetId)
           .map((set) {
             final currentSetIndex = set.setIndex;
 
-            if (currentSetIndex != null && currentSetIndex > setIndex) {
+            if (currentSetIndex != null && currentSetIndex > setIndex!) {
               return TrainingSet(
                 activeSessionSetId: set.activeSessionSetId,
+                isWarmup: set.isWarmup,
                 hintRepetitions: set.hintRepetitions,
                 hintWeight: set.hintWeight,
                 hintNotes: set.hintNotes,
@@ -127,7 +133,7 @@ AsyncValue<List<Exercise>> saveSetCellToState(
   int activeSessionSetId,
   int? reps,
   double? weight,
-  String? notes
+  String? notes,
 ) {
   final updated = currentState.map((exercise) {
     if (exercise.id == exerciseId &&
@@ -137,6 +143,7 @@ AsyncValue<List<Exercise>> saveSetCellToState(
             activeSessionSetId == set.activeSessionSetId) {
           return TrainingSet(
             activeSessionSetId: set.activeSessionSetId,
+            isWarmup: set.isWarmup,
             hintRepetitions: set.hintRepetitions,
             hintWeight: set.hintWeight,
             hintNotes: set.hintNotes,
@@ -162,6 +169,43 @@ AsyncValue<List<Exercise>> saveSetCellToState(
     }
 
     return exercise;
+  }).toList();
+
+  return AsyncData(updated);
+}
+
+AsyncValue<List<Exercise>> toggleSetWarmupInState(
+  List<Exercise> currentState,
+  int activeSessionSetId,
+) {
+  final updated = currentState.map((exercise) {
+    final updatedSets = exercise.sets.map((set) {
+      if (set.activeSessionSetId == activeSessionSetId) {
+        return TrainingSet(
+          activeSessionSetId: set.activeSessionSetId,
+          hintRepetitions: set.hintRepetitions,
+          hintWeight: set.hintWeight,
+          hintNotes: set.hintNotes,
+          actualRepetitions: set.actualRepetitions,
+          actualWeight: set.actualWeight,
+          actualNotes: set.actualNotes,
+          setIndex: set.setIndex,
+          isWarmup: !(set.isWarmup ?? false),
+        );
+      }
+
+      return set;
+    }).toList();
+
+    return Exercise(
+      name: exercise.name,
+      muscleGroup: exercise.muscleGroup,
+      id: exercise.id,
+      note: exercise.note,
+      idInDayExerciseRelation: exercise.idInDayExerciseRelation,
+      orderIndex: exercise.orderIndex,
+      sets: updatedSets,
+    );
   }).toList();
 
   return AsyncData(updated);

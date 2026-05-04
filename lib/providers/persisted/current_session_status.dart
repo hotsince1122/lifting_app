@@ -101,7 +101,6 @@ class CurrentSessionStatusNotifier extends AsyncNotifier<bool> {
       SELECT id
       FROM active_session_sets
       WHERE workout_session_id = ?
-        AND is_deleted = 0
         AND (
           actual_weight IS NULL
           OR actual_repetitions IS NULL
@@ -148,7 +147,6 @@ class CurrentSessionStatusNotifier extends AsyncNotifier<bool> {
             actual_repetitions = COALESCE(actual_repetitions, hint_repetitions),
             actual_notes = COALESCE(actual_notes, hint_notes)
         WHERE workout_session_id = ?
-          AND is_deleted = 0
           AND (actual_weight IS NULL OR actual_repetitions IS NULL)
         ''',
         [activeSessionId],
@@ -224,10 +222,10 @@ class CurrentSessionStatusNotifier extends AsyncNotifier<bool> {
           actual_notes AS notes,
           set_index AS set_index,
           exercise_order_index AS order_index,
-          exercise_occurrence_index AS exercise_occurrence_index
+          exercise_occurrence_index AS exercise_occurrence_index,
+          is_warmup AS is_warmup
         FROM active_session_sets
-        WHERE is_deleted = 0
-          AND actual_weight IS NOT NULL
+        WHERE actual_weight IS NOT NULL
           AND actual_repetitions IS NOT NULL
           AND workout_session_id = ?
         ''',

@@ -5,6 +5,10 @@ import 'package:lifting_tracker_app/models/entity/exercise.dart';
 import 'package:lifting_tracker_app/models/entity/training_set.dart';
 import 'package:sqflite/sqflite.dart';
 
+bool _readSqliteBool(Object? value) => value == 1 || value == true;
+
+int _writeSqliteBool(bool? value) => value == true ? 1 : 0;
+
 List<Exercise> _addDefaultSetToExercisesIfEmpty(
   List<Exercise> exercisesPlanned,
 ) {
@@ -13,6 +17,7 @@ List<Exercise> _addDefaultSetToExercisesIfEmpty(
       exercisesPlanned[i].sets.add(
         TrainingSet(
           setIndex: 1,
+          isWarmup: false,
           hintRepetitions: 0,
           hintWeight: 0,
           hintNotes: '',
@@ -40,11 +45,11 @@ List<Exercise> _addSetsToExerciseFromDbData(
         exercisesPlanned[i].sets.add(
           TrainingSet(
             activeSessionSetId: set['activeSessionSetId'] as int?,
+            isWarmup: _readSqliteBool(set['isWarmup']),
             setIndex: set['setIndex'] as int,
             hintRepetitions: set['hintRepetitions'] as int,
             hintWeight: (set['hintWeight'] as num).toDouble(),
             hintNotes: set['hintNotes'] as String? ?? '',
-
             actualRepetitions: isSessionAlreadyActive
                 ? set['actualRepetitions'] as int?
                 : null,
@@ -104,11 +109,10 @@ Future<void> populateActiveSessionSets(
         'exercise_order_index': exercise.orderIndex,
         'exercise_occurrence_index': exerciseOccurrenceIndexes[exerciseIndex],
         'set_index': set.setIndex ?? i + 1,
+        'is_warmup' : _writeSqliteBool(set.isWarmup),
         'hint_weight': set.hintWeight,
         'hint_repetitions': set.hintRepetitions,
         'hint_notes': set.hintNotes,
-        'is_completed': 0,
-        'is_deleted': 0,
       }));
     }
   }
@@ -189,6 +193,7 @@ Future<List<Exercise>> _ifSessionIsAlreadyActiveReturnSets(
       id AS activeSessionSetId,
       exercise_order_index AS orderIndex,
       exercise_occurrence_index AS occurrenceIndex,
+      is_warmup AS isWarmup,
       set_index AS setIndex,
       hint_weight AS hintWeight,
       hint_repetitions AS hintRepetitions,
@@ -197,7 +202,7 @@ Future<List<Exercise>> _ifSessionIsAlreadyActiveReturnSets(
       actual_repetitions AS actualRepetitions,
       actual_notes AS actualNotes
     FROM active_session_sets 
-    WHERE workout_session_id = ? AND is_deleted = 0
+    WHERE workout_session_id = ?
     ORDER BY exercise_order_index, set_index
     ''',
     [workoutSessionId],
@@ -252,7 +257,6 @@ Future<List<String>> loadExercisesExecutedIds (Database db, int workoutSessionId
     SELECT exercise_id
     FROM active_session_sets
     WHERE workout_session_id = ?
-      AND is_deleted = 0
     GROUP BY exercise_order_index
     ORDER BY exercise_order_index
     ''',
@@ -293,6 +297,7 @@ Future<List<Exercise>> _loadRepetedWorkoutHints(
       ls.repetitions AS hintRepetitions,
       ls.notes AS hintNotes,
       ls.set_index AS setIndex,
+      ls.is_warmup AS isWarmup,
       ls.order_index AS orderIndex,
       ls.notes AS notes,
       ls.exercise_occurrence_index AS occurrenceIndex

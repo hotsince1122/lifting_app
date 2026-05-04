@@ -89,7 +89,7 @@ class _ExerciseAndSetsCardState extends ConsumerState<ExerciseAndSetsCard> {
     String exerciseId,
     int exerciseOrderIndex,
     Object dismissIdentity,
-    int setIndexDb,
+    int activeSessionSetId,
     bool isLastSetRemaining,
     Widget child,
   ) {
@@ -114,7 +114,7 @@ class _ExerciseAndSetsCardState extends ConsumerState<ExerciseAndSetsCard> {
 
         await ref
             .read(exercisesAndSetsProvider(widget.workoutSessionId).notifier)
-            .removeSetFromExercise(exerciseId, exerciseOrderIndex, setIndexDb);
+            .removeSetFromExercise(activeSessionSetId);
       },
       child: child,
     );
@@ -123,9 +123,27 @@ class _ExerciseAndSetsCardState extends ConsumerState<ExerciseAndSetsCard> {
   Widget _buildSet(Exercise exercise, int exerciseOrderIndex, int setIndexUI) {
     final set = exercise.sets[setIndexUI];
     final isLastSetRemaining = exercise.sets.length == 1;
+    final displaySetIndex = set.isWarmup == true
+        ? null
+        : exercise.sets
+              .take(setIndexUI + 1)
+              .where((set) => set.isWarmup != true)
+              .length;
     final setIdentity =
         set.activeSessionSetId ??
         (exercise.id, exercise.orderIndex, set.setIndex, setIndexUI);
+    final activeSessionSetId = set.activeSessionSetId!;
+
+    Future<void> deleteSetFromSettings() async {
+      if (isLastSetRemaining) {
+        await _animateAndDeleteExercise(exercise.id, exerciseOrderIndex);
+        return;
+      }
+
+      await ref
+          .read(exercisesAndSetsProvider(widget.workoutSessionId).notifier)
+          .removeSetFromExercise(activeSessionSetId);
+    }
 
     final child = Column(
       children: [
@@ -134,7 +152,7 @@ class _ExerciseAndSetsCardState extends ConsumerState<ExerciseAndSetsCard> {
           exercise.id,
           exerciseOrderIndex,
           setIdentity,
-          set.setIndex!,
+          activeSessionSetId,
           isLastSetRemaining,
           _hp(
             Column(
@@ -142,11 +160,12 @@ class _ExerciseAndSetsCardState extends ConsumerState<ExerciseAndSetsCard> {
                 SizedBox(height: _paddingBetween / 2),
                 ExerciseSetTile(
                   set,
-                  setIndexUI,
+                  displaySetIndex,
                   _iconSize,
                   widget.workoutSessionId,
                   exercise.id,
                   exercise.orderIndex!,
+                  onDeleteSet: deleteSetFromSettings,
                   key: ValueKey(setIdentity),
                 ),
                 SizedBox(height: _paddingBetween / 2),

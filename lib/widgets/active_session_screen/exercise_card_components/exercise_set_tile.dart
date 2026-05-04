@@ -5,6 +5,7 @@ import 'package:lifting_tracker_app/data/queries/save_progress.dart';
 import 'package:lifting_tracker_app/models/entity/training_set.dart';
 import 'package:lifting_tracker_app/providers/persisted/exercise_and_sets/exercises_and_sets.dart';
 import 'package:lifting_tracker_app/theme/app_colors.dart';
+import 'package:lifting_tracker_app/widgets/active_session_screen/set_settings.dart';
 import 'package:phosphor_flutter/phosphor_flutter.dart';
 import 'package:flutter/services.dart';
 
@@ -16,15 +17,17 @@ class ExerciseSetTile extends ConsumerStatefulWidget {
     this.workoutSessionId,
     this.exerciseId,
     this.exerciseOrderIndex, {
+    required this.onDeleteSet,
     super.key,
   });
 
   final TrainingSet set;
-  final int setIndex;
+  final int? setIndex;
   final double iconSize;
   final int workoutSessionId;
   final String exerciseId;
   final int exerciseOrderIndex;
+  final Future<void> Function() onDeleteSet;
 
   @override
   ConsumerState<ExerciseSetTile> createState() => _ExerciseSetTileState();
@@ -113,6 +116,8 @@ class _ExerciseSetTileState extends ConsumerState<ExerciseSetTile> {
 
   @override
   Widget build(BuildContext context) {
+    final screenWidth = MediaQuery.of(context).size.width;
+
     Widget cellLabel(String text) {
       return Text(
         text,
@@ -189,7 +194,7 @@ class _ExerciseSetTileState extends ConsumerState<ExerciseSetTile> {
       );
     }
 
-    Widget indexContainer(int setIndex) {
+    Widget indexContainer(int? setIndex) {
       return Container(
         height: widget.iconSize,
         width: widget.iconSize,
@@ -200,7 +205,7 @@ class _ExerciseSetTileState extends ConsumerState<ExerciseSetTile> {
         ),
         child: Center(
           child: Text(
-            (setIndex + 1).toString(),
+            setIndex?.toString() ?? '',
             style: Theme.of(
               context,
             ).textTheme.bodyMedium!.copyWith(fontWeight: FontWeight.bold),
@@ -272,7 +277,16 @@ class _ExerciseSetTileState extends ConsumerState<ExerciseSetTile> {
           height: 44,
           child: InkWell(
             splashFactory: NoSplash.splashFactory,
-            onTap: () {},
+            onTap: () async {
+              await SetSettings.openSetSettings(
+                context,
+                screenWidth,
+                widget.set.activeSessionSetId!,
+                widget.set.isWarmup!,
+                widget.workoutSessionId,
+                widget.onDeleteSet,
+              );
+            },
             child: PhosphorIcon(
               PhosphorIcons.dotsThree(PhosphorIconsStyle.bold),
               color: AppColors.secondary,

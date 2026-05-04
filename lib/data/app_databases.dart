@@ -235,6 +235,7 @@ class AppDatabases {
             repetitions INTEGER NOT NULL,
             notes TEXT,
             set_index INTEGER NOT NULL,
+            is_warmup INTEGER NOT NULL,
             order_index INTEGER NOT NULL,
             exercise_occurrence_index INTEGER NOT NULL,
             FOREIGN KEY (ex_id) REFERENCES exercises(id),
@@ -258,8 +259,7 @@ class AppDatabases {
             actual_repetitions INTEGER,
             actual_notes TEXT,
 
-            is_completed INTEGER NOT NULL DEFAULT 0,
-            is_deleted INTEGER NOT NULL DEFAULT 0,
+            is_warmup INTEGER NOT NULL DEFAULT 0,
 
             FOREIGN KEY (workout_session_id) REFERENCES workout_sessions(id),
             FOREIGN KEY (exercise_id) REFERENCES exercises(id),

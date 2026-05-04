@@ -2,6 +2,7 @@ class TrainingSet {
   const TrainingSet({
     this.activeSessionSetId,
     this.setIndex,
+    this.isWarmup,
     required this.hintRepetitions,
     required this.hintWeight,
     required this.hintNotes,
@@ -12,6 +13,7 @@ class TrainingSet {
 
   final int? activeSessionSetId;
   final int? setIndex;
+  final bool? isWarmup;
 
   final double hintWeight;
   final int hintRepetitions;

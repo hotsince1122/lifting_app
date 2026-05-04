@@ -3,11 +3,12 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:lifting_tracker_app/data/app_databases.dart';
 import 'package:lifting_tracker_app/data/queries/interact_with_active_session/add_sets_or_exercises.dart';
 import 'package:lifting_tracker_app/data/queries/interact_with_active_session/delete_sets_or_exercises.dart';
+import 'package:lifting_tracker_app/data/queries/interact_with_active_session/miscellaneous_funcs.dart';
 import 'package:lifting_tracker_app/data/queries/populate_active_sessions_table.dart';
 import 'package:lifting_tracker_app/data/queries/save_progress.dart';
 import 'package:lifting_tracker_app/data/workout_session_statuses.dart';
 import 'package:lifting_tracker_app/models/entity/exercise.dart';
-import 'package:lifting_tracker_app/providers/persisted/exercise_and_sets/update_state_aux_fuctions.dart';
+import 'package:lifting_tracker_app/providers/persisted/exercise_and_sets/update_state_fuctions.dart';
 
 FutureOr<String?> _checkWorkoutStatus(int workoutSessionId) async {
   final db = await AppDatabases.getDatabase();
@@ -84,21 +85,53 @@ class ExercisesAndSetsProvider extends AsyncNotifier<List<Exercise>> {
   }
 
   Future<void> removeSetFromExercise(
-    String exerciseId,
-    int exerciseOrderIndex,
-    int setIndex,
+    int activeSessionSetId,
   ) async {
+    final currentState = state.value;
+    if (currentState == null) return;
+
+    Exercise? exerciseToUpdate;
+    for (final exercise in currentState) {
+      final containsSet = exercise.sets.any(
+        (set) => set.activeSessionSetId == activeSessionSetId,
+      );
+
+      if (containsSet) {
+        exerciseToUpdate = exercise;
+        break;
+      }
+    }
+
+    if (exerciseToUpdate == null) return;
+
+    if (exerciseToUpdate.sets.length == 1) {
+      final exerciseOrderIndex = exerciseToUpdate.orderIndex;
+      if (exerciseOrderIndex == null) return;
+
+      final didSucceed = await deleteExerciseFromDb(
+        exerciseToUpdate.id,
+        exerciseOrderIndex,
+        workoutSessionId,
+      );
+
+      if (didSucceed) {
+        state = deleteExerciseFromState(
+          currentState,
+          exerciseToUpdate.id,
+          exerciseOrderIndex,
+        );
+      }
+
+      return;
+    }
+
     final didSucceed = await removeSetFromExerciseDb(
-      exerciseId,
-      exerciseOrderIndex,
-      setIndex,
+      activeSessionSetId,
       workoutSessionId,
     );
 
-    final currentState = state.value;
-
-    if (currentState != null && didSucceed) {
-      state = deleteExerciseSetFromState(currentState, exerciseId, exerciseOrderIndex, setIndex);
+    if (didSucceed) {
+      state = deleteExerciseSetFromState(currentState, activeSessionSetId);
     }
   }
 
@@ -121,6 +154,19 @@ class ExercisesAndSetsProvider extends AsyncNotifier<List<Exercise>> {
 
     if (currentState != null && didSucceed) {
       state = saveSetCellToState(currentState, exerciseId, exerciseOrderIndex, activeSessionSetId, reps, weight, notes);
+    }
+  }
+
+  Future<void> toggleSetWarmup (int activeSessionSetId) async {
+    final didSucceed = await toggleSetWarmupInDb(
+      activeSessionSetId,
+      workoutSessionId,
+    );
+
+    final currentState = state.value;
+
+    if (currentState != null && didSucceed) {
+      state = toggleSetWarmupInState(currentState, activeSessionSetId);
     }
   }
 }

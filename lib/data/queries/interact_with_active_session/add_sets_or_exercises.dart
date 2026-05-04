@@ -6,6 +6,10 @@ import 'package:lifting_tracker_app/models/entity/exercise.dart';
 import 'package:lifting_tracker_app/models/entity/training_set.dart';
 import 'package:sqflite/sqflite.dart';
 
+bool _readSqliteBool(Object? value) => value == 1 || value == true;
+
+int _writeSqliteBool(bool? value) => value == true ? 1 : 0;
+
 Future<Exercise?> addNewExerciseToDb(
   int workoutSessionId,
   Exercise newExercise,
@@ -34,6 +38,7 @@ Future<Exercise?> addNewExerciseToDb(
         final dataPreviousWorkoutSets = await txn.rawQuery(
           '''
         SELECT set_index AS setIndex,
+          is_warmup AS isWarmup,
           weight AS hintWeight,
           repetitions AS hintRepetitions,
           notes AS hintNotes
@@ -48,6 +53,7 @@ Future<Exercise?> addNewExerciseToDb(
             .map(
               (set) => TrainingSet(
                 setIndex: set['setIndex'] as int,
+                isWarmup: _readSqliteBool(set['isWarmup']),
                 hintWeight: (set['hintWeight'] as num).toDouble(),
                 hintRepetitions: set['hintRepetitions'] as int,
                 hintNotes: set['hintNotes'] as String? ?? '',
@@ -134,7 +140,8 @@ Future<TrainingSet?> addSetToExerciseInDb(
           '''
         SELECT weight AS hintWeight,
           repetitions AS hintRepetitions,
-          notes AS hintNotes
+          notes AS hintNotes,
+          is_warmup AS isWarmup
         FROM logged_sets
         WHERE session_id = ? AND ex_id = ? AND exercise_occurrence_index = ? AND set_index = ?
         LIMIT 1
@@ -149,6 +156,7 @@ Future<TrainingSet?> addSetToExerciseInDb(
             hintWeight: (set['hintWeight'] as num).toDouble(),
             hintRepetitions: set['hintRepetitions'] as int,
             hintNotes: set['hintNotes'] as String? ?? '',
+            isWarmup: _readSqliteBool(set['isWarmup'])
           );
         }
       }
@@ -161,16 +169,16 @@ Future<TrainingSet?> addSetToExerciseInDb(
         'exercise_order_index': exerciseOrderIndex,
         'exercise_occurrence_index': occurrenceIndex,
         'set_index': setToInsert.setIndex ?? nextSetIndex,
+        'is_warmup': _writeSqliteBool(setToInsert.isWarmup),
         'hint_weight': setToInsert.hintWeight,
         'hint_repetitions': setToInsert.hintRepetitions,
         'hint_notes': setToInsert.hintNotes,
-        'is_completed': 0,
-        'is_deleted': 0,
       });
 
       return TrainingSet(
         activeSessionSetId: activeSessionSetId,
         setIndex: setToInsert.setIndex,
+        isWarmup: setToInsert.isWarmup,
         hintRepetitions: setToInsert.hintRepetitions,
         hintWeight: setToInsert.hintWeight,
         hintNotes: setToInsert.hintNotes,

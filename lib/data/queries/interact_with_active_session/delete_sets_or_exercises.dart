@@ -3,24 +3,39 @@ import 'package:lifting_tracker_app/data/app_databases.dart';
 import 'package:sqflite/sqflite.dart';
 
 Future<bool> removeSetFromExerciseDb(
-  String exerciseId,
-  int exerciseOrderIndex,
-  int setIndex,
+  int activeSessionSetId,
   int workoutId,
 ) async {
   final db = await AppDatabases.getDatabase();
 
   try {
     final rowsDeleted = await db.transaction((txn) async {
+      final setData = await txn.rawQuery(
+        '''
+      SELECT exercise_id,
+        exercise_order_index,
+        set_index
+      FROM active_session_sets
+      WHERE id = ?
+        AND workout_session_id = ?
+      LIMIT 1
+      ''',
+        [activeSessionSetId, workoutId],
+      );
+
+      if (setData.isEmpty) return 0;
+
+      final exerciseId = setData.first['exercise_id'] as String;
+      final exerciseOrderIndex = setData.first['exercise_order_index'] as int;
+      final setIndex = setData.first['set_index'] as int;
+
       final rowsDeleted = await txn.rawDelete(
         '''
       DELETE FROM active_session_sets
-      WHERE workout_session_id = ?
-        AND exercise_id = ?
-        AND exercise_order_index = ?
-        AND set_index = ?
+      WHERE id = ?
+        AND workout_session_id = ?
       ''',
-        [workoutId, exerciseId, exerciseOrderIndex, setIndex],
+        [activeSessionSetId, workoutId],
       );
 
       await txn.rawUpdate(

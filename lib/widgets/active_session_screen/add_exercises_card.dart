@@ -63,25 +63,3 @@ class AddExercisesCard extends ConsumerWidget {
     );
   }
 }
-
-
-
-
-
-// Text('Add exercise'),
-// Icon(Icons.add_circle_outline_rounded),
-
-// final addedExercise = await openExercisePickerSheet(
-              //   context,
-              //   screenWidth,
-              // );
-          
-              // if (addedExercise != null) {
-              //   await ref
-              //       .read(exercisesInADayProvider(workoutDay.id).notifier)
-              //       .addExerciseToDay(workoutDay.id, addedExercise.id);
-              //   await ref
-              //       .read(splitDaySummaryProvider(workoutDay.id).notifier)
-              //       .refresh();
-              //   await ref.read(canUserFinishSetupProvider.notifier).refresh();
-              // }

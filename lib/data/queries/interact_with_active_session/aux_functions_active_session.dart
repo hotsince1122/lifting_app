@@ -1,6 +1,8 @@
 import 'package:lifting_tracker_app/models/entity/training_set.dart';
 import 'package:sqflite/sqflite.dart';
 
+bool _readSqliteBool(Object? value) => value == 1 || value == true;
+
 Future<int> loadNextExerciseOrderIndex(
   DatabaseExecutor db,
   int workoutSessionId,
@@ -45,6 +47,7 @@ Future<List<TrainingSet>> loadActiveSessionSetsForExercise(
     '''
     SELECT id AS activeSessionSetId,
       set_index AS setIndex,
+      is_warmup AS isWarmup,
       hint_weight AS hintWeight,
       hint_repetitions AS hintRepetitions,
       hint_notes AS hintNotes,
@@ -55,7 +58,6 @@ Future<List<TrainingSet>> loadActiveSessionSetsForExercise(
     WHERE workout_session_id = ?
       AND exercise_id = ?
       AND exercise_order_index = ?
-      AND is_deleted = 0
     ORDER BY set_index
     ''',
     [workoutSessionId, exerciseId, exerciseOrderIndex],
@@ -66,6 +68,7 @@ Future<List<TrainingSet>> loadActiveSessionSetsForExercise(
         (set) => TrainingSet(
           activeSessionSetId: set['activeSessionSetId'] as int,
           setIndex: set['setIndex'] as int,
+          isWarmup: _readSqliteBool(set['isWarmup']),
           hintWeight: (set['hintWeight'] as num).toDouble(),
           hintRepetitions: set['hintRepetitions'] as int,
           hintNotes: set['hintNotes'] as String? ?? '',
@@ -97,6 +100,7 @@ Future<int> loadNextSetIndex(
 TrainingSet emptySet({int? setIndex}) {
   return TrainingSet(
     setIndex: setIndex,
+    isWarmup: false,
     hintRepetitions: 0,
     hintWeight: 0,
     hintNotes: '',
