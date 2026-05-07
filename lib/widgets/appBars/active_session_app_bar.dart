@@ -4,6 +4,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:intl/intl.dart';
 import 'package:lifting_tracker_app/providers/persisted/current_session_status.dart';
 import 'package:lifting_tracker_app/theme/app_colors.dart';
+import 'package:lifting_tracker_app/widgets/active_session_screen/reorder_exercises_sheet.dart';
 import 'package:lifting_tracker_app/widgets/solid_button.dart';
 import 'package:lifting_tracker_app/widgets/solid_card.dart';
 import 'package:phosphor_flutter/phosphor_flutter.dart';
@@ -123,6 +124,8 @@ class ActiveSessionAppBar extends ConsumerWidget
     final double buttonHeight = 46;
     final double iconSize = 26;
 
+    final screenWidth = MediaQuery.of(context).size.width;
+
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 16),
       child: Row(
@@ -179,13 +182,38 @@ class ActiveSessionAppBar extends ConsumerWidget
                     ),
                   ),
                   const SizedBox(width: 12),
-                  IconButton(
-                    onPressed: () {},
+                  PopupMenuButton(
                     icon: PhosphorIcon(
                       PhosphorIcons.dotsThreeOutline(PhosphorIconsStyle.bold),
                       size: iconSize,
                       color: AppColors.onSurface,
                     ),
+                    itemBuilder: (context) => [
+                      PopupMenuItem(
+                        onTap: () => ReorderExercisesSheet.openSheet(
+                          context,
+                          screenWidth,
+                          activeSessionId,
+                        ),
+                        child: SizedBox(
+                          width: 145,
+                          height: 60,
+                          child: Center(
+                            child: Text(
+                              'Reorder Exercises',
+                              style: Theme.of(context).textTheme.titleMedium,
+                            ),
+                          ),
+                        ),
+                      ),
+                    ],
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(24),
+                      side: BorderSide(color: AppColors.cardBorder, width: 1),
+                    ),
+                    clipBehavior: Clip.antiAlias,
+                    color: AppColors.card.withAlpha(245),
+                    menuPadding: EdgeInsets.zero,
                   ),
                 ],
               ),

@@ -25,13 +25,7 @@ AsyncValue<List<Exercise>>? addExerciseSetToState(
 
   final oldExercise = updated[index];
 
-  final patchedExercise = Exercise(
-    id: oldExercise.id,
-    name: oldExercise.name,
-    muscleGroup: oldExercise.muscleGroup,
-    orderIndex: oldExercise.orderIndex,
-    note: oldExercise.note,
-    idInDayExerciseRelation: oldExercise.idInDayExerciseRelation,
+  final patchedExercise = oldExercise.copyWith(
     sets: [...oldExercise.sets, newSet],
   );
 
@@ -54,15 +48,7 @@ AsyncValue<List<Exercise>> deleteExerciseFromState(
         final orderIndex = exercise.orderIndex;
 
         if (orderIndex != null && orderIndex > exerciseOrderIndex) {
-          return Exercise(
-            id: exercise.id,
-            name: exercise.name,
-            muscleGroup: exercise.muscleGroup,
-            orderIndex: orderIndex - 1,
-            note: exercise.note,
-            idInDayExerciseRelation: exercise.idInDayExerciseRelation,
-            sets: exercise.sets,
-          );
+          return exercise.copyWith(orderIndex: orderIndex - 1);
         }
 
         return exercise;
@@ -92,32 +78,14 @@ AsyncValue<List<Exercise>> deleteExerciseSetFromState(
             final currentSetIndex = set.setIndex;
 
             if (currentSetIndex != null && currentSetIndex > setIndex!) {
-              return TrainingSet(
-                activeSessionSetId: set.activeSessionSetId,
-                isWarmup: set.isWarmup,
-                hintRepetitions: set.hintRepetitions,
-                hintWeight: set.hintWeight,
-                hintNotes: set.hintNotes,
-                actualRepetitions: set.actualRepetitions,
-                actualWeight: set.actualWeight,
-                actualNotes: set.actualNotes,
-                setIndex: currentSetIndex - 1,
-              );
+              return set.copyWith(setIndex: currentSetIndex - 1);
             }
 
             return set;
           })
           .toList();
 
-      return Exercise(
-        name: exercise.name,
-        muscleGroup: exercise.muscleGroup,
-        id: exercise.id,
-        note: exercise.note,
-        idInDayExerciseRelation: exercise.idInDayExerciseRelation,
-        orderIndex: exercise.orderIndex,
-        sets: updatedSets,
-      );
+      return exercise.copyWith(sets: updatedSets);
     }
 
     return exercise;
@@ -141,31 +109,17 @@ AsyncValue<List<Exercise>> saveSetCellToState(
       final updatedSets = exercise.sets.map((set) {
         if (set.activeSessionSetId != null &&
             activeSessionSetId == set.activeSessionSetId) {
-          return TrainingSet(
-            activeSessionSetId: set.activeSessionSetId,
-            isWarmup: set.isWarmup,
-            hintRepetitions: set.hintRepetitions,
-            hintWeight: set.hintWeight,
-            hintNotes: set.hintNotes,
+          return set.copyWith(
             actualRepetitions: reps,
             actualWeight: weight,
             actualNotes: notes,
-            setIndex: set.setIndex,
           );
         }
 
         return set;
       }).toList();
 
-      return Exercise(
-        name: exercise.name,
-        muscleGroup: exercise.muscleGroup,
-        id: exercise.id,
-        note: exercise.note,
-        idInDayExerciseRelation: exercise.idInDayExerciseRelation,
-        orderIndex: exercise.orderIndex,
-        sets: updatedSets,
-      );
+      return exercise.copyWith(sets: updatedSets);
     }
 
     return exercise;
@@ -181,32 +135,34 @@ AsyncValue<List<Exercise>> toggleSetWarmupInState(
   final updated = currentState.map((exercise) {
     final updatedSets = exercise.sets.map((set) {
       if (set.activeSessionSetId == activeSessionSetId) {
-        return TrainingSet(
-          activeSessionSetId: set.activeSessionSetId,
-          hintRepetitions: set.hintRepetitions,
-          hintWeight: set.hintWeight,
-          hintNotes: set.hintNotes,
-          actualRepetitions: set.actualRepetitions,
-          actualWeight: set.actualWeight,
-          actualNotes: set.actualNotes,
-          setIndex: set.setIndex,
-          isWarmup: !(set.isWarmup ?? false),
-        );
+        return set.copyWith(isWarmup: !(set.isWarmup ?? false));
       }
 
       return set;
     }).toList();
 
-    return Exercise(
-      name: exercise.name,
-      muscleGroup: exercise.muscleGroup,
-      id: exercise.id,
-      note: exercise.note,
-      idInDayExerciseRelation: exercise.idInDayExerciseRelation,
-      orderIndex: exercise.orderIndex,
-      sets: updatedSets,
-    );
+    return exercise.copyWith(sets: updatedSets);
   }).toList();
 
   return AsyncData(updated);
+}
+
+List<Exercise> reorderExercisesInState(
+  List<Exercise> currentState,
+  int oldIndex,
+  int newIndex,
+) {
+  if (newIndex > oldIndex) newIndex--;
+
+  final reordered = [...currentState];
+  final movedItem = reordered.removeAt(oldIndex);
+  reordered.insert(newIndex, movedItem);
+
+  final reorederedFinal = <Exercise>[];
+
+  for (int i = 0; i < reordered.length; i++) {
+    reorederedFinal.add(reordered[i].copyWith(orderIndex: i));
+  }
+
+  return reorederedFinal;
 }

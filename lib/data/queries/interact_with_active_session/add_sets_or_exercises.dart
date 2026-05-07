@@ -68,10 +68,7 @@ Future<Exercise?> addNewExerciseToDb(
 
       await populateActiveSessionSets(
         [
-          Exercise(
-            id: newExercise.id,
-            name: newExercise.name,
-            muscleGroup: newExercise.muscleGroup,
+          newExercise.copyWith(
             orderIndex: nextExerciseOrderIndex,
             sets: setsToInsert,
           ),
@@ -88,10 +85,7 @@ Future<Exercise?> addNewExerciseToDb(
         nextExerciseOrderIndex,
       );
 
-      return Exercise(
-        id: newExercise.id,
-        name: newExercise.name,
-        muscleGroup: newExercise.muscleGroup,
+      return newExercise.copyWith(
         orderIndex: nextExerciseOrderIndex,
         sets: activeSets,
       );
@@ -175,16 +169,8 @@ Future<TrainingSet?> addSetToExerciseInDb(
         'hint_notes': setToInsert.hintNotes,
       });
 
-      return TrainingSet(
+      return setToInsert.copyWith(
         activeSessionSetId: activeSessionSetId,
-        setIndex: setToInsert.setIndex,
-        isWarmup: setToInsert.isWarmup,
-        hintRepetitions: setToInsert.hintRepetitions,
-        hintWeight: setToInsert.hintWeight,
-        hintNotes: setToInsert.hintNotes,
-        actualRepetitions: setToInsert.actualRepetitions,
-        actualWeight: setToInsert.actualWeight,
-        actualNotes: setToInsert.actualNotes,
       );
     });
 

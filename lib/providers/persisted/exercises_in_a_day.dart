@@ -92,7 +92,7 @@ class ExercisesInADayNotifier extends AsyncNotifier<List<Exercise>> {
     final currentState = state.value;
     if (currentState == null) return;
 
-    if (newIndex > oldIndex) newIndex -= 1;
+    if (newIndex > oldIndex) newIndex--;
 
     final reordered = [...currentState];
     final movedItem = reordered.removeAt(oldIndex);

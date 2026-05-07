@@ -169,4 +169,20 @@ class ExercisesAndSetsProvider extends AsyncNotifier<List<Exercise>> {
       state = toggleSetWarmupInState(currentState, activeSessionSetId);
     }
   }
+
+  Future<void> reorderExercises(int oldIndex, int newIndex) async {
+    final currentState = state.value;
+
+    if (currentState == null) return;
+
+    final newState = reorderExercisesInState(currentState, oldIndex, newIndex);
+    state = AsyncData(newState);
+
+    final didSucceed = await reorderExercisesInDb(
+      newState,
+      workoutSessionId,
+    );
+
+    if (!didSucceed) state = AsyncData(currentState);
+  }
 }

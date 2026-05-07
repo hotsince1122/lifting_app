@@ -18,7 +18,7 @@ class SessionSummaryCard extends ConsumerWidget {
     );
 
     String transformIntoDateLabel(DateTime? date) {
-      if (date == null) return '-';
+      if (date == null) return '–';
 
       final weekday = DateFormat('EEE', 'en_US').format(date);
       final month = DateFormat('MMM', 'en_US').format(date);
@@ -63,7 +63,7 @@ class SessionSummaryCard extends ConsumerWidget {
         final endTimeLabel = transformIntoDateLabel(sessionSummaryCard.endTime);
         String durationInMinutes = (sessionSummaryCard.workoutDurationInMinutes)
             .toString();
-        if (durationInMinutes == 'null') durationInMinutes = '-';
+        if (durationInMinutes == 'null') durationInMinutes = '–';
 
         return AspectRatio(
           aspectRatio: 1.55,
