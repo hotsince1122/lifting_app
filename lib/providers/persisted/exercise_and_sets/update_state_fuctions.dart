@@ -58,6 +58,23 @@ AsyncValue<List<Exercise>> deleteExerciseFromState(
   return AsyncData(updated);
 }
 
+AsyncValue<List<Exercise>> replaceExerciseInState(
+  List<Exercise> currentState,
+  String oldExerciseId,
+  int oldExerciseOrderIndex,
+  Exercise replacement,
+) {
+  final updated = currentState.map((exercise) {
+    final isExerciseToReplace =
+        exercise.id == oldExerciseId &&
+        exercise.orderIndex == oldExerciseOrderIndex;
+
+    return isExerciseToReplace ? replacement : exercise;
+  }).toList();
+
+  return AsyncData(updated);
+}
+
 AsyncValue<List<Exercise>> deleteExerciseSetFromState(
   List<Exercise> currentState,
   int activeSessionSetId,

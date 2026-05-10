@@ -7,6 +7,7 @@ import 'package:lifting_tracker_app/widgets/active_session_screen/exercise_card_
 import 'package:lifting_tracker_app/widgets/active_session_screen/exercise_card_components/exercise_tile_footer.dart';
 import 'package:lifting_tracker_app/widgets/active_session_screen/exercise_card_components/exercise_tile_header.dart';
 import 'package:lifting_tracker_app/widgets/active_session_screen/exercise_card_components/insert_set_animation.dart';
+import 'package:lifting_tracker_app/widgets/active_session_screen/exercise_settings.dart';
 import 'package:lifting_tracker_app/widgets/solid_card.dart';
 
 class ExerciseAndSetsCard extends ConsumerStatefulWidget {
@@ -284,7 +285,12 @@ class _ExerciseAndSetsCardState extends ConsumerState<ExerciseAndSetsCard> {
     );
   }
 
-  List<Widget> _interactivLayer(Exercise exercise) {
+  List<Widget> _interactivLayer(Exercise exercise, double screenWidth) {
+    Future<void> deleteExerciseFromSettings() async {
+      await _animateAndDeleteExercise(exercise.id, exercise.orderIndex!);
+      return;
+    }
+
     return [
       Positioned(
         top: 11,
@@ -294,8 +300,19 @@ class _ExerciseAndSetsCardState extends ConsumerState<ExerciseAndSetsCard> {
         child: Material(
           color: Colors.transparent,
           child: InkWell(
+            splashColor: Colors.transparent,
+            splashFactory: InkSplash.splashFactory,
+            highlightColor: Colors.transparent,
             borderRadius: BorderRadius.circular(_iconTouchTarget / 2),
-            onTap: () {},
+            onTap: () {
+              ExerciseSettings.openExerciseSettings(
+                context,
+                screenWidth,
+                widget.workoutSessionId,
+                exercise,
+                deleteExerciseFromSettings,
+              );
+            },
           ),
         ),
       ),
@@ -336,6 +353,7 @@ class _ExerciseAndSetsCardState extends ConsumerState<ExerciseAndSetsCard> {
   @override
   Widget build(BuildContext context) {
     final exercise = widget.exerciseAndItsSets;
+    final screenWidth = MediaQuery.of(context).size.width;
 
     return AnimatedSize(
       duration: _collapseDuration,
@@ -377,7 +395,7 @@ class _ExerciseAndSetsCardState extends ConsumerState<ExerciseAndSetsCard> {
                                 child: _visualLayer(exercise),
                               ),
                             ),
-                            ..._interactivLayer(exercise),
+                            ..._interactivLayer(exercise, screenWidth),
                           ],
                         ),
                       ),

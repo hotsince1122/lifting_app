@@ -4,6 +4,7 @@ import 'package:lifting_tracker_app/data/app_databases.dart';
 import 'package:lifting_tracker_app/data/queries/interact_with_active_session/add_sets_or_exercises.dart';
 import 'package:lifting_tracker_app/data/queries/interact_with_active_session/delete_sets_or_exercises.dart';
 import 'package:lifting_tracker_app/data/queries/interact_with_active_session/miscellaneous_funcs.dart';
+import 'package:lifting_tracker_app/data/queries/interact_with_active_session/replace_exercise.dart';
 import 'package:lifting_tracker_app/data/queries/populate_active_sessions_table.dart';
 import 'package:lifting_tracker_app/data/queries/save_progress.dart';
 import 'package:lifting_tracker_app/data/workout_session_statuses.dart';
@@ -82,6 +83,35 @@ class ExercisesAndSetsProvider extends AsyncNotifier<List<Exercise>> {
 
     final currentState = state.value;
     if (didSucceed && currentState != null) state = deleteExerciseFromState(currentState, exerciseId, exerciseOrderIndex);
+  }
+
+  Future<void> replaceExercise(
+    Exercise oldExercise,
+    Exercise newExercise,
+  ) async {
+    final exerciseOrderIndex = oldExercise.orderIndex;
+    final currentState = state.value;
+
+    if (exerciseOrderIndex == null ||
+        currentState == null ||
+        oldExercise.id == newExercise.id) {
+      return;
+    }
+
+    final replacement = await replaceExerciseInDb(
+      workoutSessionId,
+      oldExercise,
+      newExercise,
+    );
+
+    if (replacement == null) return;
+
+    state = replaceExerciseInState(
+      currentState,
+      oldExercise.id,
+      exerciseOrderIndex,
+      replacement,
+    );
   }
 
   Future<void> removeSetFromExercise(
