@@ -3,13 +3,23 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:lifting_tracker_app/providers/persisted/exercise_and_sets/exercises_and_sets.dart';
 import 'package:lifting_tracker_app/widgets/active_session_screen/add_exercises_card.dart';
 import 'package:lifting_tracker_app/widgets/active_session_screen/exercise_and_sets_card.dart';
-import 'package:lifting_tracker_app/widgets/appBars/active_session_app_bar.dart';
+import 'package:lifting_tracker_app/widgets/appBars/workout_session/active_workout_editor_flow.dart';
+import 'package:lifting_tracker_app/widgets/appBars/workout_session/edit_workout_editor_flow.dart';
+import 'package:lifting_tracker_app/widgets/appBars/workout_session/workout_session_app_bar.dart';
+import 'package:lifting_tracker_app/widgets/appBars/workout_session/workout_editor_flow.dart';
 import 'package:lifting_tracker_app/widgets/session_summary_card.dart';
 
-class ActiveSessionScreen extends ConsumerWidget {
-  const ActiveSessionScreen(this.workoutSessionId, {super.key});
+class WorkoutEditorScreen extends ConsumerWidget {
+  const WorkoutEditorScreen(this.workoutSessionId, this.flow, {super.key});
+
+  const WorkoutEditorScreen.active(this.workoutSessionId, {super.key})
+    : flow = const ActiveWorkoutEditorFlow();
+
+  const WorkoutEditorScreen.edit(this.workoutSessionId, {super.key})
+    : flow = const EditWorkoutEditorFlow();
 
   final int workoutSessionId;
+  final WorkoutEditorFlow flow;
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -34,7 +44,7 @@ class ActiveSessionScreen extends ConsumerWidget {
           const Center(child: Text('An error has occured. Try again.')),
       data: (exerciseAndSets) {
         return Scaffold(
-          appBar: ActiveSessionAppBar(workoutSessionId),
+          appBar: WorkoutSessionAppBar(workoutSessionId, flow),
           body: SafeArea(
             top: false,
             child: Padding(

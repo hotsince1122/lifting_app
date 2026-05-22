@@ -3,7 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:lifting_tracker_app/providers/persisted/active_session_id.dart';
 import 'package:lifting_tracker_app/providers/persisted/current_session_status.dart';
 import 'package:lifting_tracker_app/providers/presentation/next_in_cycle.dart';
-import 'package:lifting_tracker_app/screens/active_session.dart';
+import 'package:lifting_tracker_app/screens/workout_editor.dart';
 import 'package:lifting_tracker_app/theme/app_colors.dart';
 import 'package:lifting_tracker_app/widgets/solid_button.dart';
 
@@ -42,7 +42,7 @@ class StartSession extends ConsumerWidget {
 
       Navigator.of(context).push(
         MaterialPageRoute(
-          builder: (context) => ActiveSessionScreen(activeSessionId),
+          builder: (context) => WorkoutEditorScreen.active(activeSessionId),
         ),
       );
     } catch (_) {

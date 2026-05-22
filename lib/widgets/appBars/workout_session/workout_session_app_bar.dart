@@ -1,116 +1,19 @@
-import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:intl/intl.dart';
-import 'package:lifting_tracker_app/providers/persisted/current_session_status.dart';
 import 'package:lifting_tracker_app/theme/app_colors.dart';
 import 'package:lifting_tracker_app/widgets/active_session_screen/reorder_exercises_sheet.dart';
+import 'package:lifting_tracker_app/widgets/appBars/workout_session/workout_editor_flow.dart';
 import 'package:lifting_tracker_app/widgets/solid_button.dart';
 import 'package:lifting_tracker_app/widgets/solid_card.dart';
 import 'package:phosphor_flutter/phosphor_flutter.dart';
 
-class ActiveSessionAppBar extends ConsumerWidget
+class WorkoutSessionAppBar extends ConsumerWidget
     implements PreferredSizeWidget {
-  const ActiveSessionAppBar(this.workoutSessionId, {super.key});
+  const WorkoutSessionAppBar(this.workoutSessionId, this.flow, {super.key});
 
   final int workoutSessionId;
-
-  Future<void> _handleFinish(
-    BuildContext context,
-    WidgetRef ref,
-    int workoutSessionId,
-  ) async {
-    final sessionStatusNotifier = ref.read(
-      currentSessionStatusProvider.notifier,
-    );
-
-    final hasEmptySet = await sessionStatusNotifier.checkIfAnySetEmpty(
-      workoutSessionId,
-    );
-
-    final userModifiedPlannedExercises = await sessionStatusNotifier
-        .checkIfUserModifiedExercisesPlanned(workoutSessionId);
-
-    if (hasEmptySet && context.mounted) {
-      await _handleEmptySets(context, sessionStatusNotifier);
-    }
-
-    if (userModifiedPlannedExercises && context.mounted) {
-      await _handleUpdatePlan(context, sessionStatusNotifier);
-    }
-
-    await sessionStatusNotifier.endSession(workoutSessionId);
-    if (!context.mounted) return;
-    Navigator.of(context).pop();
-  }
-
-  Future<void> _handleEmptySets(
-    BuildContext context,
-    CurrentSessionStatusNotifier sessionStatusNotifier,
-  ) async {
-    await showDialog(
-      context: context,
-      builder: (context) {
-        return CupertinoAlertDialog(
-          title: const Text('Weight or reps missing'),
-          content: const Text(
-            'Do you want to autofill them using last time weight and reps?',
-          ),
-          actions: [
-            CupertinoDialogAction(
-              child: const Text('Yes, Autofill'),
-              onPressed: () async {
-                await sessionStatusNotifier.saveEmptySetsWithHints(
-                  workoutSessionId,
-                );
-                if (!context.mounted) return;
-                Navigator.of(context).pop();
-              },
-            ),
-            CupertinoDialogAction(
-              child: const Text('No Thanks'),
-              onPressed: () async {
-                Navigator.of(context).pop();
-              },
-            ),
-          ],
-        );
-      },
-    );
-  }
-
-  Future<void> _handleUpdatePlan(
-    BuildContext context,
-    CurrentSessionStatusNotifier sessionStatusNotifier,
-  ) async {
-    await showDialog(
-      context: context,
-      builder: (context) {
-        return CupertinoAlertDialog(
-          title: const Text('Update plan?'),
-          content: const Text(
-            'You changed the exercises in this session. Save this order and exercise list for future sessions?',
-          ),
-          actions: [
-            CupertinoDialogAction(
-              child: const Text('Update plan'),
-              onPressed: () async {
-                await sessionStatusNotifier.updateCurrentPlan(workoutSessionId);
-                if (!context.mounted) return;
-                Navigator.of(context).pop();
-              },
-            ),
-            CupertinoDialogAction(
-              child: const Text('This session only'),
-              onPressed: () async {
-                Navigator.of(context).pop();
-              },
-            ),
-          ],
-        );
-      },
-    );
-  }
+  final WorkoutEditorFlow flow;
 
   @override
   Size get preferredSize => const Size.fromHeight(90);
@@ -147,13 +50,13 @@ class ActiveSessionAppBar extends ConsumerWidget
 
           SolidButton(
             onPressed: () {
-              _handleFinish(context, ref, workoutSessionId);
+              flow.onPrimryAction(context, ref, workoutSessionId);
             },
             buttonHeight: buttonHeight,
             buttonWidth: 92,
             padding: EdgeInsets.zero,
             child: Text(
-              'Finish',
+              flow.primaryButtonLabel,
               style: Theme.of(context).textTheme.titleLarge!.copyWith(
                 color: AppColors.secondary,
                 fontWeight: FontWeight.w900,
