@@ -7,6 +7,7 @@ import 'package:lifting_tracker_app/theme/app_colors.dart';
 import 'package:lifting_tracker_app/widgets/add_exercise_selector/add_exercise_header.dart';
 import 'package:lifting_tracker_app/widgets/add_exercise_selector/add_exercise_step.dart';
 import 'package:lifting_tracker_app/widgets/add_exercise_selector/exercise_form.dart';
+import 'package:lifting_tracker_app/widgets/add_exercise_selector/exercise_validation_dialog.dart';
 import 'package:lifting_tracker_app/widgets/add_exercise_selector/exercises_for_a_group.dart';
 import 'package:lifting_tracker_app/widgets/add_exercise_selector/muscle_groups_list.dart';
 import 'package:lifting_tracker_app/widgets/modal_scaffold.dart';
@@ -165,26 +166,45 @@ class AddExerciseSelectorState extends ConsumerState<AddExerciseSelector> {
   }
 
   void addCustomExercise(String? name, String? muscleGroup) async {
-    if (muscleGroup == null) return;
+    final isValid = await showExerciseValidationDialog(
+      context,
+      name: name,
+      muscleGroup: muscleGroup,
+    );
+
+    if (!mounted || !isValid || muscleGroup == null || name == null) return;
 
     final newExercise = await ref
         .read(exercisesFromAMuscleGroup(muscleGroup).notifier)
-        .addCustomExercise(name, muscleGroup, context);
-    if (newExercise == null) {
-      return;
-    } else {
-      if (!context.mounted) return;
-      Navigator.of(context, rootNavigator: true).pop(newExercise);
-    }
+        .addCustomExercise(name.trim(), muscleGroup);
+
+    if (!mounted) return;
+    Navigator.of(context, rootNavigator: true).pop(newExercise);
   }
 
   void _saveEditingExercise(String? name, String? muscleGroup) async {
-    final oldMuscleGroup = _editingExercise?.muscleGroup;
-    if (oldMuscleGroup == null) return;
+    final exercise = _editingExercise;
+    final isValid = await showExerciseValidationDialog(
+      context,
+      name: name,
+      muscleGroup: muscleGroup,
+    );
+
+    if (!mounted ||
+        !isValid ||
+        exercise == null ||
+        muscleGroup == null ||
+        name == null) {
+      return;
+    }
 
     await ref
-        .read(exercisesFromAMuscleGroup(oldMuscleGroup).notifier)
-        .updateExercise(_editingExercise, name, muscleGroup, context);
+        .read(exercisesFromAMuscleGroup(exercise.muscleGroup).notifier)
+        .updateExercise(exercise, name.trim(), muscleGroup);
+
+    if (muscleGroup != exercise.muscleGroup) {
+      ref.invalidate(exercisesFromAMuscleGroup(muscleGroup));
+    }
 
     _navKey.currentState?.pop();
     setState(() {
