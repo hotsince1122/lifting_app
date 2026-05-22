@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:lifting_tracker_app/providers/persisted/active_split_days.dart';
+import 'package:lifting_tracker_app/providers/persisted/did_user_finish_setup.dart';
 import 'package:lifting_tracker_app/providers/presentation/can_user_finish_setup.dart';
 import 'package:lifting_tracker_app/screens/main_shell.dart';
 import 'package:lifting_tracker_app/theme/app_gradients.dart';
@@ -116,9 +117,15 @@ class _FinishOnboardingButton extends ConsumerWidget {
         Widget skipButton = SizedBox(
           height: 20,
           child: TextButton(
-            onPressed: () => Navigator.of(
-              context,
-            ).pushReplacement(MaterialPageRoute(builder: (context) => MainShell())),
+            onPressed: () async {
+              await ref
+                  .watch(didUserFinishSetupProvider.notifier)
+                  .userFinishedSetup();
+              if (!context.mounted) return;
+              Navigator.of(context).pushReplacement(
+                MaterialPageRoute(builder: (context) => MainShell()),
+              );
+            },
             style: TextButton.styleFrom(padding: EdgeInsets.zero),
             child: Text(
               'Skip',
@@ -139,16 +146,30 @@ class _FinishOnboardingButton extends ConsumerWidget {
               buttonHeight: 54,
               onPressed: !canUserFinishSetup
                   ? () {}
-                  : () => Navigator.of(context).pushReplacement(
-                      MaterialPageRoute(builder: (context) => MainShell()),
-                    ),
+                  : () async {
+                      await ref
+                          .watch(didUserFinishSetupProvider.notifier)
+                          .userFinishedSetup();
+                      if (!context.mounted) return;
+                      Navigator.of(context).pushReplacement(
+                        MaterialPageRoute(builder: (context) => MainShell()),
+                      );
+                    },
               child: Row(
                 mainAxisSize: MainAxisSize.min,
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
-                  Text('Finish', style: Theme.of(context).textTheme.titleLarge!.copyWith(color: AppColors.background)),
+                  Text(
+                    'Finish',
+                    style: Theme.of(context).textTheme.titleLarge!.copyWith(
+                      color: AppColors.background,
+                    ),
+                  ),
                   SizedBox(width: 8),
-                  Icon(Icons.arrow_forward_rounded, color: AppColors.background,),
+                  Icon(
+                    Icons.arrow_forward_rounded,
+                    color: AppColors.background,
+                  ),
                 ],
               ),
             ),
