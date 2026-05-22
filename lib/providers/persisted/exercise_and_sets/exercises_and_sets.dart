@@ -1,11 +1,11 @@
 import 'dart:async';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:lifting_tracker_app/data/app_databases.dart';
-import 'package:lifting_tracker_app/data/queries/interact_with_active_session/add_sets_or_exercises.dart';
-import 'package:lifting_tracker_app/data/queries/interact_with_active_session/delete_sets_or_exercises.dart';
-import 'package:lifting_tracker_app/data/queries/interact_with_active_session/miscellaneous_funcs.dart';
-import 'package:lifting_tracker_app/data/queries/interact_with_active_session/replace_exercise.dart';
-import 'package:lifting_tracker_app/data/queries/populate_active_sessions_table.dart';
+import 'package:lifting_tracker_app/data/queries/interact_with_workout_session/add_sets_or_exercises.dart';
+import 'package:lifting_tracker_app/data/queries/interact_with_workout_session/delete_sets_or_exercises.dart';
+import 'package:lifting_tracker_app/data/queries/interact_with_workout_session/miscellaneous_funcs.dart';
+import 'package:lifting_tracker_app/data/queries/interact_with_workout_session/replace_exercise.dart';
+import 'package:lifting_tracker_app/data/queries/populate_workout_session_sets.dart';
 import 'package:lifting_tracker_app/data/queries/save_progress.dart';
 import 'package:lifting_tracker_app/data/workout_session_statuses.dart';
 import 'package:lifting_tracker_app/models/entity/exercise.dart';
@@ -47,7 +47,7 @@ class ExercisesAndSetsProvider extends AsyncNotifier<List<Exercise>> {
       return [];
     }
 
-    return resumeOrStartRepetedWorkout(workoutSessionId);
+    return loadOrCreateWorkoutSessionEditorSets(workoutSessionId);
   }
 
   Future<void> addExercise(Exercise newExercise) async {
@@ -71,7 +71,8 @@ class ExercisesAndSetsProvider extends AsyncNotifier<List<Exercise>> {
     final currentState = state.value;
     if (setToAddToState == null || currentState == null) return;
 
-    state = addExerciseSetToState (currentState, exercise, setToAddToState) ?? state;
+    state =
+        addExerciseSetToState(currentState, exercise, setToAddToState) ?? state;
   }
 
   Future<void> deleteExercise(String exerciseId, int exerciseOrderIndex) async {
@@ -82,7 +83,13 @@ class ExercisesAndSetsProvider extends AsyncNotifier<List<Exercise>> {
     );
 
     final currentState = state.value;
-    if (didSucceed && currentState != null) state = deleteExerciseFromState(currentState, exerciseId, exerciseOrderIndex);
+    if (didSucceed && currentState != null) {
+      state = deleteExerciseFromState(
+        currentState,
+        exerciseId,
+        exerciseOrderIndex,
+      );
+    }
   }
 
   Future<void> replaceExercise(
@@ -114,16 +121,14 @@ class ExercisesAndSetsProvider extends AsyncNotifier<List<Exercise>> {
     );
   }
 
-  Future<void> removeSetFromExercise(
-    int activeSessionSetId,
-  ) async {
+  Future<void> removeSetFromExercise(int workoutSessionSetId) async {
     final currentState = state.value;
     if (currentState == null) return;
 
     Exercise? exerciseToUpdate;
     for (final exercise in currentState) {
       final containsSet = exercise.sets.any(
-        (set) => set.activeSessionSetId == activeSessionSetId,
+        (set) => set.workoutSessionSetId == workoutSessionSetId,
       );
 
       if (containsSet) {
@@ -156,17 +161,17 @@ class ExercisesAndSetsProvider extends AsyncNotifier<List<Exercise>> {
     }
 
     final didSucceed = await removeSetFromExerciseDb(
-      activeSessionSetId,
+      workoutSessionSetId,
       workoutSessionId,
     );
 
     if (didSucceed) {
-      state = deleteExerciseSetFromState(currentState, activeSessionSetId);
+      state = deleteExerciseSetFromState(currentState, workoutSessionSetId);
     }
   }
 
-  Future<void> saveSetCell( 
-    int activeSessionSetId,
+  Future<void> saveSetCell(
+    int workoutSessionSetId,
     double? weight,
     int? reps,
     String? notes,
@@ -174,7 +179,7 @@ class ExercisesAndSetsProvider extends AsyncNotifier<List<Exercise>> {
     int exerciseOrderIndex,
   ) async {
     final didSucceed = await saveSetCellToDb(
-      activeSessionSetId,
+      workoutSessionSetId,
       weight,
       reps,
       notes,
@@ -183,20 +188,28 @@ class ExercisesAndSetsProvider extends AsyncNotifier<List<Exercise>> {
     final currentState = state.value;
 
     if (currentState != null && didSucceed) {
-      state = saveSetCellToState(currentState, exerciseId, exerciseOrderIndex, activeSessionSetId, reps, weight, notes);
+      state = saveSetCellToState(
+        currentState,
+        exerciseId,
+        exerciseOrderIndex,
+        workoutSessionSetId,
+        reps,
+        weight,
+        notes,
+      );
     }
   }
 
-  Future<void> toggleSetWarmup (int activeSessionSetId) async {
+  Future<void> toggleSetWarmup(int workoutSessionSetId) async {
     final didSucceed = await toggleSetWarmupInDb(
-      activeSessionSetId,
+      workoutSessionSetId,
       workoutSessionId,
     );
 
     final currentState = state.value;
 
     if (currentState != null && didSucceed) {
-      state = toggleSetWarmupInState(currentState, activeSessionSetId);
+      state = toggleSetWarmupInState(currentState, workoutSessionSetId);
     }
   }
 
@@ -208,10 +221,7 @@ class ExercisesAndSetsProvider extends AsyncNotifier<List<Exercise>> {
     final newState = reorderExercisesInState(currentState, oldIndex, newIndex);
     state = AsyncData(newState);
 
-    final didSucceed = await reorderExercisesInDb(
-      newState,
-      workoutSessionId,
-    );
+    final didSucceed = await reorderExercisesInDb(newState, workoutSessionId);
 
     if (!didSucceed) state = AsyncData(currentState);
   }

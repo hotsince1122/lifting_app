@@ -11,25 +11,25 @@ import 'package:phosphor_flutter/phosphor_flutter.dart';
 
 class ActiveSessionAppBar extends ConsumerWidget
     implements PreferredSizeWidget {
-  const ActiveSessionAppBar(this.activeSessionId, {super.key});
+  const ActiveSessionAppBar(this.workoutSessionId, {super.key});
 
-  final int activeSessionId;
+  final int workoutSessionId;
 
   Future<void> _handleFinish(
     BuildContext context,
     WidgetRef ref,
-    int activeSessionId,
+    int workoutSessionId,
   ) async {
     final sessionStatusNotifier = ref.read(
       currentSessionStatusProvider.notifier,
     );
 
     final hasEmptySet = await sessionStatusNotifier.checkIfAnySetEmpty(
-      activeSessionId,
+      workoutSessionId,
     );
 
     final userModifiedPlannedExercises = await sessionStatusNotifier
-        .checkIfUserModifiedExercisesPlanned(activeSessionId);
+        .checkIfUserModifiedExercisesPlanned(workoutSessionId);
 
     if (hasEmptySet && context.mounted) {
       await _handleEmptySets(context, sessionStatusNotifier);
@@ -39,7 +39,7 @@ class ActiveSessionAppBar extends ConsumerWidget
       await _handleUpdatePlan(context, sessionStatusNotifier);
     }
 
-    await sessionStatusNotifier.endSession(activeSessionId);
+    await sessionStatusNotifier.endSession(workoutSessionId);
     if (!context.mounted) return;
     Navigator.of(context).pop();
   }
@@ -61,7 +61,7 @@ class ActiveSessionAppBar extends ConsumerWidget
               child: const Text('Yes, Autofill'),
               onPressed: () async {
                 await sessionStatusNotifier.saveEmptySetsWithHints(
-                  activeSessionId,
+                  workoutSessionId,
                 );
                 if (!context.mounted) return;
                 Navigator.of(context).pop();
@@ -95,7 +95,7 @@ class ActiveSessionAppBar extends ConsumerWidget
             CupertinoDialogAction(
               child: const Text('Update plan'),
               onPressed: () async {
-                await sessionStatusNotifier.updateCurrentPlan(activeSessionId);
+                await sessionStatusNotifier.updateCurrentPlan(workoutSessionId);
                 if (!context.mounted) return;
                 Navigator.of(context).pop();
               },
@@ -147,7 +147,7 @@ class ActiveSessionAppBar extends ConsumerWidget
 
           SolidButton(
             onPressed: () {
-              _handleFinish(context, ref, activeSessionId);
+              _handleFinish(context, ref, workoutSessionId);
             },
             buttonHeight: buttonHeight,
             buttonWidth: 92,
@@ -193,7 +193,7 @@ class ActiveSessionAppBar extends ConsumerWidget
                         onTap: () => ReorderExercisesSheet.openSheet(
                           context,
                           screenWidth,
-                          activeSessionId,
+                          workoutSessionId,
                         ),
                         child: SizedBox(
                           width: 145,

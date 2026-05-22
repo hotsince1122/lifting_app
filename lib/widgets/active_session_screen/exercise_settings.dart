@@ -11,21 +11,21 @@ import 'package:phosphor_flutter/phosphor_flutter.dart';
 class ExerciseSettings extends ConsumerStatefulWidget {
   const ExerciseSettings(
     this.screenWidth,
-    this.activeSessionId,
+    this.workoutSessionId,
     this.exercise, {
     required this.onDelete,
     super.key,
   });
 
   final double screenWidth;
-  final int activeSessionId;
+  final int workoutSessionId;
   final Exercise exercise;
   final Future<void> Function() onDelete;
 
   static Future<void> openExerciseSettings(
     BuildContext context,
     double screenWidth,
-    int activeSessionId,
+    int workoutSessionId,
     Exercise exercise,
     Future<void> Function() onDelete,
   ) {
@@ -38,7 +38,7 @@ class ExerciseSettings extends ConsumerStatefulWidget {
       isScrollControlled: true,
       builder: (context) => ExerciseSettings(
         screenWidth,
-        activeSessionId,
+        workoutSessionId,
         exercise,
         onDelete: onDelete,
       ),
@@ -148,7 +148,7 @@ class ExerciseSettingsState extends ConsumerState<ExerciseSettings> {
                             ReorderExercisesSheet.openSheet(
                               context,
                               widget.screenWidth,
-                              widget.activeSessionId,
+                              widget.workoutSessionId,
                             );
                           }),
                           _separator(),
@@ -159,7 +159,7 @@ class ExerciseSettingsState extends ConsumerState<ExerciseSettings> {
                               final exerciseToReplace = widget.exercise;
                               final exercisesNotifier = ref.read(
                                 exercisesAndSetsProvider(
-                                  widget.activeSessionId,
+                                  widget.workoutSessionId,
                                 ).notifier,
                               );
 

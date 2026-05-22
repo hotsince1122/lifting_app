@@ -3,7 +3,7 @@ import 'dart:async';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:lifting_tracker_app/data/app_databases.dart';
 import 'package:lifting_tracker_app/data/queries/aux_functions_for_pop.dart';
-import 'package:lifting_tracker_app/data/queries/populate_active_sessions_table.dart';
+import 'package:lifting_tracker_app/data/queries/populate_workout_session_sets.dart';
 import 'package:lifting_tracker_app/data/workout_session_statuses.dart';
 import 'package:lifting_tracker_app/models/entity/exercise.dart';
 import 'package:lifting_tracker_app/providers/persisted/week_progress.dart';
@@ -92,7 +92,7 @@ class CurrentSessionStatusNotifier extends AsyncNotifier<bool> {
     return sessionId;
   }
 
-  Future<bool> checkIfAnySetEmpty(int activeSessionId) async {
+  Future<bool> checkIfAnySetEmpty(int workoutSessionId) async {
     final db = await AppDatabases.getDatabase();
 
     return db.transaction((txn) async {
@@ -107,24 +107,24 @@ class CurrentSessionStatusNotifier extends AsyncNotifier<bool> {
         )
       LIMIT 1;
       ''',
-        [activeSessionId],
+        [workoutSessionId],
       );
 
       return data.isNotEmpty;
     });
   }
 
-  Future<bool> checkIfUserModifiedExercisesPlanned(int activeSessionId) async {
+  Future<bool> checkIfUserModifiedExercisesPlanned(int workoutSessionId) async {
     final db = await AppDatabases.getDatabase();
 
     final List<Exercise> exercisesPlanned = await loadPlannedExercises(
       db,
-      activeSessionId,
+      workoutSessionId,
     );
 
     final List<String> exercisesExecutedIds = await loadExercisesExecutedIds(
       db,
-      activeSessionId,
+      workoutSessionId,
     );
 
     if (exercisesPlanned.length != exercisesExecutedIds.length) return true;
@@ -136,7 +136,7 @@ class CurrentSessionStatusNotifier extends AsyncNotifier<bool> {
     return false;
   }
 
-  Future<void> saveEmptySetsWithHints(int activeSessionId) async {
+  Future<void> saveEmptySetsWithHints(int workoutSessionId) async {
     final db = await AppDatabases.getDatabase();
 
     await db.transaction((txn) async {
@@ -149,18 +149,16 @@ class CurrentSessionStatusNotifier extends AsyncNotifier<bool> {
         WHERE workout_session_id = ?
           AND (actual_weight IS NULL OR actual_repetitions IS NULL)
         ''',
-        [activeSessionId],
+        [workoutSessionId],
       );
     });
   }
 
-  Future<void> updateCurrentPlan(int activeSessionId) async {
+  Future<void> updateCurrentPlan(int workoutSessionId) async {
     final db = await AppDatabases.getDatabase();
 
-    final List<String> exercisesExecutedIdsInOrder = await loadExercisesExecutedIds(
-      db,
-      activeSessionId,
-    );
+    final List<String> exercisesExecutedIdsInOrder =
+        await loadExercisesExecutedIds(db, workoutSessionId);
 
     await db.transaction((txn) async {
       final data = await txn.rawQuery(
@@ -169,7 +167,7 @@ class CurrentSessionStatusNotifier extends AsyncNotifier<bool> {
         FROM workout_sessions
         WHERE id = ?
         ''',
-        [activeSessionId],
+        [workoutSessionId],
       );
 
       if (data.isEmpty) return;
@@ -180,22 +178,23 @@ class CurrentSessionStatusNotifier extends AsyncNotifier<bool> {
         '''
         DELETE FROM day_exercises
         WHERE day_id = ?
-        ''', [dayId]
+        ''',
+        [dayId],
       );
 
       final batch = txn.batch();
       for (int i = 0; i < exercisesExecutedIdsInOrder.length; i++) {
         batch.insert('day_exercises', {
-          'day_id' : dayId,
-          'exercise_id' : exercisesExecutedIdsInOrder[i],
-          'order_idx' : i
+          'day_id': dayId,
+          'exercise_id': exercisesExecutedIdsInOrder[i],
+          'order_idx': i,
         });
       }
       await batch.commit(noResult: true);
     });
   }
 
-  Future<void> endSession(int activeSessionId) async {
+  Future<void> endSession(int workoutSessionId) async {
     final db = await AppDatabases.getDatabase();
     final finishedWeekday = DateTime.now().weekday;
 
@@ -206,7 +205,7 @@ class CurrentSessionStatusNotifier extends AsyncNotifier<bool> {
         FROM workout_sessions
         WHERE id = ? AND status = ?
         ''',
-        [activeSessionId, WorkoutSessionStatuses.activeStatus],
+        [workoutSessionId, WorkoutSessionStatuses.activeStatus],
       );
 
       if (data.isEmpty) return false;
@@ -229,7 +228,7 @@ class CurrentSessionStatusNotifier extends AsyncNotifier<bool> {
           AND actual_repetitions IS NOT NULL
           AND workout_session_id = ?
         ''',
-        [activeSessionId],
+        [workoutSessionId],
       );
 
       final batch = txn.batch();
@@ -250,7 +249,7 @@ class CurrentSessionStatusNotifier extends AsyncNotifier<bool> {
           DateTime.now().millisecondsSinceEpoch ~/ 1000,
           DateTime.now().millisecondsSinceEpoch ~/ 1000 - workoutStartedAt,
           WorkoutSessionStatuses.completedStatus,
-          activeSessionId,
+          workoutSessionId,
           WorkoutSessionStatuses.activeStatus,
         ],
       );

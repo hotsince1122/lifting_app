@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:lifting_tracker_app/data/app_databases.dart';
-import 'package:lifting_tracker_app/data/queries/interact_with_active_session/aux_functions_active_session.dart';
-import 'package:lifting_tracker_app/data/queries/populate_active_sessions_table.dart';
+import 'package:lifting_tracker_app/data/queries/interact_with_workout_session/aux_functions_workout_session.dart';
+import 'package:lifting_tracker_app/data/queries/populate_workout_session_sets.dart';
 import 'package:lifting_tracker_app/models/entity/exercise.dart';
 import 'package:lifting_tracker_app/models/entity/training_set.dart';
 import 'package:sqflite/sqflite.dart';
@@ -66,7 +66,7 @@ Future<Exercise?> addNewExerciseToDb(
         setsToInsert = [emptySet(setIndex: 1)];
       }
 
-      await populateActiveSessionSets(
+      await populateWorkoutSessionSets(
         [
           newExercise.copyWith(
             orderIndex: nextExerciseOrderIndex,
@@ -78,7 +78,7 @@ Future<Exercise?> addNewExerciseToDb(
         exerciseOccurrenceIndexOverride: nextExerciseOccurrenceIndex,
       );
 
-      final activeSets = await loadActiveSessionSetsForExercise(
+      final workoutSets = await loadWorkoutSessionSetsForExercise(
         txn,
         workoutSessionId,
         newExercise.id,
@@ -87,7 +87,7 @@ Future<Exercise?> addNewExerciseToDb(
 
       return newExercise.copyWith(
         orderIndex: nextExerciseOrderIndex,
-        sets: activeSets,
+        sets: workoutSets,
       );
     });
 
@@ -150,14 +150,14 @@ Future<TrainingSet?> addSetToExerciseInDb(
             hintWeight: (set['hintWeight'] as num).toDouble(),
             hintRepetitions: set['hintRepetitions'] as int,
             hintNotes: set['hintNotes'] as String? ?? '',
-            isWarmup: _readSqliteBool(set['isWarmup'])
+            isWarmup: _readSqliteBool(set['isWarmup']),
           );
         }
       }
 
       setToInsert ??= emptySet(setIndex: nextSetIndex);
 
-      final activeSessionSetId = await txn.insert('active_session_sets', {
+      final workoutSessionSetId = await txn.insert('active_session_sets', {
         'workout_session_id': workoutSessionId,
         'exercise_id': exercise.id,
         'exercise_order_index': exerciseOrderIndex,
@@ -169,9 +169,7 @@ Future<TrainingSet?> addSetToExerciseInDb(
         'hint_notes': setToInsert.hintNotes,
       });
 
-      return setToInsert.copyWith(
-        activeSessionSetId: activeSessionSetId,
-      );
+      return setToInsert.copyWith(workoutSessionSetId: workoutSessionSetId);
     });
 
     return setToInsertUI;

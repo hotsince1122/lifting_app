@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:lifting_tracker_app/data/app_databases.dart';
-import 'package:lifting_tracker_app/data/queries/interact_with_active_session/aux_functions_active_session.dart';
-import 'package:lifting_tracker_app/data/queries/populate_active_sessions_table.dart';
+import 'package:lifting_tracker_app/data/queries/interact_with_workout_session/aux_functions_workout_session.dart';
+import 'package:lifting_tracker_app/data/queries/populate_workout_session_sets.dart';
 import 'package:lifting_tracker_app/models/entity/exercise.dart';
 import 'package:lifting_tracker_app/models/entity/training_set.dart';
 import 'package:sqflite/sqflite.dart';
@@ -18,12 +18,12 @@ Future<Exercise?> replaceExerciseInDb(
   final exerciseOrderIndex = oldExercise.orderIndex;
   if (exerciseOrderIndex == null || oldExercise.sets.isEmpty) return null;
 
-  final activeSessionSetIds = <int>[];
+  final workoutSessionSetIds = <int>[];
   for (final set in oldExercise.sets) {
-    final activeSessionSetId = set.activeSessionSetId;
-    if (activeSessionSetId == null) return null;
+    final workoutSessionSetId = set.workoutSessionSetId;
+    if (workoutSessionSetId == null) return null;
 
-    activeSessionSetIds.add(activeSessionSetId);
+    workoutSessionSetIds.add(workoutSessionSetId);
   }
 
   final db = await AppDatabases.getDatabase();
@@ -56,7 +56,7 @@ Future<Exercise?> replaceExerciseInDb(
         oldExercise.sets.length,
       );
 
-      for (var i = 0; i < activeSessionSetIds.length; i++) {
+      for (var i = 0; i < workoutSessionSetIds.length; i++) {
         final setToUse = setsToUse[i];
         final rowsUpdated = await txn.update(
           'active_session_sets',
@@ -73,11 +73,11 @@ Future<Exercise?> replaceExerciseInDb(
             'actual_notes': null,
           },
           where: 'id = ? AND workout_session_id = ?',
-          whereArgs: [activeSessionSetIds[i], workoutSessionId],
+          whereArgs: [workoutSessionSetIds[i], workoutSessionId],
         );
 
         if (rowsUpdated != 1) {
-          throw StateError('Some active session sets were not replaced.');
+          throw StateError('Some workout session sets were not replaced.');
         }
       }
 
@@ -88,7 +88,7 @@ Future<Exercise?> replaceExerciseInDb(
         oldOccurrenceIndex,
       );
 
-      final activeSets = await loadActiveSessionSetsForExercise(
+      final workoutSets = await loadWorkoutSessionSetsForExercise(
         txn,
         workoutSessionId,
         newExercise.id,
@@ -97,7 +97,7 @@ Future<Exercise?> replaceExerciseInDb(
 
       return newExercise.copyWith(
         orderIndex: exerciseOrderIndex,
-        sets: activeSets,
+        sets: workoutSets,
       );
     });
   } catch (e, st) {

@@ -7,9 +7,9 @@ import 'package:lifting_tracker_app/widgets/appBars/active_session_app_bar.dart'
 import 'package:lifting_tracker_app/widgets/session_summary_card.dart';
 
 class ActiveSessionScreen extends ConsumerWidget {
-  const ActiveSessionScreen(this.activeSessionId, {super.key});
+  const ActiveSessionScreen(this.workoutSessionId, {super.key});
 
-  final int activeSessionId;
+  final int workoutSessionId;
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -18,7 +18,7 @@ class ActiveSessionScreen extends ConsumerWidget {
     final double bottomPadding = 32;
 
     final exercisesAndSetsAsync = ref.watch(
-      exercisesAndSetsProvider(activeSessionId),
+      exercisesAndSetsProvider(workoutSessionId),
     );
 
     Widget hp(Widget child) {
@@ -34,7 +34,7 @@ class ActiveSessionScreen extends ConsumerWidget {
           const Center(child: Text('An error has occured. Try again.')),
       data: (exerciseAndSets) {
         return Scaffold(
-          appBar: ActiveSessionAppBar(activeSessionId),
+          appBar: ActiveSessionAppBar(workoutSessionId),
           body: SafeArea(
             top: false,
             child: Padding(
@@ -42,12 +42,12 @@ class ActiveSessionScreen extends ConsumerWidget {
               child: SingleChildScrollView(
                 child: Column(
                   children: [
-                    hp(SessionSummaryCard(sessionId: activeSessionId)),
+                    hp(SessionSummaryCard(sessionId: workoutSessionId)),
                     SizedBox(height: spaceBetween),
                     for (int i = 0; i < exerciseAndSets.length; i++) ...[
                       ExerciseAndSetsCard(
                         exerciseAndSets[i],
-                        activeSessionId,
+                        workoutSessionId,
                         horizontalPadding,
                         key: ValueKey((
                           exerciseAndSets[i].id,
@@ -56,7 +56,7 @@ class ActiveSessionScreen extends ConsumerWidget {
                       ),
                       SizedBox(height: spaceBetween),
                     ],
-                    hp(AddExercisesCard(activeSessionId)),
+                    hp(AddExercisesCard(workoutSessionId)),
                     const SizedBox(height: 12),
                   ],
                 ),

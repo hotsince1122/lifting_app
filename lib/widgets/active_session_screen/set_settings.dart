@@ -9,25 +9,25 @@ import 'package:phosphor_flutter/phosphor_flutter.dart';
 class SetSettings extends ConsumerStatefulWidget {
   const SetSettings(
     this.screenWidth,
-    this.activeSessionSetId,
+    this.workoutSessionSetId,
     this.isWarmup,
-    this.activeSessionId, {
+    this.workoutSessionId, {
     required this.onDelete,
     super.key,
   });
 
   final double screenWidth;
-  final int activeSessionSetId;
-  final int activeSessionId;
+  final int workoutSessionSetId;
+  final int workoutSessionId;
   final bool isWarmup;
   final Future<void> Function() onDelete;
 
   static Future<void> openSetSettings(
     BuildContext context,
     double screenWidth,
-    int activeSessionSetId,
+    int workoutSessionSetId,
     bool isWarmup,
-    int activeSessionId,
+    int workoutSessionId,
     Future<void> Function() onDelete,
   ) {
     return showModalBottomSheet(
@@ -39,9 +39,9 @@ class SetSettings extends ConsumerStatefulWidget {
       isScrollControlled: true,
       builder: (context) => SetSettings(
         screenWidth,
-        activeSessionSetId,
+        workoutSessionSetId,
         isWarmup,
-        activeSessionId,
+        workoutSessionId,
         onDelete: onDelete,
       ),
     );
@@ -59,8 +59,10 @@ class SetSettingsState extends ConsumerState<SetSettings> {
           Navigator.of(context).maybePop();
           if (!isSelected) {
             await ref
-                .read(exercisesAndSetsProvider(widget.activeSessionId).notifier)
-                .toggleSetWarmup(widget.activeSessionSetId);
+                .read(
+                  exercisesAndSetsProvider(widget.workoutSessionId).notifier,
+                )
+                .toggleSetWarmup(widget.workoutSessionSetId);
           }
         },
         child: Container(

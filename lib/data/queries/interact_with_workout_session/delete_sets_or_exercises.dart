@@ -3,8 +3,8 @@ import 'package:lifting_tracker_app/data/app_databases.dart';
 import 'package:sqflite/sqflite.dart';
 
 Future<bool> removeSetFromExerciseDb(
-  int activeSessionSetId,
-  int workoutId,
+  int workoutSessionSetId,
+  int workoutSessionId,
 ) async {
   final db = await AppDatabases.getDatabase();
 
@@ -20,7 +20,7 @@ Future<bool> removeSetFromExerciseDb(
         AND workout_session_id = ?
       LIMIT 1
       ''',
-        [activeSessionSetId, workoutId],
+        [workoutSessionSetId, workoutSessionId],
       );
 
       if (setData.isEmpty) return 0;
@@ -35,7 +35,7 @@ Future<bool> removeSetFromExerciseDb(
       WHERE id = ?
         AND workout_session_id = ?
       ''',
-        [activeSessionSetId, workoutId],
+        [workoutSessionSetId, workoutSessionId],
       );
 
       await txn.rawUpdate(
@@ -47,7 +47,7 @@ Future<bool> removeSetFromExerciseDb(
         AND exercise_order_index = ?
         AND set_index > ?
       ''',
-        [workoutId, exerciseId, exerciseOrderIndex, setIndex],
+        [workoutSessionId, exerciseId, exerciseOrderIndex, setIndex],
       );
 
       await txn.rawUpdate(
@@ -59,7 +59,7 @@ Future<bool> removeSetFromExerciseDb(
         AND exercise_order_index = ?
         AND set_index < 0
       ''',
-        [workoutId, exerciseId, exerciseOrderIndex],
+        [workoutSessionId, exerciseId, exerciseOrderIndex],
       );
 
       return rowsDeleted;
@@ -80,7 +80,7 @@ Future<bool> removeSetFromExerciseDb(
 Future<bool> deleteExerciseFromDb(
   String exerciseId,
   int exerciseOrderIndex,
-  int workoutId,
+  int workoutSessionId,
 ) async {
   final db = await AppDatabases.getDatabase();
 
@@ -88,7 +88,7 @@ Future<bool> deleteExerciseFromDb(
     final rowsDeleted = await db.transaction((txn) async {
       final exerciseOccurrenceIndex = await _loadExerciseOccurrenceIndex(
         txn,
-        workoutId,
+        workoutSessionId,
         exerciseId,
         exerciseOrderIndex,
       );
@@ -97,7 +97,7 @@ Future<bool> deleteExerciseFromDb(
 
       final rowsDeleted = await _deleteExerciseRows(
         txn,
-        workoutId,
+        workoutSessionId,
         exerciseId,
         exerciseOrderIndex,
       );
@@ -106,13 +106,13 @@ Future<bool> deleteExerciseFromDb(
 
       await _compactExerciseOrderIndexes(
         txn,
-        workoutId,
+        workoutSessionId,
         exerciseOrderIndex,
       );
 
       await _compactExerciseOccurrenceIndexes(
         txn,
-        workoutId,
+        workoutSessionId,
         exerciseId,
         exerciseOccurrenceIndex,
       );
@@ -134,7 +134,7 @@ Future<bool> deleteExerciseFromDb(
 
 Future<int?> _loadExerciseOccurrenceIndex(
   DatabaseExecutor db,
-  int workoutId,
+  int workoutSessionId,
   String exerciseId,
   int exerciseOrderIndex,
 ) async {
@@ -147,7 +147,7 @@ Future<int?> _loadExerciseOccurrenceIndex(
       AND exercise_order_index = ?
     LIMIT 1
     ''',
-    [workoutId, exerciseId, exerciseOrderIndex],
+    [workoutSessionId, exerciseId, exerciseOrderIndex],
   );
 
   if (data.isEmpty) return null;
@@ -157,7 +157,7 @@ Future<int?> _loadExerciseOccurrenceIndex(
 
 Future<int> _deleteExerciseRows(
   DatabaseExecutor db,
-  int workoutId,
+  int workoutSessionId,
   String exerciseId,
   int exerciseOrderIndex,
 ) {
@@ -168,13 +168,13 @@ Future<int> _deleteExerciseRows(
       AND exercise_id = ?
       AND exercise_order_index = ?
     ''',
-    [workoutId, exerciseId, exerciseOrderIndex],
+    [workoutSessionId, exerciseId, exerciseOrderIndex],
   );
 }
 
 Future<void> _compactExerciseOrderIndexes(
   DatabaseExecutor db,
-  int workoutId,
+  int workoutSessionId,
   int deletedExerciseOrderIndex,
 ) async {
   await db.rawUpdate(
@@ -184,7 +184,7 @@ Future<void> _compactExerciseOrderIndexes(
     WHERE workout_session_id = ?
       AND exercise_order_index > ?
     ''',
-    [workoutId, deletedExerciseOrderIndex],
+    [workoutSessionId, deletedExerciseOrderIndex],
   );
 
   await db.rawUpdate(
@@ -194,13 +194,13 @@ Future<void> _compactExerciseOrderIndexes(
     WHERE workout_session_id = ?
       AND exercise_order_index < 0
     ''',
-    [workoutId],
+    [workoutSessionId],
   );
 }
 
 Future<void> _compactExerciseOccurrenceIndexes(
   DatabaseExecutor db,
-  int workoutId,
+  int workoutSessionId,
   String exerciseId,
   int deletedExerciseOccurrenceIndex,
 ) async {
@@ -212,6 +212,6 @@ Future<void> _compactExerciseOccurrenceIndexes(
       AND exercise_id = ?
       AND exercise_occurrence_index > ?
     ''',
-    [workoutId, exerciseId, deletedExerciseOccurrenceIndex],
+    [workoutSessionId, exerciseId, deletedExerciseOccurrenceIndex],
   );
 }

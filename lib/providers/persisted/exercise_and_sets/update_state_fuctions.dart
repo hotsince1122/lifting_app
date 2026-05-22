@@ -77,12 +77,12 @@ AsyncValue<List<Exercise>> replaceExerciseInState(
 
 AsyncValue<List<Exercise>> deleteExerciseSetFromState(
   List<Exercise> currentState,
-  int activeSessionSetId,
+  int workoutSessionSetId,
 ) {
   final updated = currentState.map((exercise) {
     int? setIndex;
     for (final set in exercise.sets) {
-      if (set.activeSessionSetId == activeSessionSetId) {
+      if (set.workoutSessionSetId == workoutSessionSetId) {
         setIndex = set.setIndex;
         break;
       }
@@ -90,7 +90,7 @@ AsyncValue<List<Exercise>> deleteExerciseSetFromState(
 
     if (setIndex != null) {
       final updatedSets = exercise.sets
-          .where((set) => set.activeSessionSetId != activeSessionSetId)
+          .where((set) => set.workoutSessionSetId != workoutSessionSetId)
           .map((set) {
             final currentSetIndex = set.setIndex;
 
@@ -115,7 +115,7 @@ AsyncValue<List<Exercise>> saveSetCellToState(
   List<Exercise> currentState,
   String exerciseId,
   int exerciseOrderIndex,
-  int activeSessionSetId,
+  int workoutSessionSetId,
   int? reps,
   double? weight,
   String? notes,
@@ -124,8 +124,8 @@ AsyncValue<List<Exercise>> saveSetCellToState(
     if (exercise.id == exerciseId &&
         exercise.orderIndex == exerciseOrderIndex) {
       final updatedSets = exercise.sets.map((set) {
-        if (set.activeSessionSetId != null &&
-            activeSessionSetId == set.activeSessionSetId) {
+        if (set.workoutSessionSetId != null &&
+            workoutSessionSetId == set.workoutSessionSetId) {
           return set.copyWith(
             actualRepetitions: reps,
             actualWeight: weight,
@@ -147,11 +147,11 @@ AsyncValue<List<Exercise>> saveSetCellToState(
 
 AsyncValue<List<Exercise>> toggleSetWarmupInState(
   List<Exercise> currentState,
-  int activeSessionSetId,
+  int workoutSessionSetId,
 ) {
   final updated = currentState.map((exercise) {
     final updatedSets = exercise.sets.map((set) {
-      if (set.activeSessionSetId == activeSessionSetId) {
+      if (set.workoutSessionSetId == workoutSessionSetId) {
         return set.copyWith(isWarmup: !(set.isWarmup ?? false));
       }
 

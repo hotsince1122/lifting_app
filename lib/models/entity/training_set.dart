@@ -2,7 +2,7 @@ const _copyWithSentinel = Object();
 
 class TrainingSet {
   const TrainingSet({
-    this.activeSessionSetId,
+    this.workoutSessionSetId,
     this.setIndex,
     this.isWarmup,
     required this.hintRepetitions,
@@ -13,7 +13,7 @@ class TrainingSet {
     this.actualNotes,
   });
 
-  final int? activeSessionSetId;
+  final int? workoutSessionSetId;
   final int? setIndex;
   final bool? isWarmup;
 
@@ -26,7 +26,7 @@ class TrainingSet {
   final String? actualNotes;
 
   TrainingSet copyWith({
-    Object? activeSessionSetId = _copyWithSentinel,
+    Object? workoutSessionSetId = _copyWithSentinel,
     Object? setIndex = _copyWithSentinel,
     Object? isWarmup = _copyWithSentinel,
     double? hintWeight,
@@ -37,10 +37,9 @@ class TrainingSet {
     Object? actualNotes = _copyWithSentinel,
   }) {
     return TrainingSet(
-      activeSessionSetId:
-          identical(activeSessionSetId, _copyWithSentinel)
-          ? this.activeSessionSetId
-          : activeSessionSetId as int?,
+      workoutSessionSetId: identical(workoutSessionSetId, _copyWithSentinel)
+          ? this.workoutSessionSetId
+          : workoutSessionSetId as int?,
       setIndex: identical(setIndex, _copyWithSentinel)
           ? this.setIndex
           : setIndex as int?,

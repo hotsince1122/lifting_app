@@ -13,7 +13,7 @@ class ExerciseTileFooter extends StatelessWidget {
   static Widget exerciseTileFooterOnTap(
     Exercise exercise,
     WidgetRef ref,
-    int activeSessionId,
+    int workoutSessionId,
   ) {
     return Positioned(
       bottom: 0,
@@ -25,7 +25,7 @@ class ExerciseTileFooter extends StatelessWidget {
         child: InkWell(
           onTap: () {
             ref
-                .read(exercisesAndSetsProvider(activeSessionId).notifier)
+                .read(exercisesAndSetsProvider(workoutSessionId).notifier)
                 .addSetToExercise(exercise);
           },
         ),

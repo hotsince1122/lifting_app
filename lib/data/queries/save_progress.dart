@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:lifting_tracker_app/data/app_databases.dart';
 
 Future<bool> saveSetCellToDb(
-  int activeSessionSetId,
+  int workoutSessionSetId,
   double? weight,
   int? reps,
   String? notes,
@@ -19,7 +19,7 @@ Future<bool> saveSetCellToDb(
         actual_notes = ?
       WHERE id = ?
       ''',
-        [weight, reps, notes, activeSessionSetId],
+        [weight, reps, notes, workoutSessionSetId],
       );
 
       return rowsUpdated;

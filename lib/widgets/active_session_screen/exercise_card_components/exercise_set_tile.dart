@@ -89,7 +89,7 @@ class _ExerciseSetTileState extends ConsumerState<ExerciseSetTile> {
   }
 
   Future<void> _saveNow() async {
-    final setId = widget.set.activeSessionSetId;
+    final setId = widget.set.workoutSessionSetId;
     if (setId == null) return;
 
     _exercisesAndSetsNotifier.saveSetCell(
@@ -103,7 +103,7 @@ class _ExerciseSetTileState extends ConsumerState<ExerciseSetTile> {
   }
 
   Future<void> _saveToDbOnly() async {
-    final setId = widget.set.activeSessionSetId;
+    final setId = widget.set.workoutSessionSetId;
     if (setId == null) return;
 
     await saveSetCellToDb(
@@ -281,7 +281,7 @@ class _ExerciseSetTileState extends ConsumerState<ExerciseSetTile> {
               await SetSettings.openSetSettings(
                 context,
                 screenWidth,
-                widget.set.activeSessionSetId!,
+                widget.set.workoutSessionSetId!,
                 widget.set.isWarmup!,
                 widget.workoutSessionId,
                 widget.onDeleteSet,

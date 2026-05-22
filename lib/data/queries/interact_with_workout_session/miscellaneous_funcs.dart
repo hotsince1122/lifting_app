@@ -2,18 +2,16 @@ import 'package:flutter/foundation.dart';
 import 'package:lifting_tracker_app/data/app_databases.dart';
 import 'package:lifting_tracker_app/models/entity/exercise.dart';
 
-Future<bool> toggleSetWarmupInDb (
-  int activeSessionSetId,
+Future<bool> toggleSetWarmupInDb(
+  int workoutSessionSetId,
   int workoutSessionId,
 ) async {
-
   final db = await AppDatabases.getDatabase();
 
   try {
-    final rowsUpdated = await db.transaction(
-      (txn) async {
-        final rowsUpdated = await txn.rawUpdate(
-          '''
+    final rowsUpdated = await db.transaction((txn) async {
+      final rowsUpdated = await txn.rawUpdate(
+        '''
           UPDATE active_session_sets
           SET is_warmup = CASE
             WHEN is_warmup = 0 THEN 1
@@ -22,15 +20,14 @@ Future<bool> toggleSetWarmupInDb (
           WHERE id = ?
             AND workout_session_id = ?
           ''',
-          [activeSessionSetId, workoutSessionId]
-        );
+        [workoutSessionSetId, workoutSessionId],
+      );
 
-        return rowsUpdated;
-      }
-    );
+      return rowsUpdated;
+    });
 
     if (rowsUpdated >= 1) return true;
-    
+
     return false;
   } catch (e, st) {
     debugPrint('Transaction failed: $e');
@@ -41,20 +38,20 @@ Future<bool> toggleSetWarmupInDb (
 
 Future<bool> reorderExercisesInDb(
   List<Exercise> reorderedExercises,
-  int sessionId,
+  int workoutSessionId,
 ) async {
-  final setUpdates = <({int activeSessionSetId, int orderIndex})>[];
+  final setUpdates = <({int workoutSessionSetId, int orderIndex})>[];
 
   for (final exercise in reorderedExercises) {
     final orderIndex = exercise.orderIndex;
     if (orderIndex == null) return false;
 
     for (final set in exercise.sets) {
-      final activeSessionSetId = set.activeSessionSetId;
-      if (activeSessionSetId == null) return false;
+      final workoutSessionSetId = set.workoutSessionSetId;
+      if (workoutSessionSetId == null) return false;
 
       setUpdates.add((
-        activeSessionSetId: activeSessionSetId,
+        workoutSessionSetId: workoutSessionSetId,
         orderIndex: orderIndex,
       ));
     }
@@ -78,14 +75,14 @@ Future<bool> reorderExercisesInDb(
           ''',
           [
             -(update.orderIndex + 1),
-            update.activeSessionSetId,
-            sessionId,
+            update.workoutSessionSetId,
+            workoutSessionId,
           ],
         );
       }
 
       if (updatedRows != setUpdates.length) {
-        throw StateError('Some active session sets were not found.');
+        throw StateError('Some workout session sets were not found.');
       }
 
       final rowsMovedToFinalIndexes = await txn.rawUpdate(
@@ -95,11 +92,11 @@ Future<bool> reorderExercisesInDb(
         WHERE workout_session_id = ?
           AND exercise_order_index < 0
         ''',
-        [sessionId],
+        [workoutSessionId],
       );
 
       if (rowsMovedToFinalIndexes != setUpdates.length) {
-        throw StateError('Some active session sets were not finalized.');
+        throw StateError('Some workout session sets were not finalized.');
       }
 
       return updatedRows;

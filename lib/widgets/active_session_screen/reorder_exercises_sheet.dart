@@ -36,7 +36,7 @@ class ReorderExercisesSheetState extends ConsumerState<ReorderExercisesSheet> {
   Object _exerciseKey(Exercise exercise) {
     final firstSetId = exercise.sets.isEmpty
         ? null
-        : exercise.sets.first.activeSessionSetId;
+        : exercise.sets.first.workoutSessionSetId;
 
     return firstSetId ?? '${exercise.id}-${exercise.orderIndex}';
   }

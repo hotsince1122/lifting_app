@@ -90,7 +90,7 @@ class _ExerciseAndSetsCardState extends ConsumerState<ExerciseAndSetsCard> {
     String exerciseId,
     int exerciseOrderIndex,
     Object dismissIdentity,
-    int activeSessionSetId,
+    int workoutSessionSetId,
     bool isLastSetRemaining,
     Widget child,
   ) {
@@ -115,7 +115,7 @@ class _ExerciseAndSetsCardState extends ConsumerState<ExerciseAndSetsCard> {
 
         await ref
             .read(exercisesAndSetsProvider(widget.workoutSessionId).notifier)
-            .removeSetFromExercise(activeSessionSetId);
+            .removeSetFromExercise(workoutSessionSetId);
       },
       child: child,
     );
@@ -131,9 +131,9 @@ class _ExerciseAndSetsCardState extends ConsumerState<ExerciseAndSetsCard> {
               .where((set) => set.isWarmup != true)
               .length;
     final setIdentity =
-        set.activeSessionSetId ??
+        set.workoutSessionSetId ??
         (exercise.id, exercise.orderIndex, set.setIndex, setIndexUI);
-    final activeSessionSetId = set.activeSessionSetId!;
+    final workoutSessionSetId = set.workoutSessionSetId!;
 
     Future<void> deleteSetFromSettings() async {
       if (isLastSetRemaining) {
@@ -143,7 +143,7 @@ class _ExerciseAndSetsCardState extends ConsumerState<ExerciseAndSetsCard> {
 
       await ref
           .read(exercisesAndSetsProvider(widget.workoutSessionId).notifier)
-          .removeSetFromExercise(activeSessionSetId);
+          .removeSetFromExercise(workoutSessionSetId);
     }
 
     final child = Column(
@@ -153,7 +153,7 @@ class _ExerciseAndSetsCardState extends ConsumerState<ExerciseAndSetsCard> {
           exercise.id,
           exerciseOrderIndex,
           setIdentity,
-          activeSessionSetId,
+          workoutSessionSetId,
           isLastSetRemaining,
           _hp(
             Column(

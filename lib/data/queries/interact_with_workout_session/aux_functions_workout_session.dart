@@ -22,7 +22,7 @@ Future<int> loadNextExerciseOrderIndex(
 Future<int> loadNextExerciseOccurrenceIndex(
   DatabaseExecutor db,
   int workoutSessionId,
-  String exerciseId
+  String exerciseId,
 ) async {
   final data = await db.rawQuery(
     '''
@@ -37,7 +37,7 @@ Future<int> loadNextExerciseOccurrenceIndex(
   return data.first['nextExerciseOccurrenceIndex'] as int;
 }
 
-Future<List<TrainingSet>> loadActiveSessionSetsForExercise(
+Future<List<TrainingSet>> loadWorkoutSessionSetsForExercise(
   DatabaseExecutor db,
   int workoutSessionId,
   String exerciseId,
@@ -45,7 +45,7 @@ Future<List<TrainingSet>> loadActiveSessionSetsForExercise(
 ) async {
   final data = await db.rawQuery(
     '''
-    SELECT id AS activeSessionSetId,
+    SELECT id AS workoutSessionSetId,
       set_index AS setIndex,
       is_warmup AS isWarmup,
       hint_weight AS hintWeight,
@@ -66,7 +66,7 @@ Future<List<TrainingSet>> loadActiveSessionSetsForExercise(
   return data
       .map(
         (set) => TrainingSet(
-          activeSessionSetId: set['activeSessionSetId'] as int,
+          workoutSessionSetId: set['workoutSessionSetId'] as int,
           setIndex: set['setIndex'] as int,
           isWarmup: _readSqliteBool(set['isWarmup']),
           hintWeight: (set['hintWeight'] as num).toDouble(),

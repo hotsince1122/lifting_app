@@ -32,7 +32,7 @@ List<Exercise> _addDefaultSetToExercisesIfEmpty(
 List<Exercise> _addSetsToExerciseFromDbData(
   List<Exercise> exercisesPlanned,
   List<Map<String, Object?>> data, {
-  bool isSessionAlreadyActive = false,
+  bool includeActualValues = false,
 }) {
   if (data.isEmpty) return exercisesPlanned;
 
@@ -48,19 +48,19 @@ List<Exercise> _addSetsToExerciseFromDbData(
           occurrenceIndexes[i] == set['occurrenceIndex'] as int) {
         updatedSets.add(
           TrainingSet(
-            activeSessionSetId: set['activeSessionSetId'] as int?,
+            workoutSessionSetId: set['workoutSessionSetId'] as int?,
             isWarmup: _readSqliteBool(set['isWarmup']),
             setIndex: set['setIndex'] as int,
             hintRepetitions: set['hintRepetitions'] as int,
             hintWeight: (set['hintWeight'] as num).toDouble(),
             hintNotes: set['hintNotes'] as String? ?? '',
-            actualRepetitions: isSessionAlreadyActive
+            actualRepetitions: includeActualValues
                 ? set['actualRepetitions'] as int?
                 : null,
-            actualWeight: isSessionAlreadyActive
+            actualWeight: includeActualValues
                 ? (set['actualWeight'] as num?)?.toDouble()
                 : null,
-            actualNotes: isSessionAlreadyActive
+            actualNotes: includeActualValues
                 ? set['actualNotes'] as String?
                 : null,
           ),
@@ -87,7 +87,7 @@ List<int> _buildExerciseOccurrenceIndexes(List<Exercise> exercises) {
   return occurrenceIndexes;
 }
 
-Future<void> populateActiveSessionSets(
+Future<void> populateWorkoutSessionSets(
   List<Exercise> exercisesPlanned,
   DatabaseExecutor db,
   int sessionId, {
@@ -102,9 +102,11 @@ Future<void> populateActiveSessionSets(
           exerciseOccurrenceIndexOverride,
         );
 
-  for (var exerciseIndex = 0;
-      exerciseIndex < exercisesPlanned.length;
-      exerciseIndex++) {
+  for (
+    var exerciseIndex = 0;
+    exerciseIndex < exercisesPlanned.length;
+    exerciseIndex++
+  ) {
     final exercise = exercisesPlanned[exerciseIndex];
     for (int i = 0; i < exercise.sets.length; i++) {
       final set = exercise.sets[i];
@@ -115,7 +117,7 @@ Future<void> populateActiveSessionSets(
         'exercise_order_index': exercise.orderIndex,
         'exercise_occurrence_index': exerciseOccurrenceIndexes[exerciseIndex],
         'set_index': set.setIndex ?? i + 1,
-        'is_warmup' : _writeSqliteBool(set.isWarmup),
+        'is_warmup': _writeSqliteBool(set.isWarmup),
         'hint_weight': set.hintWeight,
         'hint_repetitions': set.hintRepetitions,
         'hint_notes': set.hintNotes,
@@ -160,7 +162,7 @@ Future<int?> loadLastCompletedWorkoutIdForSameDay(
   return dataLastWorkoutIdWithSameDayId.first['id'] as int;
 }
 
-Future<List<Exercise>> _loadExercisesFromASession(
+Future<List<Exercise>> _loadExercisesFromWorkoutSession(
   int workoutSessionId,
 ) async {
   final db = await AppDatabases.getDatabase();
@@ -197,16 +199,18 @@ Future<List<Exercise>> _loadExercisesFromASession(
   return currentExercises;
 }
 
-Future<List<Exercise>> _ifSessionIsAlreadyActiveReturnSets(
+Future<List<Exercise>> _loadExistingWorkoutSessionSets(
   Database db,
   int workoutSessionId,
 ) async {
-  var currentExercises = await _loadExercisesFromASession(workoutSessionId);
+  var currentExercises = await _loadExercisesFromWorkoutSession(
+    workoutSessionId,
+  );
 
   final dataCurrentSets = await db.rawQuery(
     '''
     SELECT exercise_id AS exerciseId,
-      id AS activeSessionSetId,
+      id AS workoutSessionSetId,
       exercise_order_index AS orderIndex,
       exercise_occurrence_index AS occurrenceIndex,
       is_warmup AS isWarmup,
@@ -227,7 +231,7 @@ Future<List<Exercise>> _ifSessionIsAlreadyActiveReturnSets(
   currentExercises = _addSetsToExerciseFromDbData(
     currentExercises,
     dataCurrentSets,
-    isSessionAlreadyActive: true,
+    includeActualValues: true,
   );
 
   return currentExercises;
@@ -266,8 +270,10 @@ Future<List<Exercise>> loadPlannedExercises(
       .toList();
 }
 
-Future<List<String>> loadExercisesExecutedIds (Database db, int workoutSessionId) async {
-
+Future<List<String>> loadExercisesExecutedIds(
+  Database db,
+  int workoutSessionId,
+) async {
   final exercisesExecutedIdsData = await db.rawQuery(
     '''
     SELECT exercise_id
@@ -276,10 +282,10 @@ Future<List<String>> loadExercisesExecutedIds (Database db, int workoutSessionId
     GROUP BY exercise_order_index
     ORDER BY exercise_order_index
     ''',
-    [workoutSessionId]
+    [workoutSessionId],
   );
 
-  if(exercisesExecutedIdsData.isEmpty) return [];
+  if (exercisesExecutedIdsData.isEmpty) return [];
 
   return exercisesExecutedIdsData.map((exercise) {
     return exercise['exercise_id'] as String;
@@ -334,10 +340,12 @@ Future<List<Exercise>> _loadRepetedWorkoutHints(
   return exercisesPlanned;
 }
 
-Future<List<Exercise>> resumeOrStartRepetedWorkout(int workoutSessionId) async {
+Future<List<Exercise>> loadOrCreateWorkoutSessionEditorSets(
+  int workoutSessionId,
+) async {
   final db = await AppDatabases.getDatabase();
 
-  final currentExercises = await _ifSessionIsAlreadyActiveReturnSets(
+  final currentExercises = await _loadExistingWorkoutSessionSets(
     db,
     workoutSessionId,
   );
@@ -358,7 +366,7 @@ Future<List<Exercise>> resumeOrStartRepetedWorkout(int workoutSessionId) async {
     workoutSessionId,
   );
 
-  await populateActiveSessionSets(exercisesPlanned, db, workoutSessionId);
+  await populateWorkoutSessionSets(exercisesPlanned, db, workoutSessionId);
 
-  return _ifSessionIsAlreadyActiveReturnSets(db, workoutSessionId);
+  return _loadExistingWorkoutSessionSets(db, workoutSessionId);
 }
