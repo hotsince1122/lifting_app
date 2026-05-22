@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:lifting_tracker_app/providers/persisted/active_session_id.dart';
-import 'package:lifting_tracker_app/providers/persisted/current_session_status.dart';
+import 'package:lifting_tracker_app/providers/persisted/active_session_lifecycle.dart';
 import 'package:lifting_tracker_app/providers/presentation/next_in_cycle.dart';
 import 'package:lifting_tracker_app/screens/workout_editor.dart';
 import 'package:lifting_tracker_app/theme/app_colors.dart';
@@ -23,10 +23,10 @@ class StartSession extends ConsumerWidget {
   Future<void> _handlePressed(BuildContext context, WidgetRef ref) async {
     try {
       final sessionStatusNotifier = ref.read(
-        currentSessionStatusProvider.notifier,
+        activeSessionLifecycleProvider.notifier,
       );
       final isSessionAlreadyActive = await ref.read(
-        currentSessionStatusProvider.future,
+        activeSessionLifecycleProvider.future,
       );
 
       final int? activeSessionId = isSessionAlreadyActive
@@ -73,7 +73,7 @@ class _SessionName extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final nextInCycleAsync = ref.watch(nextInCycleProvider);
-    final sessionStatusAsync = ref.watch(currentSessionStatusProvider);
+    final sessionStatusAsync = ref.watch(activeSessionLifecycleProvider);
 
     if (nextInCycleAsync.isLoading || sessionStatusAsync.isLoading) {
       return const Center(child: CircularProgressIndicator());

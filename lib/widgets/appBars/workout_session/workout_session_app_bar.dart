@@ -49,8 +49,8 @@ class WorkoutSessionAppBar extends ConsumerWidget
           ),
 
           SolidButton(
-            onPressed: () {
-              flow.onPrimryAction(context, ref, workoutSessionId);
+            onPressed: () async {
+              await flow.onPrimaryAction(context, ref, workoutSessionId);
             },
             buttonHeight: buttonHeight,
             buttonWidth: 92,

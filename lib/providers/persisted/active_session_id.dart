@@ -3,7 +3,7 @@ import 'dart:async';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:lifting_tracker_app/data/app_databases.dart';
 import 'package:lifting_tracker_app/data/workout_session_statuses.dart';
-import 'package:lifting_tracker_app/providers/persisted/current_session_status.dart';
+import 'package:lifting_tracker_app/providers/persisted/active_session_lifecycle.dart';
 
 FutureOr<int?> _returnActiveSessionId() async {
   final db = await AppDatabases.getDatabase();
@@ -33,7 +33,7 @@ final activeSessionProvider = AsyncNotifierProvider<ActiveSessionNotifier, int?>
 class ActiveSessionNotifier extends AsyncNotifier<int?> {
   @override
   FutureOr<int?> build() {
-    ref.watch(currentSessionStatusProvider);
+    ref.watch(activeSessionLifecycleProvider);
     return _returnActiveSessionId();
   }
 }

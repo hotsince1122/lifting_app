@@ -4,7 +4,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:lifting_tracker_app/data/app_databases.dart';
 import 'package:lifting_tracker_app/data/queries/aux_functions_for_pop.dart';
 import 'package:lifting_tracker_app/models/view_model/next_in_cycle_card_vm.dart';
-import 'package:lifting_tracker_app/providers/persisted/current_session_status.dart';
+import 'package:lifting_tracker_app/providers/persisted/active_session_lifecycle.dart';
 import 'package:sqflite/sqflite.dart';
 
 Future<Map<String, String>> _loadNextWorkoutData(
@@ -98,7 +98,7 @@ final nextInCycleProvider =
 class NextInCycleNotifier extends AsyncNotifier<NextInCycleCardVm> {
   @override
   FutureOr<NextInCycleCardVm> build() {
-    ref.watch(currentSessionStatusProvider);
+    ref.watch(activeSessionLifecycleProvider);
     return _loadNextWorkout();
   }
 }

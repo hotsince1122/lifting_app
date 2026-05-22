@@ -6,7 +6,7 @@ abstract class WorkoutEditorFlow {
 
   String get primaryButtonLabel;
 
-  Future<void> onPrimryAction (
+  Future<void> onPrimaryAction(
     BuildContext context,
     WidgetRef ref,
     int workoutSessionId,

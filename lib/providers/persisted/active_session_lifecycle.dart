@@ -3,13 +3,11 @@ import 'dart:async';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:lifting_tracker_app/data/app_databases.dart';
 import 'package:lifting_tracker_app/data/queries/aux_functions_for_pop.dart';
-import 'package:lifting_tracker_app/data/queries/populate_workout_session_sets.dart';
 import 'package:lifting_tracker_app/data/workout_session_statuses.dart';
-import 'package:lifting_tracker_app/models/entity/exercise.dart';
 import 'package:lifting_tracker_app/providers/persisted/week_progress.dart';
 import 'package:sqflite/sqflite.dart';
 
-FutureOr<bool> _loadSessionStatus() async {
+FutureOr<bool> _hasActiveSession() async {
   final db = await AppDatabases.getDatabase();
 
   final data = await db.rawQuery(
@@ -48,15 +46,15 @@ FutureOr<String> _nextDayInCycleDayId(
   return row['id'] as String;
 }
 
-final currentSessionStatusProvider =
-    AsyncNotifierProvider<CurrentSessionStatusNotifier, bool>(
-      CurrentSessionStatusNotifier.new,
+final activeSessionLifecycleProvider =
+    AsyncNotifierProvider<ActiveSessionLifecycleNotifier, bool>(
+      ActiveSessionLifecycleNotifier.new,
     );
 
-class CurrentSessionStatusNotifier extends AsyncNotifier<bool> {
+class ActiveSessionLifecycleNotifier extends AsyncNotifier<bool> {
   @override
   FutureOr<bool> build() {
-    return _loadSessionStatus();
+    return _hasActiveSession();
   }
 
   Future<int> startSession() async {
@@ -90,108 +88,6 @@ class CurrentSessionStatusNotifier extends AsyncNotifier<bool> {
 
     state = AsyncData(true);
     return sessionId;
-  }
-
-  Future<bool> checkIfAnySetEmpty(int workoutSessionId) async {
-    final db = await AppDatabases.getDatabase();
-
-    return db.transaction((txn) async {
-      final data = await txn.rawQuery(
-        '''
-      SELECT id
-      FROM active_session_sets
-      WHERE workout_session_id = ?
-        AND (
-          actual_weight IS NULL
-          OR actual_repetitions IS NULL
-        )
-      LIMIT 1;
-      ''',
-        [workoutSessionId],
-      );
-
-      return data.isNotEmpty;
-    });
-  }
-
-  Future<bool> checkIfUserModifiedExercisesPlanned(int workoutSessionId) async {
-    final db = await AppDatabases.getDatabase();
-
-    final List<Exercise> exercisesPlanned = await loadPlannedExercises(
-      db,
-      workoutSessionId,
-    );
-
-    final List<String> exercisesExecutedIds = await loadExercisesExecutedIds(
-      db,
-      workoutSessionId,
-    );
-
-    if (exercisesPlanned.length != exercisesExecutedIds.length) return true;
-
-    for (int i = 0; i < exercisesExecutedIds.length; i++) {
-      if (exercisesExecutedIds[i] != exercisesPlanned[i].id) return true;
-    }
-
-    return false;
-  }
-
-  Future<void> saveEmptySetsWithHints(int workoutSessionId) async {
-    final db = await AppDatabases.getDatabase();
-
-    await db.transaction((txn) async {
-      await txn.rawUpdate(
-        '''
-        UPDATE active_session_sets
-        SET actual_weight = COALESCE(actual_weight, hint_weight),
-            actual_repetitions = COALESCE(actual_repetitions, hint_repetitions),
-            actual_notes = COALESCE(actual_notes, hint_notes)
-        WHERE workout_session_id = ?
-          AND (actual_weight IS NULL OR actual_repetitions IS NULL)
-        ''',
-        [workoutSessionId],
-      );
-    });
-  }
-
-  Future<void> updateCurrentPlan(int workoutSessionId) async {
-    final db = await AppDatabases.getDatabase();
-
-    final List<String> exercisesExecutedIdsInOrder =
-        await loadExercisesExecutedIds(db, workoutSessionId);
-
-    await db.transaction((txn) async {
-      final data = await txn.rawQuery(
-        '''
-        SELECT day_id
-        FROM workout_sessions
-        WHERE id = ?
-        ''',
-        [workoutSessionId],
-      );
-
-      if (data.isEmpty) return;
-
-      final dayId = data[0]['day_id'] as String;
-
-      await txn.rawDelete(
-        '''
-        DELETE FROM day_exercises
-        WHERE day_id = ?
-        ''',
-        [dayId],
-      );
-
-      final batch = txn.batch();
-      for (int i = 0; i < exercisesExecutedIdsInOrder.length; i++) {
-        batch.insert('day_exercises', {
-          'day_id': dayId,
-          'exercise_id': exercisesExecutedIdsInOrder[i],
-          'order_idx': i,
-        });
-      }
-      await batch.commit(noResult: true);
-    });
   }
 
   Future<void> endSession(int workoutSessionId) async {

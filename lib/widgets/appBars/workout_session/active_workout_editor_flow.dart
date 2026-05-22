@@ -1,7 +1,8 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:lifting_tracker_app/providers/persisted/current_session_status.dart';
+import 'package:lifting_tracker_app/providers/persisted/active_session_lifecycle.dart';
+import 'package:lifting_tracker_app/providers/persisted/workout_editor_clean_up_actions.dart';
 import 'package:lifting_tracker_app/widgets/appBars/workout_session/workout_editor_flow.dart';
 
 class ActiveWorkoutEditorFlow extends WorkoutEditorFlow {
@@ -12,33 +13,37 @@ class ActiveWorkoutEditorFlow extends WorkoutEditorFlow {
     WidgetRef ref,
     int workoutSessionId,
   ) async {
-    final sessionStatusNotifier = ref.read(
-      currentSessionStatusProvider.notifier,
+    final workoutCleanUpEditor = ref.read(
+      workoutEditorCleanUpActionsProvider.notifier,
     );
 
-    final hasEmptySet = await sessionStatusNotifier.checkIfAnySetEmpty(
+    final activeSessionLifecycleNotifier = ref.read(
+      activeSessionLifecycleProvider.notifier,
+    );
+
+    final hasEmptySet = await workoutCleanUpEditor.checkIfAnySetEmpty(
       workoutSessionId,
     );
 
-    final userModifiedPlannedExercises = await sessionStatusNotifier
+    final userModifiedPlannedExercises = await workoutCleanUpEditor
         .checkIfUserModifiedExercisesPlanned(workoutSessionId);
 
     if (hasEmptySet && context.mounted) {
-      await _handleEmptySets(context, sessionStatusNotifier, workoutSessionId);
+      await _handleEmptySets(context, workoutCleanUpEditor, workoutSessionId);
     }
 
     if (userModifiedPlannedExercises && context.mounted) {
-      await _handleUpdatePlan(context, sessionStatusNotifier, workoutSessionId);
+      await _handleUpdatePlan(context, workoutCleanUpEditor, workoutSessionId);
     }
 
-    await sessionStatusNotifier.endSession(workoutSessionId);
+    await activeSessionLifecycleNotifier.endSession(workoutSessionId);
     if (!context.mounted) return;
     Navigator.of(context).pop();
   }
 
   Future<void> _handleEmptySets(
     BuildContext context,
-    CurrentSessionStatusNotifier sessionStatusNotifier,
+    WorkoutEditorCleanUpActionsNotifier workoutCleanUpEditor,
     int workoutSessionId,
   ) async {
     await showDialog(
@@ -53,7 +58,7 @@ class ActiveWorkoutEditorFlow extends WorkoutEditorFlow {
             CupertinoDialogAction(
               child: const Text('Yes, Autofill'),
               onPressed: () async {
-                await sessionStatusNotifier.saveEmptySetsWithHints(
+                await workoutCleanUpEditor.saveEmptySetsWithHints(
                   workoutSessionId,
                 );
                 if (!context.mounted) return;
@@ -74,7 +79,7 @@ class ActiveWorkoutEditorFlow extends WorkoutEditorFlow {
 
   Future<void> _handleUpdatePlan(
     BuildContext context,
-    CurrentSessionStatusNotifier sessionStatusNotifier,
+    WorkoutEditorCleanUpActionsNotifier workoutCleanUpEditor,
     int workoutSessionId,
   ) async {
     await showDialog(
@@ -89,7 +94,7 @@ class ActiveWorkoutEditorFlow extends WorkoutEditorFlow {
             CupertinoDialogAction(
               child: const Text('Update plan'),
               onPressed: () async {
-                await sessionStatusNotifier.updateCurrentPlan(workoutSessionId);
+                await workoutCleanUpEditor.updateCurrentPlan(workoutSessionId);
                 if (!context.mounted) return;
                 Navigator.of(context).pop();
               },
@@ -110,11 +115,11 @@ class ActiveWorkoutEditorFlow extends WorkoutEditorFlow {
   String get primaryButtonLabel => 'Finish';
 
   @override
-  Future<void> onPrimryAction(
+  Future<void> onPrimaryAction(
     BuildContext context,
     WidgetRef ref,
     int workoutSessionId,
   ) async {
-    _handleFinish(context, ref, workoutSessionId);
+    await _handleFinish(context, ref, workoutSessionId);
   }
 }

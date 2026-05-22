@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:lifting_tracker_app/providers/persisted/current_session_status.dart';
+import 'package:lifting_tracker_app/providers/persisted/active_session_lifecycle.dart';
 import 'package:lifting_tracker_app/providers/presentation/next_in_cycle.dart';
 import 'package:lifting_tracker_app/theme/app_colors.dart';
 import 'package:lifting_tracker_app/theme/app_gradients.dart';
@@ -12,7 +12,7 @@ class NextInCycleSection extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final sessionStatusAsync = ref.watch(currentSessionStatusProvider);
+    final sessionStatusAsync = ref.watch(activeSessionLifecycleProvider);
     Widget cardTitle = sessionStatusAsync.when(
       loading: () => const Center(child: CircularProgressIndicator()),
       error: (_, _) =>

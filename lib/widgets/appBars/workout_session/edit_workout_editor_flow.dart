@@ -9,10 +9,10 @@ class EditWorkoutEditorFlow extends WorkoutEditorFlow {
   String get primaryButtonLabel => 'Save';
 
   @override
-  Future<void> onPrimryAction(
+  Future<void> onPrimaryAction(
     BuildContext context,
     WidgetRef ref,
-    int workoutSessionId
+    int workoutSessionId,
   ) async {
     //rescriem logged_sets din active_session_sets
 

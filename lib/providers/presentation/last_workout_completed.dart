@@ -3,7 +3,7 @@ import 'dart:async';
 import 'package:lifting_tracker_app/data/app_databases.dart';
 import 'package:lifting_tracker_app/data/workout_session_statuses.dart';
 import 'package:lifting_tracker_app/models/view_model/last_workout_completed_card_vm.dart';
-import 'package:lifting_tracker_app/providers/persisted/current_session_status.dart';
+import 'package:lifting_tracker_app/providers/persisted/active_session_lifecycle.dart';
 import 'package:riverpod/riverpod.dart';
 
 Future<LastWorkoutCompletedCardVm?> _loadLastWorkout() async {
@@ -58,7 +58,7 @@ class LastWorkoutCompletedNotifier
     extends AsyncNotifier<LastWorkoutCompletedCardVm?> {
   @override
   FutureOr<LastWorkoutCompletedCardVm?> build() {
-    ref.watch(currentSessionStatusProvider);
+    ref.watch(activeSessionLifecycleProvider);
     return _loadLastWorkout();
   }
 }
