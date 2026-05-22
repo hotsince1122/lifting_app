@@ -5,7 +5,7 @@ import 'package:lifting_tracker_app/providers/presentation/can_user_finish_setup
 import 'package:lifting_tracker_app/providers/persisted/exercises_in_a_day.dart';
 import 'package:lifting_tracker_app/providers/presentation/split_day_summary_tile.dart';
 import 'package:lifting_tracker_app/theme/app_colors.dart';
-import 'package:lifting_tracker_app/widgets/add_exercise_selector.dart';
+import 'package:lifting_tracker_app/widgets/add_exercise_selector/add_exercise_selector.dart';
 import 'package:lifting_tracker_app/widgets/profile_setup/added_exercises.dart';
 
 class WorkoutDayExpansionTile extends ConsumerWidget {

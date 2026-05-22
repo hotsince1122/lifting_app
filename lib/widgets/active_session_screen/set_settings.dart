@@ -161,7 +161,7 @@ class SetSettingsState extends ConsumerState<SetSettings> {
                             AppColors.surface,
                           ),
                           borderRadius: BorderRadius.circular(22),
-                          border: Border.all(color: Colors.red, width: 1),
+                          border: Border.all(color: Colors.red, width: 0.5),
                         ),
                         child: Row(
                           children: [

@@ -4,7 +4,7 @@ import 'package:lifting_tracker_app/providers/persisted/exercise_and_sets/exerci
 import 'package:lifting_tracker_app/theme/app_colors.dart';
 import 'package:lifting_tracker_app/theme/app_gradients.dart';
 import 'package:lifting_tracker_app/widgets/gradient_cards.dart';
-import 'package:lifting_tracker_app/widgets/add_exercise_selector.dart';
+import 'package:lifting_tracker_app/widgets/add_exercise_selector/add_exercise_selector.dart';
 
 class AddExercisesCard extends ConsumerWidget {
   const AddExercisesCard(this.workoutSessionId, {super.key});
