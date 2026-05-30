@@ -14,6 +14,23 @@ class WorkoutEditorCleanUpActionsNotifier extends AsyncNotifier<void> {
     return;
   }
 
+  Future<String?> _loadWorkoutSessionDayId(int workoutSessionId) async {
+    final db = await AppDatabases.getDatabase();
+
+    final data = await db.rawQuery(
+      '''
+      SELECT day_id
+      FROM workout_sessions
+      WHERE id = ?
+      ''',
+      [workoutSessionId],
+    );
+
+    if (data.isEmpty) return null;
+
+    return data.first['day_id'] as String?;
+  }
+
   Future<bool> checkIfAnySetEmpty(int workoutSessionId) async {
     final db = await AppDatabases.getDatabase();
 
@@ -37,6 +54,9 @@ class WorkoutEditorCleanUpActionsNotifier extends AsyncNotifier<void> {
   }
 
   Future<bool> checkIfUserModifiedExercisesPlanned(int workoutSessionId) async {
+    final dayId = await _loadWorkoutSessionDayId(workoutSessionId);
+    if (dayId == null) return false;
+
     final db = await AppDatabases.getDatabase();
 
     final List<Exercise> exercisesPlanned = await loadPlannedExercises(
@@ -94,7 +114,8 @@ class WorkoutEditorCleanUpActionsNotifier extends AsyncNotifier<void> {
 
       if (data.isEmpty) return;
 
-      final dayId = data[0]['day_id'] as String;
+      final dayId = data[0]['day_id'] as String?;
+      if (dayId == null) return;
 
       await txn.rawDelete(
         '''

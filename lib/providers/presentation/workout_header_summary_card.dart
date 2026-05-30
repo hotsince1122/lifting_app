@@ -10,12 +10,11 @@ FutureOr<WorkoutHeaderSummaryCard?> _loadSummaryInfoFromDb(
 
   var data = await db.rawQuery(
     '''
-  SELECT sd.name AS workoutName, 
+  SELECT ws.workout_name AS workoutName, 
     ws.started_at AS startedAt,
     ws.finished_at AS finishedAt,
     ws.duration_seconds AS durationSeconds
   FROM workout_sessions ws
-  JOIN split_days sd ON ws.day_id = sd.id
   WHERE ws.id = ?
   ''',
     [workoutSessionId],
@@ -23,20 +22,26 @@ FutureOr<WorkoutHeaderSummaryCard?> _loadSummaryInfoFromDb(
 
   final row = data.first;
 
-  if (row['workoutName'] == null) return null;
+  if (row.isEmpty) return null;
 
   final bool isWorkoutFinished = row['finishedAt'] != null;
 
   return WorkoutHeaderSummaryCard(
     workoutName: row['workoutName'] as String,
-    startTime: DateTime.fromMillisecondsSinceEpoch((row['startedAt'] as int) * 1000),
+    startTime: DateTime.fromMillisecondsSinceEpoch(
+      (row['startedAt'] as int) * 1000,
+    ),
     endTime: isWorkoutFinished
         ? DateTime.fromMillisecondsSinceEpoch((row['finishedAt'] as int) * 1000)
         : null,
     workoutDurationInMinutes: isWorkoutFinished
-        ? row['durationSeconds'] as int
+        ? transformSecondsToMinutes(row['durationSeconds'] as int)
         : null,
   );
+}
+
+int transformSecondsToMinutes(int seconds) {
+  return (seconds / 60).toInt();
 }
 
 final workoutHeaderSummaryCardProvider =

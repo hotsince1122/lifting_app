@@ -1,14 +1,15 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:lifting_tracker_app/theme/app_colors.dart';
 import 'package:phosphor_flutter/phosphor_flutter.dart';
 
-class CustomBottomNavBar extends StatelessWidget {
+class CustomBottomNavBar extends ConsumerWidget {
   const CustomBottomNavBar({required this.onTabSelected, super.key});
 
-  final ValueChanged<int> onTabSelected;
+  final void Function(int, WidgetRef) onTabSelected;
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
 
     const int homeIndex = 0;
     const int historyIndex = 1;
@@ -21,8 +22,7 @@ class CustomBottomNavBar extends StatelessWidget {
         child: InkWell(
           borderRadius: BorderRadius.circular(24),
           onTap: () {
-            // print(tabIndex);
-            onTabSelected(tabIndex);
+            onTabSelected(tabIndex, ref);
           },
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,

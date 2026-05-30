@@ -5,7 +5,7 @@ import 'package:lifting_tracker_app/data/queries/save_progress.dart';
 import 'package:lifting_tracker_app/models/entity/training_set.dart';
 import 'package:lifting_tracker_app/providers/persisted/exercise_and_sets/exercises_and_sets.dart';
 import 'package:lifting_tracker_app/theme/app_colors.dart';
-import 'package:lifting_tracker_app/widgets/active_session_screen/set_settings.dart';
+import 'package:lifting_tracker_app/widgets/workout_session_screen/set_settings.dart';
 import 'package:phosphor_flutter/phosphor_flutter.dart';
 import 'package:flutter/services.dart';
 

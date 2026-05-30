@@ -1,0 +1,101 @@
+import 'dart:async';
+
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:lifting_tracker_app/data/app_databases.dart';
+import 'package:lifting_tracker_app/data/workout_session_statuses.dart';
+import 'package:lifting_tracker_app/models/view_model/history_month_vm.dart';
+import 'package:lifting_tracker_app/models/view_model/history_workout_vm.dart';
+import 'package:lifting_tracker_app/providers/persisted/active_session_lifecycle.dart';
+
+final historyMonthsProvider =
+    AsyncNotifierProvider<HistoryMonthsNotifier, List<HistoryMonthVm>>(
+      HistoryMonthsNotifier.new,
+    );
+
+Future<List<String>> exercisesLabelFromAWorkoutin(int workoutId) async {
+  final db = await AppDatabases.getDatabase();
+
+  final data = await db.rawQuery(
+    '''
+    SELECT e.name AS exerciseName, COUNT(*) as exerciseSets
+    FROM logged_sets ls
+    JOIN exercises e ON ls.ex_id = e.id
+    WHERE session_id = ?
+    GROUP BY ls.ex_id, ls.order_index
+    ORDER BY ls.order_index
+    ''',
+    [workoutId],
+  );
+
+  if (data.isEmpty) return [];
+
+  final exercisesLabels = <String>[];
+
+  for (final exercise in data) {
+    exercisesLabels.add(
+      '${exercise['exerciseSets']}x ${exercise['exerciseName']}',
+    );
+  }
+
+  return exercisesLabels;
+}
+
+class HistoryMonthsNotifier extends AsyncNotifier<List<HistoryMonthVm>> {
+  @override
+  FutureOr<List<HistoryMonthVm>> build() async {
+    ref.watch(activeSessionLifecycleProvider);
+
+    return _loadHistoryMonths();
+  }
+
+  Future<List<HistoryMonthVm>> _loadHistoryMonths() async {
+    final db = await AppDatabases.getDatabase();
+    final rows = await db.rawQuery(
+      '''
+      SELECT id,
+        workout_name AS workoutName,
+        started_at AS startedAt,
+        duration_seconds AS durationSeconds
+      FROM workout_sessions
+      WHERE status = ?
+        AND finished_at IS NOT NULL
+      ORDER BY finished_at DESC
+      ''',
+      [WorkoutSessionStatuses.completedStatus],
+    );
+
+    final workoutsByMonth = <DateTime, List<HistoryWorkoutVm>>{};
+
+    for (final row in rows) {
+      final startedAt = DateTime.fromMillisecondsSinceEpoch(
+        (row['startedAt'] as int) * 1000,
+      );
+      final monthKey = DateTime(startedAt.year, startedAt.month);
+
+      workoutsByMonth
+          .putIfAbsent(monthKey, () => [])
+          .add(
+            HistoryWorkoutVm(
+              workoutId: row['id'] as int,
+              workoutName: row['workoutName'] as String,
+              startedAt: startedAt,
+              durationSeconds: row['durationSeconds'] as int,
+              exercisesLabel: await exercisesLabelFromAWorkoutin(
+                row['id'] as int,
+              ),
+            ),
+          );
+    }
+
+    return workoutsByMonth.entries
+        .map(
+          (entry) => HistoryMonthVm(
+            year: entry.key.year,
+            month: entry.key.month,
+            workoutCount: entry.value.length,
+            workouts: entry.value,
+          ),
+        )
+        .toList();
+  }
+}

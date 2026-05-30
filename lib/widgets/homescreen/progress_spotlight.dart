@@ -40,7 +40,7 @@ class ProgressSpotlight extends ConsumerWidget {
                   height: 52,
                   decoration: BoxDecoration(
                     shape: BoxShape.circle,
-                    color: AppColors.primary.withAlpha(60),
+                    color: AppColors.primaryTransparent,
                   ),
                   child: Icon(
                     Icons.trending_up,

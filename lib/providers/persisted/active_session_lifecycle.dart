@@ -5,6 +5,7 @@ import 'package:lifting_tracker_app/data/app_databases.dart';
 import 'package:lifting_tracker_app/data/queries/aux_functions_for_pop.dart';
 import 'package:lifting_tracker_app/data/workout_session_statuses.dart';
 import 'package:lifting_tracker_app/providers/persisted/week_progress.dart';
+import 'package:lifting_tracker_app/providers/presentation/workout_header_summary_card.dart';
 import 'package:sqflite/sqflite.dart';
 
 FutureOr<bool> _hasActiveSession() async {
@@ -24,7 +25,14 @@ FutureOr<bool> _hasActiveSession() async {
   return true;
 }
 
-FutureOr<String> _nextDayInCycleDayId(
+class _NextCycleDay {
+  const _NextCycleDay({required this.id, required this.name});
+
+  final String id;
+  final String name;
+}
+
+FutureOr<_NextCycleDay> _nextDayInCycleDay(
   Database db,
   List<String> activeSplitDaysIds,
   int nextInCycleIndex,
@@ -33,7 +41,7 @@ FutureOr<String> _nextDayInCycleDayId(
 
   final data = await db.rawQuery(
     '''
-    SELECT id
+    SELECT id, name
     FROM split_days
     WHERE id IN ($placeholder)
       AND order_idx = ?
@@ -43,8 +51,10 @@ FutureOr<String> _nextDayInCycleDayId(
 
   final row = data.first;
 
-  return row['id'] as String;
+  return _NextCycleDay(id: row['id'] as String, name: row['name'] as String);
 }
+
+const _extraWorkoutName = 'Extra Workout';
 
 final activeSessionLifecycleProvider =
     AsyncNotifierProvider<ActiveSessionLifecycleNotifier, bool>(
@@ -65,7 +75,7 @@ class ActiveSessionLifecycleNotifier extends AsyncNotifier<bool> {
       db,
       activeSplitDaysIds,
     );
-    final String nextDayInCycleDayId = await _nextDayInCycleDayId(
+    final nextDayInCycleDay = await _nextDayInCycleDay(
       db,
       activeSplitDaysIds,
       nextInCycleIndex,
@@ -74,13 +84,48 @@ class ActiveSessionLifecycleNotifier extends AsyncNotifier<bool> {
     final sessionId = await db.transaction<int>(
       (txn) => txn.rawInsert(
         '''
-        INSERT INTO workout_sessions (day_id, started_at, cycle_index, status)
-        VALUES (?, ?, ?, ?)
+        INSERT INTO workout_sessions (
+          workout_name,
+          day_id,
+          started_at,
+          cycle_index,
+          status
+        )
+        VALUES (?, ?, ?, ?, ?)
         ''',
         [
-          nextDayInCycleDayId,
+          nextDayInCycleDay.name,
+          nextDayInCycleDay.id,
           DateTime.now().millisecondsSinceEpoch ~/ 1000,
           nextInCycleIndex,
+          WorkoutSessionStatuses.activeStatus,
+        ],
+      ),
+    );
+
+    state = AsyncData(true);
+    return sessionId;
+  }
+
+  Future<int> startExtraSession({
+    String workoutName = _extraWorkoutName,
+  }) async {
+    final db = await AppDatabases.getDatabase();
+
+    final trimmedWorkoutName = workoutName.trim();
+    final sessionId = await db.transaction<int>(
+      (txn) => txn.rawInsert(
+        '''
+        INSERT INTO workout_sessions (
+          workout_name,
+          started_at,
+          status
+        )
+        VALUES (?, ?, ?)
+        ''',
+        [
+          trimmedWorkoutName.isEmpty ? _extraWorkoutName : trimmedWorkoutName,
+          DateTime.now().millisecondsSinceEpoch ~/ 1000,
           WorkoutSessionStatuses.activeStatus,
         ],
       ),
@@ -158,6 +203,10 @@ class ActiveSessionLifecycleNotifier extends AsyncNotifier<bool> {
     await ref
         .read(weeklyWorkoutProgressProvider.notifier)
         .updateProgress(finishedWeekday);
+
+
+    //so the summary card updates for the particular workout id
+    ref.invalidate(workoutHeaderSummaryCardProvider);
     state = AsyncData(false);
   }
 }

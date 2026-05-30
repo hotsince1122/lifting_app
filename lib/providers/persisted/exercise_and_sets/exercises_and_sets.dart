@@ -47,6 +47,10 @@ class ExercisesAndSetsProvider extends AsyncNotifier<List<Exercise>> {
       return [];
     }
 
+    if (status == WorkoutSessionStatuses.completedStatus) {
+      return loadSetsForEdit(workoutSessionId);
+    }
+
     return loadOrCreateWorkoutSessionEditorSets(workoutSessionId);
   }
 

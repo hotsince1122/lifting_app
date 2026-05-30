@@ -26,7 +26,8 @@ class SessionSummaryCard extends ConsumerWidget {
 
       final hour = date.hour;
       final minute = date.minute;
-      final time = '${hour < 10 ? '0$hour' : hour}:${minute < 10 ? '0$minute' : minute}';
+      final time =
+          '${hour < 10 ? '0$hour' : hour}:${minute < 10 ? '0$minute' : minute}';
 
       return '$weekday, $day $month at $time';
     }
@@ -61,9 +62,14 @@ class SessionSummaryCard extends ConsumerWidget {
           sessionSummaryCard!.startTime,
         );
         final endTimeLabel = transformIntoDateLabel(sessionSummaryCard.endTime);
+
         String durationInMinutes = (sessionSummaryCard.workoutDurationInMinutes)
             .toString();
-        if (durationInMinutes == 'null') durationInMinutes = '–';
+        if (durationInMinutes == 'null') {
+          durationInMinutes = '–';
+        } else {
+          durationInMinutes += ' min';
+        }
 
         return AspectRatio(
           aspectRatio: 1.55,

@@ -48,7 +48,7 @@ class HomeScreenAppBar extends StatelessWidget implements PreferredSizeWidget {
               ],
             ),
             Padding(
-              padding: const EdgeInsets.only(top: 14),
+              padding: const EdgeInsets.only(top: 22),
               child: GradientCard(
                 padding: EdgeInsets.symmetric(horizontal: 12, vertical: 6),
                 gradientVariant: AppGradients.card,

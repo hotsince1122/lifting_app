@@ -182,6 +182,9 @@ class AppDatabases {
     _db = await sql.openDatabase(
       path.join(dbPath, 'lifting.db'),
       version: 1,
+      onConfigure: (db) async {
+        await db.execute('PRAGMA foreign_keys = ON');
+      },
       onCreate: (db, version) async {
         await db.execute('''
           CREATE TABLE split_plans(
@@ -217,11 +220,12 @@ class AppDatabases {
         await db.execute('''
           CREATE TABLE workout_sessions(
             id INTEGER PRIMARY KEY,
-            day_id TEXT NOT NULL,
+            workout_name TEXT NOT NULL,
+            day_id TEXT,
             started_at INTEGER NOT NULL,
             finished_at INTEGER,
             duration_seconds INTEGER,
-            cycle_index INTEGER NOT NULL,
+            cycle_index INTEGER,
             status TEXT NOT NULL,
             FOREIGN KEY (day_id) REFERENCES split_days(id)
           )
@@ -239,7 +243,7 @@ class AppDatabases {
             order_index INTEGER NOT NULL,
             exercise_occurrence_index INTEGER NOT NULL,
             FOREIGN KEY (ex_id) REFERENCES exercises(id),
-            FOREIGN KEY (session_id) REFERENCES workout_sessions(id)
+            FOREIGN KEY (session_id) REFERENCES workout_sessions(id) ON DELETE CASCADE
           )
         ''');
         await db.execute('''
@@ -261,7 +265,7 @@ class AppDatabases {
 
             is_warmup INTEGER NOT NULL DEFAULT 0,
 
-            FOREIGN KEY (workout_session_id) REFERENCES workout_sessions(id),
+            FOREIGN KEY (workout_session_id) REFERENCES workout_sessions(id) ON DELETE CASCADE,
             FOREIGN KEY (exercise_id) REFERENCES exercises(id),
 
             UNIQUE(workout_session_id, exercise_order_index, set_index)

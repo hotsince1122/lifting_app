@@ -11,12 +11,12 @@ Future<LastWorkoutCompletedCardVm?> _loadLastWorkout() async {
 
   final workoutData = await db.rawQuery(
     '''
-    SELECT sd.name AS workoutName,
+    SELECT ws.workout_name AS workoutName,
       ws.duration_seconds AS workoutDuration,
       ws.id AS lastWorkoutId
     FROM workout_sessions ws
-    JOIN split_days sd ON ws.day_id = sd.id
     WHERE ws.status = ?
+      AND ws.finished_at IS NOT NULL
     ORDER BY ws.finished_at DESC
     LIMIT 1
     ''',

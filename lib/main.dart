@@ -17,6 +17,7 @@ class MainApp extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final goToMenuAsync = ref.watch(didUserFinishSetupProvider);
+    
 
     return MaterialApp(
       theme: AppTheme.dark,

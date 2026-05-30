@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:lifting_tracker_app/data/animations/tab_body_transition.dart';
+import 'package:lifting_tracker_app/providers/presentation/history_editing_mode.dart';
 import 'package:lifting_tracker_app/screens/history.dart';
 import 'package:lifting_tracker_app/screens/home.dart';
 import 'package:lifting_tracker_app/widgets/appBars/history_screen_app_bar.dart';
@@ -22,8 +24,12 @@ class _MainShellState extends State<MainShell> {
     HistoryAppBar(),
   ];
 
-  void _onTabSelected(int index) {
+  void _onTabSelected(int index, WidgetRef ref) {
     if (index < 0 || index > _nrOfTabes - 1) return;
+
+    if (_currentIndex == 1 && index != 1) {
+      ref.read(historyEditModeProvider.notifier).exit();
+    }
 
     setState(() {
       _currentIndex = index;

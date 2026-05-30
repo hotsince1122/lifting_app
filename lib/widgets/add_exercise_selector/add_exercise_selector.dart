@@ -251,7 +251,7 @@ class AddExerciseSelectorState extends ConsumerState<AddExerciseSelector> {
             onPressed: _backToMuscleGroupsOrExercises,
             style: TextButton.styleFrom(
               side: BorderSide(color: AppColors.cardBorder),
-              backgroundColor: AppColors.surface.withAlpha(75),
+              backgroundColor: AppColors.onCardTransparent,
             ),
             child: Text(
               'Cancel',
@@ -269,7 +269,7 @@ class AddExerciseSelectorState extends ConsumerState<AddExerciseSelector> {
             },
             icon: Icon(Icons.check),
             style: IconButton.styleFrom(
-              backgroundColor: AppColors.surface.withAlpha(75),
+              backgroundColor: AppColors.onCardTransparent,
               side: BorderSide(color: AppColors.cardBorder),
             ),
           ),
@@ -318,7 +318,7 @@ class AddExerciseSelectorState extends ConsumerState<AddExerciseSelector> {
             },
             icon: Icon(Icons.check),
             style: IconButton.styleFrom(
-              backgroundColor: AppColors.surface.withAlpha(75),
+              backgroundColor: AppColors.onCardTransparent,
               side: BorderSide(color: AppColors.cardBorder),
             ),
           ),

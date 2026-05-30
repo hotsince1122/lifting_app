@@ -370,3 +370,61 @@ Future<List<Exercise>> loadOrCreateWorkoutSessionEditorSets(
 
   return _loadExistingWorkoutSessionSets(db, workoutSessionId);
 }
+
+Future<List<Exercise>> loadSetsForEdit(int workoutSessionId) async {
+  final db = await AppDatabases.getDatabase();
+
+  final didPopulateEditDraft = await db.transaction((txn) async {
+    final executedExercisesData = await txn.rawQuery(
+      '''
+        SELECT ls.id AS setId,
+          ls.ex_id AS exerciseId,
+          ls.weight,
+          ls.repetitions,
+          ls.notes,
+          ls.set_index AS setIndex,
+          ls.is_warmup AS isWarmup,
+          ls.order_index AS exerciseOrderIndex,
+          ls.exercise_occurrence_index AS exerciseOccurrenceIndex,
+          e.name AS exerciseName,
+          e.muscle_group AS exerciseMuscleGroup
+        FROM logged_sets ls
+        JOIN exercises e ON e.id = ls.ex_id
+        WHERE session_id = ?
+        ORDER BY order_index,
+          set_index
+        ''',
+      [workoutSessionId],
+    );
+
+    if (executedExercisesData.isEmpty) return false;
+
+    final batch = txn.batch();
+
+    for (final exerciseData in executedExercisesData) {
+      batch.insert('active_session_sets', ({
+        'workout_session_id': workoutSessionId,
+        'exercise_id': exerciseData['exerciseId'] as String,
+        'exercise_order_index': exerciseData['exerciseOrderIndex'] as int,
+        'exercise_occurrence_index':
+            exerciseData['exerciseOccurrenceIndex'] as int,
+        'set_index': exerciseData['setIndex'] as int,
+        'hint_weight': (exerciseData['weight'] as num).toDouble(),
+        'hint_repetitions': exerciseData['repetitions'] as int,
+        'hint_notes': exerciseData['notes'] as String? ?? '',
+        'actual_weight': (exerciseData['weight'] as num).toDouble(),
+        'actual_repetitions': exerciseData['repetitions'] as int,
+        'actual_notes': exerciseData['notes'] as String?,
+        'is_warmup': exerciseData['isWarmup'] as int,
+      }));
+    }
+
+    await batch.commit(noResult: true);
+
+    return true;
+  });
+
+  if (!didPopulateEditDraft) return [];
+
+  return _loadExistingWorkoutSessionSets(db, workoutSessionId);
+}

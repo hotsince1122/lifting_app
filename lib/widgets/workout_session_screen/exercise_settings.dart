@@ -4,7 +4,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:lifting_tracker_app/models/entity/exercise.dart';
 import 'package:lifting_tracker_app/providers/persisted/exercise_and_sets/exercises_and_sets.dart';
 import 'package:lifting_tracker_app/theme/app_colors.dart';
-import 'package:lifting_tracker_app/widgets/active_session_screen/reorder_exercises_sheet.dart';
+import 'package:lifting_tracker_app/widgets/workout_session_screen/reorder_exercises_sheet.dart';
 import 'package:lifting_tracker_app/widgets/add_exercise_selector/add_exercise_selector.dart';
 import 'package:phosphor_flutter/phosphor_flutter.dart';
 

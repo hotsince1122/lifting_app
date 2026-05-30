@@ -14,6 +14,10 @@ class AppColors {
   static const secondary = Color.fromARGB(255, 194, 214, 208);  
 
 
+  static const primaryTransparent = Color.fromARGB(50, 162, 182, 199);
+  static const onCardTransparent = Color.fromARGB(75, 20, 26, 36);
+
+
 
   static const card = Color.fromARGB(255, 20, 26, 36);
   static const cardGradient = Color.fromARGB(255, 31, 39, 51);

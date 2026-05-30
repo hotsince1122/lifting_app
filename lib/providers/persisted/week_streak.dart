@@ -20,7 +20,7 @@ class WeekStreakNotifier extends AsyncNotifier<int> {
   }
 
   FutureOr<void> incrementStreak () async {
-    final current = state.requireValue;
+    final current = await _loadStoredStreak();
     final incrementedStreak = current + 1;
 
     final prefs = await SharedPreferences.getInstance();
@@ -29,6 +29,11 @@ class WeekStreakNotifier extends AsyncNotifier<int> {
     state = AsyncData(incrementedStreak);
 
     return;
+  }
+
+  Future<int> _loadStoredStreak() async {
+    final prefs = await SharedPreferences.getInstance();
+    return prefs.getInt(_weekStreakKey) ?? _resetedStreak;
   }
 
   Future<void> resetStreak () async {

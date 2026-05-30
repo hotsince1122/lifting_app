@@ -1,7 +1,14 @@
 import 'package:flutter/material.dart';
 import 'package:lifting_tracker_app/theme/app_colors.dart';
 
-enum AppGradients { card, softCard, deepCard, spotlightCard, primaryButton }
+enum AppGradients {
+  card,
+  softCard,
+  deepCard,
+  spotlightCard,
+  primaryButton,
+  primaryColorTransparent,
+}
 
 class AppThemeGradients {
   static LinearGradient of(AppGradients variant) {
@@ -38,7 +45,19 @@ class AppThemeGradients {
         return const LinearGradient(
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
-          colors: [AppColors.primary, AppColors.primary],
+          colors: [AppColors.primary, AppColors.secondary],
+        );
+
+      case AppGradients.primaryColorTransparent:
+        return LinearGradient(
+          begin: Alignment.bottomLeft,
+          end: Alignment.topRight,
+          stops: const [0.0, 0.8, 1.0],
+          colors: [
+            AppColors.primary.withAlpha(180),
+            AppColors.primary.withAlpha(180),
+            AppColors.secondary.withAlpha(180),
+          ],
         );
     }
   }
