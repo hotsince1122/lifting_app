@@ -4,8 +4,8 @@ import 'package:lifting_tracker_app/providers/persisted/week_progress.dart';
 import 'package:lifting_tracker_app/theme/app_colors.dart';
 import 'package:lifting_tracker_app/theme/app_gradients.dart';
 
-import 'package:lifting_tracker_app/widgets/gradient_cards.dart';
-import 'package:lifting_tracker_app/widgets/solid_button.dart';
+import 'package:lifting_tracker_app/widgets/core/gradient_cards.dart';
+import 'package:lifting_tracker_app/widgets/core/solid_button.dart';
 
 class WorkoutsPerWeekPage extends StatelessWidget {
   const WorkoutsPerWeekPage(this.controller, {super.key});

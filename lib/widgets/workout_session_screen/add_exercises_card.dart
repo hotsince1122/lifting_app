@@ -3,7 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:lifting_tracker_app/providers/persisted/exercise_and_sets/exercises_and_sets.dart';
 import 'package:lifting_tracker_app/theme/app_colors.dart';
 import 'package:lifting_tracker_app/theme/app_gradients.dart';
-import 'package:lifting_tracker_app/widgets/gradient_cards.dart';
+import 'package:lifting_tracker_app/widgets/core/gradient_cards.dart';
 import 'package:lifting_tracker_app/widgets/add_exercise_selector/add_exercise_selector.dart';
 
 class AddExercisesCard extends ConsumerWidget {

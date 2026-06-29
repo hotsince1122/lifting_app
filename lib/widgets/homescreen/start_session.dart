@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:lifting_tracker_app/theme/app_colors.dart';
 import 'package:lifting_tracker_app/widgets/session_launch_button.dart';
-import 'package:lifting_tracker_app/widgets/solid_button.dart';
+import 'package:lifting_tracker_app/widgets/core/solid_button.dart';
 
 class StartSession extends ConsumerWidget {
   const StartSession({super.key});

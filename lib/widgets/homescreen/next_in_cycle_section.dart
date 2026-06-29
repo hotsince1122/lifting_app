@@ -4,7 +4,7 @@ import 'package:lifting_tracker_app/providers/persisted/active_session_lifecycle
 import 'package:lifting_tracker_app/providers/presentation/next_in_cycle.dart';
 import 'package:lifting_tracker_app/theme/app_colors.dart';
 import 'package:lifting_tracker_app/theme/app_gradients.dart';
-import 'package:lifting_tracker_app/widgets/gradient_cards.dart';
+import 'package:lifting_tracker_app/widgets/core/gradient_cards.dart';
 import 'package:phosphor_flutter/phosphor_flutter.dart';
 
 class NextInCycleSection extends ConsumerWidget {

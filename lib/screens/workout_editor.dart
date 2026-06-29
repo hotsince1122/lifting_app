@@ -7,7 +7,7 @@ import 'package:lifting_tracker_app/widgets/appBars/workout_session/active_worko
 import 'package:lifting_tracker_app/widgets/appBars/workout_session/edit_workout_editor_flow.dart';
 import 'package:lifting_tracker_app/widgets/appBars/workout_session/workout_session_app_bar.dart';
 import 'package:lifting_tracker_app/widgets/appBars/workout_session/workout_editor_flow.dart';
-import 'package:lifting_tracker_app/widgets/session_summary_card.dart';
+import 'package:lifting_tracker_app/widgets/workout_session_screen/session_summary_card.dart';
 
 class WorkoutEditorScreen extends ConsumerWidget {
   const WorkoutEditorScreen(this.workoutSessionId, this.flow, {super.key});
@@ -33,7 +33,7 @@ class WorkoutEditorScreen extends ConsumerWidget {
 
     Widget hp(Widget child) {
       return Padding(
-        padding: EdgeInsetsGeometry.symmetric(horizontal: horizontalPadding),
+        padding: EdgeInsets.symmetric(horizontal: horizontalPadding),
         child: child,
       );
     }
@@ -52,7 +52,7 @@ class WorkoutEditorScreen extends ConsumerWidget {
               child: SingleChildScrollView(
                 child: Column(
                   children: [
-                    hp(SessionSummaryCard(sessionId: workoutSessionId)),
+                    hp(SessionSummaryCard(flow, sessionId: workoutSessionId)),
                     SizedBox(height: spaceBetween),
                     for (int i = 0; i < exerciseAndSets.length; i++) ...[
                       ExerciseAndSetsCard(

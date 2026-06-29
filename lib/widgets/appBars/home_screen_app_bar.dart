@@ -4,7 +4,7 @@ import 'package:intl/intl.dart';
 import 'package:lifting_tracker_app/providers/persisted/week_streak.dart';
 import 'package:lifting_tracker_app/theme/app_colors.dart';
 import 'package:lifting_tracker_app/theme/app_gradients.dart';
-import 'package:lifting_tracker_app/widgets/gradient_cards.dart';
+import 'package:lifting_tracker_app/widgets/core/gradient_cards.dart';
 
 class HomeScreenAppBar extends StatelessWidget implements PreferredSizeWidget {
   const HomeScreenAppBar({super.key});

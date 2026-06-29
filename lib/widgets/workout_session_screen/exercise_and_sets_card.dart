@@ -8,7 +8,7 @@ import 'package:lifting_tracker_app/widgets/workout_session_screen/exercise_card
 import 'package:lifting_tracker_app/widgets/workout_session_screen/exercise_card_components/exercise_tile_header.dart';
 import 'package:lifting_tracker_app/widgets/workout_session_screen/exercise_card_components/insert_set_animation.dart';
 import 'package:lifting_tracker_app/widgets/workout_session_screen/exercise_settings.dart';
-import 'package:lifting_tracker_app/widgets/solid_card.dart';
+import 'package:lifting_tracker_app/widgets/core/solid_card.dart';
 
 class ExerciseAndSetsCard extends ConsumerStatefulWidget {
   const ExerciseAndSetsCard(

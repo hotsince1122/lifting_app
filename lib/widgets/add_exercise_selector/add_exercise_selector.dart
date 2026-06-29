@@ -10,7 +10,7 @@ import 'package:lifting_tracker_app/widgets/add_exercise_selector/exercise_form.
 import 'package:lifting_tracker_app/widgets/add_exercise_selector/exercise_validation_dialog.dart';
 import 'package:lifting_tracker_app/widgets/add_exercise_selector/exercises_for_a_group.dart';
 import 'package:lifting_tracker_app/widgets/add_exercise_selector/muscle_groups_list.dart';
-import 'package:lifting_tracker_app/widgets/modal_scaffold.dart';
+import 'package:lifting_tracker_app/widgets/core/modal_scaffold.dart';
 
 class AddExerciseSelector extends ConsumerStatefulWidget {
   const AddExerciseSelector(this.screenWidth, {super.key});

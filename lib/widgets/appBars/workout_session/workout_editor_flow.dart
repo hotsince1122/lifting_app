@@ -11,4 +11,10 @@ abstract class WorkoutEditorFlow {
     WidgetRef ref,
     int workoutSessionId,
   );
+
+  Future<void> onWorkoutNameChange(
+    WidgetRef ref,
+    int workoutSessionId,
+    String newName,
+  );
 }

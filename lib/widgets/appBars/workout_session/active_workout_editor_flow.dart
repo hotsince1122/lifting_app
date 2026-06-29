@@ -2,6 +2,7 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:lifting_tracker_app/providers/persisted/active_session_lifecycle.dart';
+import 'package:lifting_tracker_app/providers/persisted/workout_name.dart';
 import 'package:lifting_tracker_app/providers/persisted/workout_editor_clean_up_actions.dart';
 import 'package:lifting_tracker_app/widgets/appBars/workout_session/workout_editor_flow.dart';
 
@@ -121,5 +122,16 @@ class ActiveWorkoutEditorFlow extends WorkoutEditorFlow {
     int workoutSessionId,
   ) async {
     await _handleFinish(context, ref, workoutSessionId);
+  }
+
+  @override
+  Future<void> onWorkoutNameChange(
+    WidgetRef ref,
+    int workoutSessionId,
+    String newName,
+  ) async {
+    await ref
+        .read(workoutNameProvider(workoutSessionId).notifier)
+        .renameLive(newName);
   }
 }

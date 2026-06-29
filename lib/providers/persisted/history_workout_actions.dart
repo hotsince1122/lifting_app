@@ -4,6 +4,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:lifting_tracker_app/data/app_databases.dart';
 import 'package:lifting_tracker_app/providers/persisted/exercise_and_sets/exercises_and_sets.dart';
 import 'package:lifting_tracker_app/providers/persisted/week_progress.dart';
+import 'package:lifting_tracker_app/providers/persisted/workout_name.dart';
 import 'package:lifting_tracker_app/providers/presentation/history_months.dart';
 import 'package:lifting_tracker_app/providers/presentation/last_workout_completed.dart';
 import 'package:lifting_tracker_app/providers/presentation/next_in_cycle.dart';
@@ -41,11 +42,24 @@ class HistoryWorkoutActionsNotifier extends AsyncNotifier<void> {
     return true;
   }
 
-  Future<bool> saveEditedWorkout(int workoutSessionId) async {
+  Future<bool> saveEditedWorkout(
+    int workoutSessionId, {
+    required String workoutName,
+  }) async {
     final db = await AppDatabases.getDatabase();
+    final normalizedWorkoutName = normalizeWorkoutName(workoutName);
 
     try {
       await db.transaction((txn) async {
+        await txn.rawUpdate(
+          '''
+          UPDATE workout_sessions
+          SET workout_name = ?
+          WHERE id = ?
+          ''',
+          [normalizedWorkoutName, workoutSessionId],
+        );
+
         await txn.rawDelete(
           '''
           DELETE FROM logged_sets
@@ -95,6 +109,7 @@ class HistoryWorkoutActionsNotifier extends AsyncNotifier<void> {
     ref.invalidate(historyMonthsProvider);
     ref.invalidate(lastWorkoutCompletedProvider);
     ref.invalidate(workoutHeaderSummaryCardProvider);
+    ref.invalidate(workoutNameProvider(workoutSessionId));
     ref.invalidate(exercisesAndSetsProvider(workoutSessionId));
     return true;
   }

@@ -5,7 +5,7 @@ import 'package:lifting_tracker_app/providers/persisted/active_split_plan.dart';
 import 'package:lifting_tracker_app/providers/presentation/preset_split_vm.dart';
 import 'package:lifting_tracker_app/theme/app_colors.dart';
 import 'package:lifting_tracker_app/theme/app_gradients.dart';
-import 'package:lifting_tracker_app/widgets/gradient_button.dart';
+import 'package:lifting_tracker_app/widgets/core/gradient_button.dart';
 
 class PresetSplits extends ConsumerWidget {
   const PresetSplits({

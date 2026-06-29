@@ -3,7 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:lifting_tracker_app/providers/presentation/last_workout_completed.dart';
 import 'package:lifting_tracker_app/theme/app_colors.dart';
 import 'package:lifting_tracker_app/theme/app_gradients.dart';
-import 'package:lifting_tracker_app/widgets/gradient_cards.dart';
+import 'package:lifting_tracker_app/widgets/core/gradient_cards.dart';
 import 'package:phosphor_flutter/phosphor_flutter.dart';
 
 class LastSessionSection extends StatelessWidget {

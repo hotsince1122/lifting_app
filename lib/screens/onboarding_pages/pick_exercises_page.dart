@@ -6,9 +6,9 @@ import 'package:lifting_tracker_app/providers/presentation/can_user_finish_setup
 import 'package:lifting_tracker_app/screens/main_shell.dart';
 import 'package:lifting_tracker_app/theme/app_gradients.dart';
 import 'package:lifting_tracker_app/theme/app_colors.dart';
-import 'package:lifting_tracker_app/widgets/gradient_cards.dart';
+import 'package:lifting_tracker_app/widgets/core/gradient_cards.dart';
 import 'package:lifting_tracker_app/widgets/profile_setup/workout_day_expansion_tile.dart';
-import 'package:lifting_tracker_app/widgets/solid_button.dart';
+import 'package:lifting_tracker_app/widgets/core/solid_button.dart';
 
 class PickExercisesPage extends ConsumerWidget {
   const PickExercisesPage(this.controller, {super.key});

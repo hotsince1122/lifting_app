@@ -4,8 +4,8 @@ import 'package:intl/intl.dart';
 import 'package:lifting_tracker_app/theme/app_colors.dart';
 import 'package:lifting_tracker_app/widgets/workout_session_screen/reorder_exercises_sheet.dart';
 import 'package:lifting_tracker_app/widgets/appBars/workout_session/workout_editor_flow.dart';
-import 'package:lifting_tracker_app/widgets/solid_button.dart';
-import 'package:lifting_tracker_app/widgets/solid_card.dart';
+import 'package:lifting_tracker_app/widgets/core/solid_button.dart';
+import 'package:lifting_tracker_app/widgets/core/solid_card.dart';
 import 'package:phosphor_flutter/phosphor_flutter.dart';
 
 class WorkoutSessionAppBar extends ConsumerWidget

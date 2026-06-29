@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:lifting_tracker_app/providers/persisted/history_workout_actions.dart';
+import 'package:lifting_tracker_app/providers/persisted/workout_name.dart';
 import 'package:lifting_tracker_app/widgets/appBars/workout_session/workout_editor_flow.dart';
 
 class EditWorkoutEditorFlow extends WorkoutEditorFlow {
@@ -19,8 +20,13 @@ class EditWorkoutEditorFlow extends WorkoutEditorFlow {
       historyWorkoutActionsProvider.notifier,
     );
 
+    final workoutNameFromDraft = await ref.read(
+      workoutNameProvider(workoutSessionId).future,
+    );
+
     final didSave = await historyWorkoutActionsNotifier.saveEditedWorkout(
       workoutSessionId,
+      workoutName: workoutNameFromDraft,
     );
 
     if (!context.mounted) return;
@@ -37,5 +43,16 @@ class EditWorkoutEditorFlow extends WorkoutEditorFlow {
     }
 
     Navigator.of(context).pop();
+  }
+
+  @override
+  Future<void> onWorkoutNameChange(
+    WidgetRef ref,
+    int workoutSessionId,
+    String newName,
+  ) async {
+    ref
+        .read(workoutNameProvider(workoutSessionId).notifier)
+        .renameDraft(newName);
   }
 }
