@@ -20,7 +20,7 @@ class SolidButton extends StatelessWidget {
   final Color color;
   final double buttonWidth;
   final double? buttonHeight;
-  final EdgeInsetsGeometry padding;
+  final EdgeInsets padding;
   final Color borderColor;
 
   @override

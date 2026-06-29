@@ -8,7 +8,8 @@ import 'package:lifting_tracker_app/theme/app_gradients.dart';
 import 'package:lifting_tracker_app/widgets/core/gradient_button.dart';
 import 'package:lifting_tracker_app/widgets/core/gradient_cards.dart';
 import 'package:lifting_tracker_app/widgets/history_screen/history_month_card.dart';
-import 'package:lifting_tracker_app/widgets/session_launch_button.dart';
+import 'package:lifting_tracker_app/widgets/workout_launch/session_launch_button.dart';
+import 'package:lifting_tracker_app/widgets/workout_launch/split_workout_launch_flow.dart';
 import 'package:phosphor_flutter/phosphor_flutter.dart';
 
 class History extends ConsumerWidget {
@@ -75,7 +76,8 @@ class History extends ConsumerWidget {
           const SizedBox(height: 36),
 
           SessionLaunchButton(
-            buttonBuilder: (context, onPressed, child) {
+            launchFlow: SplitWorkoutLaunchFlow(),
+            buttonBuilder: (context, onPressed, isAlreadyActive, child) {
               return GradientButton(
                 isActive: false,
                 onPressed: onPressed,

@@ -3,7 +3,8 @@ import 'dart:async';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:lifting_tracker_app/data/app_databases.dart';
 import 'package:lifting_tracker_app/data/queries/aux_functions_for_pop.dart';
-import 'package:lifting_tracker_app/models/view_model/next_in_cycle_card_vm.dart';
+import 'package:lifting_tracker_app/models/view_model/workout_focus_vm.dart';
+import 'package:lifting_tracker_app/providers/persisted/active_session_id.dart';
 import 'package:lifting_tracker_app/providers/persisted/active_session_lifecycle.dart';
 import 'package:sqflite/sqflite.dart';
 
@@ -63,7 +64,7 @@ Future<String?> _loadMuscleGroups(Database db, List<String> exerciseIds) async {
   return data.first['muscleGroups'] as String?;
 }
 
-Future<NextInCycleCardVm> _loadNextWorkout() async {
+Future<WorkoutFocusVm> _loadNextWorkout() async {
   final db = await AppDatabases.getDatabase();
 
   final activeSplitDaysIds = await loadActiveSplitDaysIds(db);
@@ -83,22 +84,59 @@ Future<NextInCycleCardVm> _loadNextWorkout() async {
     exercisesInNextWorkoutIds,
   );
 
-  return NextInCycleCardVm(
+  return WorkoutFocusVm(
     workoutName: nextWorkoutData['name']!,
     muscleGroups: muscleGroupInNextWorkout,
     nrOfExercises: exercisesInNextWorkoutIds.length,
   );
 }
 
-final nextInCycleProvider =
-    AsyncNotifierProvider<NextInCycleNotifier, NextInCycleCardVm>(
-      NextInCycleNotifier.new,
+Future<String?> returnWorkoutNameIfActiveWorkoutIsQuick(Ref ref) async {
+  final activeSessionId = await ref.watch(activeSessionIdProvider.future);
+
+  if (activeSessionId == null) return null;
+
+  final db = await AppDatabases.getDatabase();
+
+  final data = await db.rawQuery(
+    '''
+      SELECT day_id, workout_name
+      FROM workout_sessions
+      WHERE id = ?
+      ''',
+    [activeSessionId],
+  );
+
+  final row = data.first;
+
+  if (row['day_id'] == null) {
+    return row['workout_name'] as String;
+  } else {
+    return null;
+  }
+}
+
+final workoutFocusProvider  =
+    AsyncNotifierProvider<WorkoutFocusNotifier, WorkoutFocusVm>(
+      WorkoutFocusNotifier.new,
     );
 
-class NextInCycleNotifier extends AsyncNotifier<NextInCycleCardVm> {
+class WorkoutFocusNotifier extends AsyncNotifier<WorkoutFocusVm> {
   @override
-  FutureOr<NextInCycleCardVm> build() {
+  FutureOr<WorkoutFocusVm> build() async {
     ref.watch(activeSessionLifecycleProvider);
+
+    final workoutName = await returnWorkoutNameIfActiveWorkoutIsQuick(ref);
+
+    if (workoutName != null) {
+      return WorkoutFocusVm(
+        workoutName: workoutName,
+        muscleGroups: null,
+        nrOfExercises: null,
+        isActiveQuickWorkout: true
+      );
+    }
+
     return _loadNextWorkout();
   }
 }

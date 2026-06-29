@@ -7,7 +7,7 @@ import 'package:lifting_tracker_app/providers/persisted/week_progress.dart';
 import 'package:lifting_tracker_app/providers/persisted/workout_name.dart';
 import 'package:lifting_tracker_app/providers/presentation/history_months.dart';
 import 'package:lifting_tracker_app/providers/presentation/last_workout_completed.dart';
-import 'package:lifting_tracker_app/providers/presentation/next_in_cycle.dart';
+import 'package:lifting_tracker_app/providers/presentation/workout_focus.dart';
 import 'package:lifting_tracker_app/providers/presentation/workout_header_summary_card.dart';
 
 final historyWorkoutActionsProvider =
@@ -161,7 +161,7 @@ class HistoryWorkoutActionsNotifier extends AsyncNotifier<void> {
     }
 
     ref.invalidate(lastWorkoutCompletedProvider);
-    ref.invalidate(nextInCycleProvider);
+    ref.invalidate(workoutFocusProvider );
 
     ref.invalidate(historyMonthsProvider);
     ref.invalidate(workoutHeaderSummaryCardProvider);

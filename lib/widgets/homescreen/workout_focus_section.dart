@@ -1,14 +1,14 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:lifting_tracker_app/providers/persisted/active_session_lifecycle.dart';
-import 'package:lifting_tracker_app/providers/presentation/next_in_cycle.dart';
+import 'package:lifting_tracker_app/providers/presentation/workout_focus.dart';
 import 'package:lifting_tracker_app/theme/app_colors.dart';
 import 'package:lifting_tracker_app/theme/app_gradients.dart';
 import 'package:lifting_tracker_app/widgets/core/gradient_cards.dart';
 import 'package:phosphor_flutter/phosphor_flutter.dart';
 
-class NextInCycleSection extends ConsumerWidget {
-  const NextInCycleSection({super.key});
+class WorkoutFocusSection extends ConsumerWidget {
+  const WorkoutFocusSection({super.key});
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -56,85 +56,89 @@ class _NextSessionInfoAsync extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final nextInCycleAsync = ref.watch(nextInCycleProvider);
+    final workoutFocusInfoAsync = ref.watch(workoutFocusProvider);
 
-    Widget emptyState = Column(
-      children: [
-        Text(
-          'No exercises added yet. Start now and build as you go.',
-          style: Theme.of(
-            context,
-          ).textTheme.labelMedium!.copyWith(color: AppColors.onSurfaceMuted),
-        ),
-      ],
+    Widget emptyState = Text(
+      'No exercises added yet. Start now and build as you go.',
+      style: Theme.of(
+        context,
+      ).textTheme.labelMedium!.copyWith(color: AppColors.onSurfaceMuted),
     );
 
-    return nextInCycleAsync.when(
+    Widget quickSessionState = Text(
+      "This workout won't affect your split.",
+      style: Theme.of(
+        context,
+      ).textTheme.labelMedium!.copyWith(color: AppColors.onSurfaceMuted),
+    );
+
+    return workoutFocusInfoAsync.when(
       loading: () => const Center(child: CircularProgressIndicator()),
       error: (_, _) =>
           const Center(child: Text('An error has occured! Try again.')),
-      data: (nextInCycle) {
-        if (nextInCycle.muscleGroups == null) {
+      data: (workoutFocusInfo) {
+        if (workoutFocusInfo.muscleGroups == null) {
           return Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               Text(
-                nextInCycle.workoutName,
+                workoutFocusInfo.workoutName,
                 style: Theme.of(
                   context,
                 ).textTheme.titleMedium!.copyWith(fontWeight: FontWeight.w900),
               ),
               const SizedBox(height: 6),
-              emptyState,
+              workoutFocusInfo.isActiveQuickWorkout
+                  ? quickSessionState
+                  : emptyState,
             ],
           );
         }
 
         final String nrOfExercisesLabel =
-            '${nextInCycle.nrOfExercises} exercise${nextInCycle.nrOfExercises == 1 ? '' : 's'} planned.';
+            '${workoutFocusInfo.nrOfExercises} exercise${workoutFocusInfo.nrOfExercises == 1 ? '' : 's'} planned.';
 
         return Expanded(
           child: Column(
-              // mainAxisAlignment: MainAxisAlignment.spaceAround,
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  nextInCycle.workoutName,
-                  style: Theme.of(
-                    context,
-                  ).textTheme.titleMedium!.copyWith(fontWeight: FontWeight.w900),
-                ),
-          
-                const SizedBox(height: 6,),
-          
-                Text(
-                  nextInCycle.muscleGroups!,
-                  style: Theme.of(
-                    context,
-                  ).textTheme.bodySmall!.copyWith(color: AppColors.secondary),
-                ),
-          
-                const SizedBox(height: 6,),
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                workoutFocusInfo.workoutName,
+                style: Theme.of(
+                  context,
+                ).textTheme.titleMedium!.copyWith(fontWeight: FontWeight.w900),
+              ),
 
-                Row(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    PhosphorIcon(
-                      PhosphorIcons.barbell(),
-                      size: 14,
-                      color: AppColors.primary,
-                    ),
-                    const SizedBox(width: 4),
-                    Text(
-                      nrOfExercisesLabel,
-                      style: Theme.of(
-                        context,
-                      ).textTheme.labelMedium!.copyWith(color: AppColors.primary),
-                    ),
-                  ],
-                ),
-              ],
-            ),
+              const SizedBox(height: 6),
+
+              Text(
+                workoutFocusInfo.muscleGroups!,
+                style: Theme.of(
+                  context,
+                ).textTheme.bodySmall!.copyWith(color: AppColors.secondary),
+              ),
+
+              const SizedBox(height: 6),
+
+              Row(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  PhosphorIcon(
+                    PhosphorIcons.barbell(),
+                    size: 14,
+                    color: AppColors.primary,
+                  ),
+                  const SizedBox(width: 4),
+                  Text(
+                    nrOfExercisesLabel,
+                    style: Theme.of(
+                      context,
+                    ).textTheme.labelMedium!.copyWith(color: AppColors.primary),
+                  ),
+                ],
+              ),
+            ],
+          ),
         );
       },
     );

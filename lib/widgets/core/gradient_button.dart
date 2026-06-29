@@ -10,6 +10,7 @@ class GradientButton extends StatelessWidget {
     required this.gradientVariant,
     this.buttonWidth = double.infinity,
     this.buttonHeight,
+    this.padding = const EdgeInsets.symmetric(horizontal: 24, vertical: 8),
     required this.child,
     this.borderColor = AppColors.cardBorder,
   });
@@ -20,6 +21,7 @@ class GradientButton extends StatelessWidget {
   final AppGradients gradientVariant;
   final double buttonWidth;
   final double? buttonHeight;
+  final EdgeInsets padding;
   final Color borderColor;
 
   @override
@@ -42,10 +44,7 @@ class GradientButton extends StatelessWidget {
               onPressed: onPressed,
               style:
                   ElevatedButton.styleFrom(
-                    padding: const EdgeInsets.symmetric(
-                      horizontal: 24,
-                      vertical: 8,
-                    ),
+                    padding: padding,
                     elevation: 3,
                     shadowColor: AppColors.cardShadow,
                     backgroundColor: Colors.transparent,

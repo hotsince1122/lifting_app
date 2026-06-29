@@ -54,7 +54,7 @@ FutureOr<_NextCycleDay> _nextDayInCycleDay(
   return _NextCycleDay(id: row['id'] as String, name: row['name'] as String);
 }
 
-const _extraWorkoutName = 'Extra Workout';
+const _quickWorkoutName = 'Quick Workout';
 
 final activeSessionLifecycleProvider =
     AsyncNotifierProvider<ActiveSessionLifecycleNotifier, bool>(
@@ -107,8 +107,8 @@ class ActiveSessionLifecycleNotifier extends AsyncNotifier<bool> {
     return sessionId;
   }
 
-  Future<int> startExtraSession({
-    String workoutName = _extraWorkoutName,
+  Future<int> startQuickWorkout({
+    String workoutName = _quickWorkoutName,
   }) async {
     final db = await AppDatabases.getDatabase();
 
@@ -124,7 +124,7 @@ class ActiveSessionLifecycleNotifier extends AsyncNotifier<bool> {
         VALUES (?, ?, ?)
         ''',
         [
-          trimmedWorkoutName.isEmpty ? _extraWorkoutName : trimmedWorkoutName,
+          trimmedWorkoutName.isEmpty ? _quickWorkoutName : trimmedWorkoutName,
           DateTime.now().millisecondsSinceEpoch ~/ 1000,
           WorkoutSessionStatuses.activeStatus,
         ],

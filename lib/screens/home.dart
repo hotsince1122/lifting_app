@@ -1,8 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:lifting_tracker_app/providers/persisted/active_session_lifecycle.dart';
 import 'package:lifting_tracker_app/widgets/homescreen/last_session_section.dart';
-import 'package:lifting_tracker_app/widgets/homescreen/next_in_cycle_section.dart';
+import 'package:lifting_tracker_app/widgets/homescreen/workout_focus_section.dart';
 import 'package:lifting_tracker_app/widgets/homescreen/progress_spotlight.dart';
+import 'package:lifting_tracker_app/widgets/homescreen/quick_workout.dart';
 import 'package:lifting_tracker_app/widgets/homescreen/start_session.dart';
 import 'package:lifting_tracker_app/widgets/homescreen/week_progress.dart';
 
@@ -11,6 +13,10 @@ class Home extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    final isSessionAlreadyActiveAsync = ref.watch(
+      activeSessionLifecycleProvider,
+    );
+
     return SafeArea(
       bottom: false,
       child: Padding(
@@ -24,13 +30,29 @@ class Home extends ConsumerWidget {
               children: [
                 Expanded(child: LastSessionSection()),
                 const SizedBox(width: 16),
-                Expanded(child: NextInCycleSection()),
+                Expanded(child: WorkoutFocusSection()),
               ],
             ),
             const SizedBox(height: 16),
             ProgressSpotlight(),
-            const SizedBox(height: 18), //optic ilussion,
-            StartSession(),
+            const SizedBox(height: 16),
+
+            isSessionAlreadyActiveAsync.when(
+              loading: () => const Center(child: CircularProgressIndicator()),
+              error: (_, _) =>
+                  const Center(child: Text('An error has occured! Try again.')),
+              data: (isSessionAlreadyActive) {
+                return isSessionAlreadyActive
+                    ? StartSession()
+                    : Row(
+                        children: [
+                          Expanded(flex: 3, child: QuickWorkout()),
+                          const SizedBox(width: 8),
+                          Expanded(flex: 7, child: StartSession()),
+                        ],
+                      );
+              },
+            ),
           ],
         ),
       ),

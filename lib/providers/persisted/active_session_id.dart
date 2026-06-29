@@ -26,14 +26,34 @@ FutureOr<int?> _returnActiveSessionId() async {
   return row['id'] as int;
 }
 
-final activeSessionProvider = AsyncNotifierProvider<ActiveSessionNotifier, int?>(
-  ActiveSessionNotifier.new
+final activeSessionIdProvider = AsyncNotifierProvider<ActiveSessionIdNotifier, int?>(
+  ActiveSessionIdNotifier.new
 );
 
-class ActiveSessionNotifier extends AsyncNotifier<int?> {
+class ActiveSessionIdNotifier extends AsyncNotifier<int?> {
   @override
   FutureOr<int?> build() {
     ref.watch(activeSessionLifecycleProvider);
     return _returnActiveSessionId();
+  }
+
+  Future<bool> checkIfSessionIsQuick() async {
+    if(state.value == null) return false;
+
+    final db = await AppDatabases.getDatabase();
+
+    final data = await db.rawQuery(
+      '''
+      SELECT day_id
+      FROM workout_sessions
+      WHERE id = ?
+      ''', [state.value!]
+    );
+
+    final row = data.first;
+
+    if(row['day_id'] == null) return true;
+
+    return false;
   }
 }
