@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:intl/intl.dart';
 import 'package:lifting_tracker_app/theme/app_colors.dart';
-import 'package:lifting_tracker_app/widgets/workout_session_screen/reorder_exercises_sheet.dart';
 import 'package:lifting_tracker_app/widgets/appBars/workout_session/workout_editor_flow.dart';
 import 'package:lifting_tracker_app/widgets/core/solid_button.dart';
 import 'package:lifting_tracker_app/widgets/core/solid_card.dart';
@@ -27,7 +26,7 @@ class WorkoutSessionAppBar extends ConsumerWidget
     final double buttonHeight = 46;
     final double iconSize = 26;
 
-    final screenWidth = MediaQuery.of(context).size.width;
+    final actions = flow.getMenuActions(context, ref, workoutSessionId);
 
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 16),
@@ -86,29 +85,55 @@ class WorkoutSessionAppBar extends ConsumerWidget
                   ),
                   const SizedBox(width: 12),
                   PopupMenuButton(
+                    constraints: const BoxConstraints.tightFor(width: 220),
+                    menuPadding: EdgeInsets.zero,
                     icon: PhosphorIcon(
                       PhosphorIcons.dotsThreeOutline(PhosphorIconsStyle.bold),
                       size: iconSize,
                       color: AppColors.onSurface,
                     ),
                     itemBuilder: (context) => [
-                      PopupMenuItem(
-                        onTap: () => ReorderExercisesSheet.openSheet(
-                          context,
-                          screenWidth,
-                          workoutSessionId,
-                        ),
-                        child: SizedBox(
-                          width: 145,
-                          height: 60,
-                          child: Center(
-                            child: Text(
-                              'Reorder Exercises',
-                              style: Theme.of(context).textTheme.titleMedium,
+                      for (int i = 0; i < actions.length; i++) ...[
+                        PopupMenuItem(
+                          padding: EdgeInsets.zero,
+                          height: 62,
+                          onTap: () => actions[i].onPressed(
+                            context,
+                            ref,
+                            workoutSessionId,
+                          ),
+                          child: SizedBox(
+                            width: 220,
+                            height: 56,
+                            child: Row(
+                              mainAxisAlignment: MainAxisAlignment.center,
+                              children: [
+                                Icon(actions[i].icon),
+                                const SizedBox(width: 8),
+                                Text(
+                                  actions[i].label,
+                                  style: Theme.of(
+                                    context,
+                                  ).textTheme.titleMedium,
+                                ),
+                              ],
                             ),
                           ),
                         ),
-                      ),
+                        if (i != actions.length - 1)
+                          PopupMenuItem(
+                            enabled: false,
+                            padding: EdgeInsets.zero,
+                            height: 1,
+                            child: Divider(
+                              height: 1,
+                              thickness: 1,
+                              indent: 10,
+                              endIndent: 10,
+                              color: AppColors.cardBorder,
+                            ),
+                          ),
+                      ],
                     ],
                     shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(24),
@@ -116,7 +141,6 @@ class WorkoutSessionAppBar extends ConsumerWidget
                     ),
                     clipBehavior: Clip.antiAlias,
                     color: AppColors.card.withAlpha(245),
-                    menuPadding: EdgeInsets.zero,
                   ),
                 ],
               ),

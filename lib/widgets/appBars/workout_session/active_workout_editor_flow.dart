@@ -5,6 +5,7 @@ import 'package:lifting_tracker_app/providers/persisted/active_session_lifecycle
 import 'package:lifting_tracker_app/providers/persisted/workout_name.dart';
 import 'package:lifting_tracker_app/providers/persisted/workout_editor_clean_up_actions.dart';
 import 'package:lifting_tracker_app/widgets/appBars/workout_session/workout_editor_flow.dart';
+import 'package:lifting_tracker_app/widgets/workout_session_screen/reorder_exercises_sheet.dart';
 
 class ActiveWorkoutEditorFlow extends WorkoutEditorFlow {
   const ActiveWorkoutEditorFlow();
@@ -133,5 +134,24 @@ class ActiveWorkoutEditorFlow extends WorkoutEditorFlow {
     await ref
         .read(workoutNameProvider(workoutSessionId).notifier)
         .renameLive(newName);
+  }
+
+  @override
+  List<WorkoutEditorMenuAction> getMenuActions(
+    BuildContext context,
+    WidgetRef ref,
+    int workoutSessionId,
+  ) {
+    return [
+      WorkoutEditorMenuAction(
+        label: 'Reorder Exercises',
+        icon: Icons.swap_vert_rounded,
+        onPressed: (context, ref, id) => ReorderExercisesSheet.openSheet(
+          context,
+          MediaQuery.of(context).size.width,
+          workoutSessionId,
+        ),
+      ),
+    ];
   }
 }

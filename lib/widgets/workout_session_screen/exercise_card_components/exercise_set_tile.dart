@@ -50,21 +50,51 @@ class _ExerciseSetTileState extends ConsumerState<ExerciseSetTile> {
       exercisesAndSetsProvider(widget.workoutSessionId).notifier,
     );
 
-    final actualWeight = widget.set.actualWeight;
-    final weightText = actualWeight == null
-        ? ''
-        : actualWeight == actualWeight.toInt()
+    _weightController = TextEditingController();
+    _repsController = TextEditingController();
+    _notesController = TextEditingController();
+
+    _syncControllersWithSet();
+  }
+
+  String _weightText(double? actualWeight) {
+    if (actualWeight == null) return '';
+
+    return actualWeight == actualWeight.toInt()
         ? actualWeight.toInt().toString()
         : actualWeight.toString();
+  }
 
-    _weightController = TextEditingController(text: weightText);
+  void _syncControllerText(
+    TextEditingController controller,
+    String text,
+  ) {
+    if (controller.text == text) return;
 
-    _repsController = TextEditingController(
-      text: widget.set.actualRepetitions?.toString() ?? '',
+    controller.value = TextEditingValue(
+      text: text,
+      selection: TextSelection.collapsed(offset: text.length),
     );
-    _notesController = TextEditingController(
-      text: widget.set.actualNotes?.toString() ?? '',
+  }
+
+  void _syncControllersWithSet() {
+    _syncControllerText(_weightController, _weightText(widget.set.actualWeight));
+    _syncControllerText(
+      _repsController,
+      widget.set.actualRepetitions?.toString() ?? '',
     );
+    _syncControllerText(_notesController, widget.set.actualNotes ?? '');
+  }
+
+  @override
+  void didUpdateWidget(covariant ExerciseSetTile oldWidget) {
+    super.didUpdateWidget(oldWidget);
+
+    if (oldWidget.set.actualWeight != widget.set.actualWeight ||
+        oldWidget.set.actualRepetitions != widget.set.actualRepetitions ||
+        oldWidget.set.actualNotes != widget.set.actualNotes) {
+      _syncControllersWithSet();
+    }
   }
 
   void _scheduleSave() {

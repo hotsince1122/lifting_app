@@ -199,7 +199,7 @@ Future<List<Exercise>> _loadExercisesFromWorkoutSession(
   return currentExercises;
 }
 
-Future<List<Exercise>> _loadExistingWorkoutSessionSets(
+Future<List<Exercise>> loadExistingWorkoutSessionSets(
   Database db,
   int workoutSessionId,
 ) async {
@@ -345,7 +345,7 @@ Future<List<Exercise>> loadOrCreateWorkoutSessionEditorSets(
 ) async {
   final db = await AppDatabases.getDatabase();
 
-  final currentExercises = await _loadExistingWorkoutSessionSets(
+  final currentExercises = await loadExistingWorkoutSessionSets(
     db,
     workoutSessionId,
   );
@@ -368,7 +368,7 @@ Future<List<Exercise>> loadOrCreateWorkoutSessionEditorSets(
 
   await populateWorkoutSessionSets(exercisesPlanned, db, workoutSessionId);
 
-  return _loadExistingWorkoutSessionSets(db, workoutSessionId);
+  return loadExistingWorkoutSessionSets(db, workoutSessionId);
 }
 
 Future<List<Exercise>> loadSetsForEdit(int workoutSessionId) async {
@@ -426,5 +426,5 @@ Future<List<Exercise>> loadSetsForEdit(int workoutSessionId) async {
 
   if (!didPopulateEditDraft) return [];
 
-  return _loadExistingWorkoutSessionSets(db, workoutSessionId);
+  return loadExistingWorkoutSessionSets(db, workoutSessionId);
 }

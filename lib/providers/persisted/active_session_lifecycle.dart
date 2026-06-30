@@ -3,6 +3,7 @@ import 'dart:async';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:lifting_tracker_app/data/app_databases.dart';
 import 'package:lifting_tracker_app/data/queries/aux_functions_for_pop.dart';
+import 'package:lifting_tracker_app/data/queries/repeat_workout.dart';
 import 'package:lifting_tracker_app/data/workout_session_statuses.dart';
 import 'package:lifting_tracker_app/providers/persisted/week_progress.dart';
 import 'package:lifting_tracker_app/providers/presentation/workout_header_summary_card.dart';
@@ -55,6 +56,29 @@ FutureOr<_NextCycleDay> _nextDayInCycleDay(
 }
 
 const _quickWorkoutName = 'Quick Workout';
+
+Future<int> _insertQuickWorkout(
+  DatabaseExecutor db, {
+  required String workoutName,
+}) {
+  final trimmedWorkoutName = workoutName.trim();
+
+  return db.rawInsert(
+    '''
+    INSERT INTO workout_sessions (
+      workout_name,
+      started_at,
+      status
+    )
+    VALUES (?, ?, ?)
+    ''',
+    [
+      trimmedWorkoutName.isEmpty ? _quickWorkoutName : trimmedWorkoutName,
+      DateTime.now().millisecondsSinceEpoch ~/ 1000,
+      WorkoutSessionStatuses.activeStatus,
+    ],
+  );
+}
 
 final activeSessionLifecycleProvider =
     AsyncNotifierProvider<ActiveSessionLifecycleNotifier, bool>(
@@ -112,27 +136,43 @@ class ActiveSessionLifecycleNotifier extends AsyncNotifier<bool> {
   }) async {
     final db = await AppDatabases.getDatabase();
 
-    final trimmedWorkoutName = workoutName.trim();
     final sessionId = await db.transaction<int>(
-      (txn) => txn.rawInsert(
-        '''
-        INSERT INTO workout_sessions (
-          workout_name,
-          started_at,
-          status
-        )
-        VALUES (?, ?, ?)
-        ''',
-        [
-          trimmedWorkoutName.isEmpty ? _quickWorkoutName : trimmedWorkoutName,
-          DateTime.now().millisecondsSinceEpoch ~/ 1000,
-          WorkoutSessionStatuses.activeStatus,
-        ],
+      (txn) => _insertQuickWorkout(
+        txn,
+        workoutName: workoutName,
       ),
     );
 
     state = AsyncData(true);
     return sessionId;
+  }
+
+  Future<int?> startRepeatedWorkout(int sourceWorkoutId) async {
+    final db = await AppDatabases.getDatabase();
+
+    final newWorkoutId = await db.transaction<int?>((txn) async {
+      final workoutName = await getWorkoutName(txn, sourceWorkoutId);
+
+      if (workoutName == null) return null;
+
+      final newWorkoutId = await _insertQuickWorkout(
+        txn,
+        workoutName: workoutName,
+      );
+
+      await loadExercisesFromSourceWorkoutInDb(
+        txn,
+        sourceWorkoutId,
+        newWorkoutId,
+      );
+
+      return newWorkoutId;
+    });
+
+    if (newWorkoutId == null) return null;
+
+    state = AsyncData(true);
+    return newWorkoutId;
   }
 
   Future<void> endSession(int workoutSessionId) async {

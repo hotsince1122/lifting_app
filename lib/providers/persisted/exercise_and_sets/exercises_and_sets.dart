@@ -30,7 +30,8 @@ FutureOr<String?> _checkWorkoutStatus(int workoutSessionId) async {
 }
 
 final exercisesAndSetsProvider =
-    AsyncNotifierProvider.family<ExercisesAndSetsProvider, List<Exercise>, int>(
+    AsyncNotifierProvider.autoDispose
+        .family<ExercisesAndSetsProvider, List<Exercise>, int>(
       ExercisesAndSetsProvider.new,
     );
 
