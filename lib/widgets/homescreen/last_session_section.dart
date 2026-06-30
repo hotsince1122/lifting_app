@@ -18,6 +18,7 @@ class LastSessionSection extends StatelessWidget {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
+            const SizedBox(height: 4.8),
             Row(
               children: [
                 PhosphorIcon(
@@ -33,7 +34,7 @@ class LastSessionSection extends StatelessWidget {
                 ),
               ],
             ),
-            const SizedBox(height: 16),
+            const SizedBox(height: 15),
             _LastSessionInfoAsync(),
             const Spacer(),
           ],

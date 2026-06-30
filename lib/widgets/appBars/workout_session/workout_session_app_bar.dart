@@ -5,7 +5,6 @@ import 'package:lifting_tracker_app/theme/app_colors.dart';
 import 'package:lifting_tracker_app/widgets/appBars/workout_session/workout_editor_flow.dart';
 import 'package:lifting_tracker_app/widgets/core/solid_button.dart';
 import 'package:lifting_tracker_app/widgets/core/solid_card.dart';
-import 'package:phosphor_flutter/phosphor_flutter.dart';
 
 class WorkoutSessionAppBar extends ConsumerWidget
     implements PreferredSizeWidget {
@@ -87,9 +86,10 @@ class WorkoutSessionAppBar extends ConsumerWidget
                   PopupMenuButton(
                     constraints: const BoxConstraints.tightFor(width: 220),
                     menuPadding: EdgeInsets.zero,
-                    icon: PhosphorIcon(
-                      PhosphorIcons.dotsThreeOutline(PhosphorIconsStyle.bold),
-                      size: iconSize,
+                    icon: Icon(
+                      Icons.more_horiz,
+                      fontWeight: FontWeight.bold,
+                      size: iconSize + 4,
                       color: AppColors.onSurface,
                     ),
                     itemBuilder: (context) => [
@@ -140,7 +140,7 @@ class WorkoutSessionAppBar extends ConsumerWidget
                       side: BorderSide(color: AppColors.cardBorder, width: 1),
                     ),
                     clipBehavior: Clip.antiAlias,
-                    color: AppColors.card.withAlpha(245),
+                    color: AppColors.card,
                   ),
                 ],
               ),

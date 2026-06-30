@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:lifting_tracker_app/providers/persisted/active_session_lifecycle.dart';
 import 'package:lifting_tracker_app/widgets/homescreen/last_session_section.dart';
-import 'package:lifting_tracker_app/widgets/homescreen/workout_focus_section.dart';
+import 'package:lifting_tracker_app/widgets/homescreen/workout_focus_section/workout_focus_section.dart';
 import 'package:lifting_tracker_app/widgets/homescreen/progress_spotlight.dart';
 import 'package:lifting_tracker_app/widgets/homescreen/quick_workout.dart';
 import 'package:lifting_tracker_app/widgets/homescreen/start_session.dart';

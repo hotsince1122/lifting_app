@@ -17,7 +17,6 @@ coverage/
 # Platforms (keep repo lean)
 # =========================
 android/
-ios/
 web/
 windows/
 macos/

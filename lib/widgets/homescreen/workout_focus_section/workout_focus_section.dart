@@ -5,6 +5,7 @@ import 'package:lifting_tracker_app/providers/presentation/workout_focus.dart';
 import 'package:lifting_tracker_app/theme/app_colors.dart';
 import 'package:lifting_tracker_app/theme/app_gradients.dart';
 import 'package:lifting_tracker_app/widgets/core/gradient_cards.dart';
+import 'package:lifting_tracker_app/widgets/homescreen/workout_focus_section/pick_next_workout_popup_menu.dart';
 import 'package:phosphor_flutter/phosphor_flutter.dart';
 
 class WorkoutFocusSection extends ConsumerWidget {
@@ -17,10 +18,24 @@ class WorkoutFocusSection extends ConsumerWidget {
       loading: () => const Center(child: CircularProgressIndicator()),
       error: (_, _) =>
           const Center(child: Text('An error has occured! Try again.')),
-      data: (isSessionActive) => Text(
-        isSessionActive ? 'Current session' : 'Next in cycle',
-        textAlign: TextAlign.left,
-        style: Theme.of(context).textTheme.titleSmall,
+      data: (isSessionActive) => Row(
+        children: [
+          isSessionActive
+              ? Icon(
+                  Icons.navigate_next_rounded,
+                  size: 20,
+                  color: AppColors.primary,
+                )
+              : PickNextWorkoutPopupMenu(),
+
+          SizedBox(width: isSessionActive ? 2 : 6),
+
+          Text(
+            isSessionActive ? 'Current session' : 'Next in cycle',
+            textAlign: TextAlign.left,
+            style: Theme.of(context).textTheme.titleSmall,
+          ),
+        ],
       ),
     );
 
@@ -31,18 +46,8 @@ class WorkoutFocusSection extends ConsumerWidget {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
-            Row(
-              children: [
-                Icon(
-                  Icons.navigate_next_rounded,
-                  size: 20,
-                  color: AppColors.primary,
-                ),
-                const SizedBox(width: 2),
-                cardTitle,
-              ],
-            ),
-            const SizedBox(height: 16),
+            cardTitle,
+            const SizedBox(height: 4),
             _NextSessionInfoAsync(),
           ],
         ),
