@@ -2,10 +2,12 @@ import 'dart:async';
 
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:lifting_tracker_app/data/app_databases.dart';
+import 'package:lifting_tracker_app/data/queries/aux_funcs.dart';
 import 'package:lifting_tracker_app/data/queries/aux_functions_for_pop.dart';
 import 'package:lifting_tracker_app/models/view_model/workout_focus_vm.dart';
 import 'package:lifting_tracker_app/providers/persisted/active_session_id.dart';
 import 'package:lifting_tracker_app/providers/persisted/active_session_lifecycle.dart';
+import 'package:lifting_tracker_app/providers/persisted/picked_next_session_provider.dart';
 import 'package:sqflite/sqflite.dart';
 
 Future<Map<String, String>> _loadNextWorkoutData(
@@ -64,20 +66,39 @@ Future<String?> _loadMuscleGroups(Database db, List<String> exerciseIds) async {
   return data.first['muscleGroups'] as String?;
 }
 
-Future<WorkoutFocusVm> _loadNextWorkout() async {
+Future<WorkoutFocusVm> _loadNextWorkout(Ref ref) async {
   final db = await AppDatabases.getDatabase();
 
   final activeSplitDaysIds = await loadActiveSplitDaysIds(db);
-  final nextCycleIndex = await loadNextCycleIndex(db, activeSplitDaysIds);
-  final nextWorkoutData = await _loadNextWorkoutData(
-    db,
-    activeSplitDaysIds,
-    nextCycleIndex,
+  final pickedWorkoutDayId = await ref.read(
+    pickedNextSessionProvider.future,
   );
+  final shouldUsePickedWorkout =
+      pickedWorkoutDayId != null &&
+      activeSplitDaysIds.contains(pickedWorkoutDayId);
+
+  final String workoutDayId;
+  final String nextWorkoutName;
+
+  if (!shouldUsePickedWorkout) {
+    final nextCycleIndex = await loadNextCycleIndex(db, activeSplitDaysIds);
+    final nextWorkoutData = await _loadNextWorkoutData(
+      db,
+      activeSplitDaysIds,
+      nextCycleIndex,
+    );
+
+    workoutDayId = nextWorkoutData['id']!;
+    nextWorkoutName = nextWorkoutData['name']!;
+  } else {
+    workoutDayId = pickedWorkoutDayId;
+
+    nextWorkoutName = await getWorkoutName(db, workoutDayId);
+  }
 
   final exercisesInNextWorkoutIds = await _loadExerciseIdsForWorkout(
     db,
-    nextWorkoutData['id']!,
+    workoutDayId,
   );
   final muscleGroupInNextWorkout = await _loadMuscleGroups(
     db,
@@ -85,13 +106,14 @@ Future<WorkoutFocusVm> _loadNextWorkout() async {
   );
 
   return WorkoutFocusVm(
-    workoutName: nextWorkoutData['name']!,
+    workoutName: nextWorkoutName,
     muscleGroups: muscleGroupInNextWorkout,
     nrOfExercises: exercisesInNextWorkoutIds.length,
+    dayId: workoutDayId,
   );
 }
 
-Future<String?> returnWorkoutNameIfActiveWorkoutIsQuick(Ref ref) async {
+Future<WorkoutFocusVm?> _loadActiveWorkoutFocus(Ref ref) async {
   final activeSessionId = await ref.watch(activeSessionIdProvider.future);
 
   if (activeSessionId == null) return null;
@@ -107,16 +129,33 @@ Future<String?> returnWorkoutNameIfActiveWorkoutIsQuick(Ref ref) async {
     [activeSessionId],
   );
 
-  final row = data.first;
+  if (data.isEmpty) return null;
 
-  if (row['day_id'] == null) {
-    return row['workout_name'] as String;
-  } else {
-    return null;
+  final row = data.first;
+  final workoutName = row['workout_name'] as String;
+  final dayId = row['day_id'] as String?;
+
+  if (dayId == null) {
+    return WorkoutFocusVm(
+      workoutName: workoutName,
+      muscleGroups: null,
+      nrOfExercises: null,
+      isActiveQuickWorkout: true,
+    );
   }
+
+  final exerciseIds = await _loadExerciseIdsForWorkout(db, dayId);
+  final muscleGroups = await _loadMuscleGroups(db, exerciseIds);
+
+  return WorkoutFocusVm(
+    workoutName: workoutName,
+    muscleGroups: muscleGroups,
+    nrOfExercises: exerciseIds.length,
+    dayId: dayId,
+  );
 }
 
-final workoutFocusProvider  =
+final workoutFocusProvider =
     AsyncNotifierProvider<WorkoutFocusNotifier, WorkoutFocusVm>(
       WorkoutFocusNotifier.new,
     );
@@ -125,18 +164,12 @@ class WorkoutFocusNotifier extends AsyncNotifier<WorkoutFocusVm> {
   @override
   FutureOr<WorkoutFocusVm> build() async {
     ref.watch(activeSessionLifecycleProvider);
+    ref.watch(pickedNextSessionProvider);
 
-    final workoutName = await returnWorkoutNameIfActiveWorkoutIsQuick(ref);
+    final activeWorkoutFocus = await _loadActiveWorkoutFocus(ref);
 
-    if (workoutName != null) {
-      return WorkoutFocusVm(
-        workoutName: workoutName,
-        muscleGroups: null,
-        nrOfExercises: null,
-        isActiveQuickWorkout: true
-      );
-    }
+    if (activeWorkoutFocus != null) return activeWorkoutFocus;
 
-    return _loadNextWorkout();
+    return _loadNextWorkout(ref);
   }
 }

@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:lifting_tracker_app/providers/presentation/active_split_days_vm.dart';
+import 'package:lifting_tracker_app/providers/persisted/picked_next_session_provider.dart';
+import 'package:lifting_tracker_app/providers/presentation/active_split_days_options.dart';
+import 'package:lifting_tracker_app/providers/presentation/workout_focus.dart';
 import 'package:lifting_tracker_app/theme/app_colors.dart';
 
 class PickNextWorkoutPopupMenu extends ConsumerWidget {
@@ -8,7 +10,9 @@ class PickNextWorkoutPopupMenu extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final activeSplitDaysVmAsync = ref.watch(activeSplitDaysVmProvider);
+    final activeSplitDaysVmAsync = ref.watch(activeSplitDaysOptionsProvider);
+
+    final selectedWorkoutAsync = ref.watch(workoutFocusProvider);
 
     final menuDivider = PopupMenuItem(
       enabled: false,
@@ -76,27 +80,49 @@ class PickNextWorkoutPopupMenu extends ConsumerWidget {
                 PopupMenuItem(
                   padding: EdgeInsets.symmetric(horizontal: 12, vertical: 8),
                   height: 38,
+                  onTap: () => ref
+                      .read(pickedNextSessionProvider.notifier)
+                      .changeNextSessionId(splitDay.dayId!),
                   child: Align(
                     alignment: Alignment.centerLeft,
-                    child: Column(
-                      mainAxisAlignment: MainAxisAlignment.start,
-                      crossAxisAlignment: CrossAxisAlignment.stretch,
+                    child: Row(
+                      crossAxisAlignment: CrossAxisAlignment.center,
                       children: [
-                        Text(
-                          splitDay.workoutName,
-                          style: Theme.of(context).textTheme.bodyMedium!.copyWith(
-                            color: AppColors.onSurface,
-                            fontWeight: FontWeight.bold,
+                        Expanded(
+                          child: Column(
+                            mainAxisAlignment: MainAxisAlignment.start,
+                            crossAxisAlignment: CrossAxisAlignment.stretch,
+                            children: [
+                              Text(
+                                splitDay.workoutName,
+                                style: Theme.of(context).textTheme.bodyMedium!
+                                    .copyWith(
+                                      color: AppColors.onSurface,
+                                      fontWeight: FontWeight.bold,
+                                    ),
+                              ),
+                              const SizedBox(height: 4),
+                              Text(
+                                splitDay.muscleGroups ??
+                                    'no muscle groups selected',
+                                style: Theme.of(context).textTheme.bodySmall!
+                                    .copyWith(color: AppColors.primary),
+                              ),
+                            ],
                           ),
                         ),
-                        const SizedBox(height: 4),
-                        Text(
-                          splitDay.muscleGroups ??
-                              'no muscle groups selected',
-                          style: Theme.of(context).textTheme.bodySmall!.copyWith(
-                            color: AppColors.primary,
-                            // fontWeight: FontWeight.bold,
-                          ),
+
+                        selectedWorkoutAsync.when(
+                          loading: () => const SizedBox(),
+                          error: (_, _) => const Center(child: Text('Error.')),
+                          data: (selectedWorkout) {
+                            return SizedBox(
+                              width: 16,
+                              child: selectedWorkout.dayId == splitDay.dayId
+                                  ? Icon(Icons.check, size: 16)
+                                  : null,
+                            );
+                          },
                         ),
                       ],
                     ),

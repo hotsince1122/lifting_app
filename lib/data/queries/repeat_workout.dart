@@ -46,21 +46,3 @@ Future<void> loadExercisesFromSourceWorkoutInDb(
 
   await batch.commit(noResult: true);
 }
-
-Future<String?> getWorkoutName(
-  DatabaseExecutor db,
-  int sourceWorkoutId,
-) async {
-  final data = await db.rawQuery(
-    '''
-    SELECT workout_name
-    FROM workout_sessions
-    WHERE id = ?
-    ''',
-    [sourceWorkoutId],
-  );
-
-  if (data.isEmpty) return null;
-
-  return data.first['workout_name'] as String;
-}

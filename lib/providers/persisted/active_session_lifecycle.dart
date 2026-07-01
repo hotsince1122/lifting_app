@@ -2,9 +2,11 @@ import 'dart:async';
 
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:lifting_tracker_app/data/app_databases.dart';
+import 'package:lifting_tracker_app/data/queries/aux_funcs.dart';
 import 'package:lifting_tracker_app/data/queries/aux_functions_for_pop.dart';
 import 'package:lifting_tracker_app/data/queries/repeat_workout.dart';
 import 'package:lifting_tracker_app/data/workout_session_statuses.dart';
+import 'package:lifting_tracker_app/providers/persisted/picked_next_session_provider.dart';
 import 'package:lifting_tracker_app/providers/persisted/week_progress.dart';
 import 'package:lifting_tracker_app/providers/presentation/workout_header_summary_card.dart';
 import 'package:sqflite/sqflite.dart';
@@ -27,10 +29,15 @@ FutureOr<bool> _hasActiveSession() async {
 }
 
 class _NextCycleDay {
-  const _NextCycleDay({required this.id, required this.name});
+  const _NextCycleDay({
+    required this.id,
+    required this.name,
+    required this.workoutIndex,
+  });
 
   final String id;
   final String name;
+  final int workoutIndex;
 }
 
 FutureOr<_NextCycleDay> _nextDayInCycleDay(
@@ -52,7 +59,41 @@ FutureOr<_NextCycleDay> _nextDayInCycleDay(
 
   final row = data.first;
 
-  return _NextCycleDay(id: row['id'] as String, name: row['name'] as String);
+  return _NextCycleDay(
+    id: row['id'] as String,
+    name: row['name'] as String,
+    workoutIndex: nextInCycleIndex,
+  );
+}
+
+FutureOr<_NextCycleDay?> _splitDayById(Database db, String dayId) async {
+  final data = await db.rawQuery(
+    '''
+    SELECT id, name, order_idx
+    FROM split_days
+    WHERE id = ?
+    ''',
+    [dayId],
+  );
+
+  if (data.isEmpty) return null;
+
+  final row = data.first;
+
+  return _NextCycleDay(
+    id: row['id'] as String,
+    name: row['name'] as String,
+    workoutIndex: row['order_idx'] as int,
+  );
+}
+
+FutureOr<_NextCycleDay> _nextScheduledCycleDay(
+  Database db,
+  List<String> activeSplitDaysIds,
+) async {
+  final int nextInCycleIndex = await loadNextCycleIndex(db, activeSplitDaysIds);
+
+  return _nextDayInCycleDay(db, activeSplitDaysIds, nextInCycleIndex);
 }
 
 const _quickWorkoutName = 'Quick Workout';
@@ -94,16 +135,23 @@ class ActiveSessionLifecycleNotifier extends AsyncNotifier<bool> {
   Future<int> startSession() async {
     final db = await AppDatabases.getDatabase();
 
-    final List<String> activeSplitDaysIds = await loadActiveSplitDaysIds(db);
-    final int nextInCycleIndex = await loadNextCycleIndex(
-      db,
-      activeSplitDaysIds,
-    );
-    final nextDayInCycleDay = await _nextDayInCycleDay(
-      db,
-      activeSplitDaysIds,
-      nextInCycleIndex,
-    );
+    final activeSplitDaysIds = await loadActiveSplitDaysIds(db);
+    final pickedWorkoutDayId = await ref.read(pickedNextSessionProvider.future);
+
+    final isPickedDayInActiveSplit =
+        pickedWorkoutDayId != null &&
+        activeSplitDaysIds.contains(pickedWorkoutDayId);
+
+    final pickedDay = isPickedDayInActiveSplit
+        ? await _splitDayById(db, pickedWorkoutDayId)
+        : null;
+
+    if (pickedWorkoutDayId != null && pickedDay == null) {
+      await ref.read(pickedNextSessionProvider.notifier).consumeId();
+    }
+
+    final nextDayInCycleDay =
+        pickedDay ?? await _nextScheduledCycleDay(db, activeSplitDaysIds);
 
     final sessionId = await db.transaction<int>(
       (txn) => txn.rawInsert(
@@ -121,11 +169,15 @@ class ActiveSessionLifecycleNotifier extends AsyncNotifier<bool> {
           nextDayInCycleDay.name,
           nextDayInCycleDay.id,
           DateTime.now().millisecondsSinceEpoch ~/ 1000,
-          nextInCycleIndex,
+          nextDayInCycleDay.workoutIndex,
           WorkoutSessionStatuses.activeStatus,
         ],
       ),
     );
+
+    if (pickedDay != null) {
+      await ref.read(pickedNextSessionProvider.notifier).consumeId();
+    }
 
     state = AsyncData(true);
     return sessionId;
@@ -137,10 +189,7 @@ class ActiveSessionLifecycleNotifier extends AsyncNotifier<bool> {
     final db = await AppDatabases.getDatabase();
 
     final sessionId = await db.transaction<int>(
-      (txn) => _insertQuickWorkout(
-        txn,
-        workoutName: workoutName,
-      ),
+      (txn) => _insertQuickWorkout(txn, workoutName: workoutName),
     );
 
     state = AsyncData(true);
@@ -151,7 +200,10 @@ class ActiveSessionLifecycleNotifier extends AsyncNotifier<bool> {
     final db = await AppDatabases.getDatabase();
 
     final newWorkoutId = await db.transaction<int?>((txn) async {
-      final workoutName = await getWorkoutName(txn, sourceWorkoutId);
+      final workoutName = await getWorkoutNameFromWorkoutID(
+        txn,
+        sourceWorkoutId,
+      );
 
       if (workoutName == null) return null;
 
@@ -243,7 +295,6 @@ class ActiveSessionLifecycleNotifier extends AsyncNotifier<bool> {
     await ref
         .read(weeklyWorkoutProgressProvider.notifier)
         .updateProgress(finishedWeekday);
-
 
     //so the summary card updates for the particular workout id
     ref.invalidate(workoutHeaderSummaryCardProvider);
