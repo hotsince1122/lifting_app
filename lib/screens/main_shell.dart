@@ -4,7 +4,9 @@ import 'package:lifting_tracker_app/data/animations/tab_body_transition.dart';
 import 'package:lifting_tracker_app/providers/presentation/history_editing_mode.dart';
 import 'package:lifting_tracker_app/screens/history.dart';
 import 'package:lifting_tracker_app/screens/home.dart';
+import 'package:lifting_tracker_app/screens/plans.dart';
 import 'package:lifting_tracker_app/widgets/appBars/history_screen_app_bar.dart';
+import 'package:lifting_tracker_app/widgets/appBars/plans_screen/plans_screen_app_bar.dart';
 import 'package:lifting_tracker_app/widgets/homescreen/bottom_nav_bar.dart';
 import 'package:lifting_tracker_app/widgets/appBars/home_screen_app_bar.dart';
 
@@ -17,11 +19,12 @@ class MainShell extends StatefulWidget {
 
 class _MainShellState extends State<MainShell> {
   int _currentIndex = 0;
-  static const int _nrOfTabes = 2;
+  static const int _nrOfTabes = 3;
 
   static const List<PreferredSizeWidget?> _appBars = [
     HomeScreenAppBar(),
     HistoryAppBar(),
+    PlansAppBar(),
   ];
 
   void _onTabSelected(int index, WidgetRef ref) {
@@ -45,7 +48,7 @@ class _MainShellState extends State<MainShell> {
         animationKey: _currentIndex,
         child: IndexedStack(
           index: _currentIndex,
-          children: const [Home(), History()],
+          children: const [Home(), History(), Plans()],
         ),
       ),
     );
