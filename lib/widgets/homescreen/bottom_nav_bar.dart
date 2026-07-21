@@ -14,7 +14,7 @@ class CustomBottomNavBar extends ConsumerWidget {
     const int homeIndex = 0;
     const int historyIndex = 1;
     const int plansIndex = 2;
-    const int settingsIndex = 3;
+    const int progressIndex = 3;
 
     Widget navBarButton(String text, IconData icon, int tabIndex) {
       return AspectRatio(
@@ -56,7 +56,7 @@ class CustomBottomNavBar extends ConsumerWidget {
               navBarButton('Home', PhosphorIcons.house(), homeIndex),
               navBarButton('History', PhosphorIcons.clockCounterClockwise(), historyIndex),
               navBarButton('Plans', PhosphorIcons.squaresFour(), plansIndex),
-              navBarButton('Settings', PhosphorIcons.gear(), settingsIndex),
+              navBarButton('Progress', PhosphorIcons.chartLineUp(), progressIndex),
             ],
           ),
         ),

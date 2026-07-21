@@ -6,9 +6,9 @@ class AppDatabases {
 
   static const _presetSplitPlans = <Map<String, Object?>>[
     {'id': 1, 'name': 'PPL', 'is_preset': 1, 'is_active': 0},
-    {'id': 2, 'name': 'UL', 'is_preset': 1, 'is_active': 0},
+    {'id': 2, 'name': 'Upper Lower', 'is_preset': 1, 'is_active': 0},
     {'id': 3, 'name': 'Arnold', 'is_preset': 1, 'is_active': 0},
-    {'id': 4, 'name': 'FB', 'is_preset': 1, 'is_active': 0},
+    {'id': 4, 'name': 'Full Body', 'is_preset': 1, 'is_active': 0},
   ];
 
   static const _presetSplitDays = <Map<String, Object?>>[

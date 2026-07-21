@@ -10,7 +10,8 @@ final activeSplitDaysOptionsProvider =
       ActiveSplitDaysOptionsNotifier.new,
     );
 
-class ActiveSplitDaysOptionsNotifier extends AsyncNotifier<List<WorkoutFocusVm>> {
+class ActiveSplitDaysOptionsNotifier
+    extends AsyncNotifier<List<WorkoutFocusVm>> {
   @override
   FutureOr<List<WorkoutFocusVm>> build() async {
     final activeSplitDays = await ref.watch(activeSplitDaysProvider.future);
@@ -21,7 +22,7 @@ class ActiveSplitDaysOptionsNotifier extends AsyncNotifier<List<WorkoutFocusVm>>
 
     await db.transaction((txn) async {
       for (final splitDay in activeSplitDays) {
-        final data = await txn.rawQuery(
+        var data = await txn.rawQuery(
           '''
           SELECT GROUP_CONCAT(muscle_group, ' / ') AS muscleGroups
           FROM ( 
@@ -35,11 +36,29 @@ class ActiveSplitDaysOptionsNotifier extends AsyncNotifier<List<WorkoutFocusVm>>
           [splitDay.id],
         );
 
+        var muscleGroup = data.first['muscleGroups'] as String?;
+        if (muscleGroup != null && !muscleGroup.contains(' ')) {
+          muscleGroup += ' focused';
+        }
+
+        data = await txn.rawQuery(
+          '''
+          SELECT COUNT(*) as nrOfExercises
+          FROM day_exercises
+          WHERE day_id = ?
+          ''',
+          [splitDay.id],
+        );
+
+        final nrOfExercises = data.isEmpty
+            ? 0
+            : data.first['nrOfExercises'] as int;
+
         workouts.add(
           WorkoutFocusVm(
             workoutName: splitDay.name,
-            muscleGroups: data.first['muscleGroups'] as String?,
-            nrOfExercises: null,
+            muscleGroups: muscleGroup ?? 'no muscle groups',
+            nrOfExercises: nrOfExercises,
             dayId: splitDay.id,
           ),
         );

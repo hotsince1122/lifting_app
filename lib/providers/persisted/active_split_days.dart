@@ -1,41 +1,12 @@
-import 'dart:async';
-
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:lifting_tracker_app/data/app_databases.dart';
 import 'package:lifting_tracker_app/models/entity/split_day.dart';
-import 'package:lifting_tracker_app/providers/persisted/active_split_plan.dart';
+import 'package:lifting_tracker_app/providers/persisted/active_split_id.dart';
+import 'package:lifting_tracker_app/providers/persisted/split_days.dart';
 
-Future<List<SplitDay>> _loadDaysFromActiveSplit() async {
-  final db = await AppDatabases.getDatabase();
+final activeSplitDaysProvider = FutureProvider<List<SplitDay>>((ref) async {
+  final activeSplitId = await ref.watch(activeSplitIdProvider.future);
 
-  final data = await db.rawQuery('''
-    SELECT sd.name AS name, sd.order_idx AS orderIndex, sd.id AS id
-    FROM split_plans sp
-    JOIN split_days sd ON sp.id = sd.split_id
-    WHERE sp.is_active = 1
-    ORDER BY sd.order_idx
-    ''');
+  if (activeSplitId == null) return const <SplitDay>[];
 
-  return data
-      .map(
-        (row) => SplitDay(
-          name: row['name'] as String,
-          orderIndex: row['orderIndex'] as int,
-          id: row['id'] as String,
-        ),
-      )
-      .toList();
-}
-
-final activeSplitDaysProvider =
-    AsyncNotifierProvider<ActiveSplitDaysProvider, List<SplitDay>>(
-      ActiveSplitDaysProvider.new,
-    );
-
-class ActiveSplitDaysProvider extends AsyncNotifier<List<SplitDay>> {
-  @override
-  FutureOr<List<SplitDay>> build() async {  
-    ref.watch(activeSplitPlanProvider);
-    return _loadDaysFromActiveSplit();
-  }
-}
+  return ref.watch(splitDaysProvider(activeSplitId).future);
+});

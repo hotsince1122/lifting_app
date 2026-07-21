@@ -46,7 +46,6 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
               ),
       ),
       body: SafeArea(
-        bottom: false,
         child: Stack(
           children: [
             PageView(

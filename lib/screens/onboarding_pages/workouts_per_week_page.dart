@@ -1,11 +1,10 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:lifting_tracker_app/providers/persisted/week_progress.dart';
 import 'package:lifting_tracker_app/theme/app_colors.dart';
 import 'package:lifting_tracker_app/theme/app_gradients.dart';
 
 import 'package:lifting_tracker_app/widgets/core/gradient_cards.dart';
 import 'package:lifting_tracker_app/widgets/core/solid_button.dart';
+import 'package:lifting_tracker_app/widgets/profile_setup/workouts_per_week_slider.dart';
 
 class WorkoutsPerWeekPage extends StatelessWidget {
   const WorkoutsPerWeekPage(this.controller, {super.key});
@@ -23,6 +22,8 @@ class WorkoutsPerWeekPage extends StatelessWidget {
             gradientVariant: AppGradients.card,
             child: Center(
               child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                crossAxisAlignment: CrossAxisAlignment.center,
                 children: [
                   Text(
                     'Welcome to Focus Lifts',
@@ -58,7 +59,7 @@ class WorkoutsPerWeekPage extends StatelessWidget {
                     style: Theme.of(context).textTheme.titleLarge!.copyWith(fontSize: 17),
                   ),
                   const SizedBox(height: 20),
-                  _WorkoutsPerWeekSlider(),
+                  WorkoutsPerWeekSlider(),
                 ],
               ),
             ),
@@ -88,39 +89,6 @@ class WorkoutsPerWeekPage extends StatelessWidget {
           ),
         ],
       ),
-    );
-  }
-}
-
-class _WorkoutsPerWeekSlider extends ConsumerWidget {
-  const _WorkoutsPerWeekSlider();
-
-  @override
-  Widget build(BuildContext context, WidgetRef ref) {
-    final workoutsPerWeekAsync = ref.watch(weeklyWorkoutProgressProvider);
-
-    return workoutsPerWeekAsync.when(
-      loading: () => const Center(child: CircularProgressIndicator()),
-      error: (error, stack) => Center(child: Text('Error: $error')),
-      data: (weeklyWorkoutProgress) {
-        final target = weeklyWorkoutProgress.target;
-
-        return Slider(
-          value: target.toDouble(),
-          max: 7,
-          min: 1,
-          divisions: 6,
-          activeColor: AppColors.onSurface,
-          inactiveColor: AppColors.surface,
-          label: '$target day${target > 1 ? 's' : ''}',
-          thumbColor: AppColors.primary,
-          onChanged: (value) {
-            ref
-                .read(weeklyWorkoutProgressProvider.notifier)
-                .saveNewTarget(value.toInt());
-          },
-        );
-      },
     );
   }
 }

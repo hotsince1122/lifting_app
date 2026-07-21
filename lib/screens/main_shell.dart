@@ -2,13 +2,14 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:lifting_tracker_app/data/animations/tab_body_transition.dart';
 import 'package:lifting_tracker_app/providers/presentation/history_editing_mode.dart';
+import 'package:lifting_tracker_app/providers/presentation/plans_change_weekly_target_mode.dart';
 import 'package:lifting_tracker_app/screens/history.dart';
 import 'package:lifting_tracker_app/screens/home.dart';
-import 'package:lifting_tracker_app/screens/plans.dart';
-import 'package:lifting_tracker_app/widgets/appBars/history_screen_app_bar.dart';
-import 'package:lifting_tracker_app/widgets/appBars/plans_screen/plans_screen_app_bar.dart';
+import 'package:lifting_tracker_app/screens/plans/plans.dart';
+import 'package:lifting_tracker_app/widgets/app_bars/history_screen_app_bar.dart';
+import 'package:lifting_tracker_app/widgets/app_bars/plans_screen/plans_screen_app_bar.dart';
 import 'package:lifting_tracker_app/widgets/homescreen/bottom_nav_bar.dart';
-import 'package:lifting_tracker_app/widgets/appBars/home_screen_app_bar.dart';
+import 'package:lifting_tracker_app/widgets/app_bars/home_screen_app_bar.dart';
 
 class MainShell extends StatefulWidget {
   const MainShell({super.key});
@@ -32,6 +33,10 @@ class _MainShellState extends State<MainShell> {
 
     if (_currentIndex == 1 && index != 1) {
       ref.read(historyEditModeProvider.notifier).exit();
+    }
+
+    if (_currentIndex == 2 && index != 2) {
+      ref.read(changeWeeklyTargetMode.notifier).exit();
     }
 
     setState(() {

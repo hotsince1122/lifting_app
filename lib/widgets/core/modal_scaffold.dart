@@ -23,7 +23,7 @@ class ModalScaffold extends StatelessWidget {
         child: ClipRRect(
           borderRadius: BorderRadius.circular(24),
           child: Container(
-            height: MediaQuery.of(context).size.height * 0.72,
+            height: MediaQuery.of(context).size.height * height,
             width: width,
             decoration: BoxDecoration(
               borderRadius: BorderRadius.circular(24),

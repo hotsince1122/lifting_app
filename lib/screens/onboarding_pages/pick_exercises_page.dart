@@ -70,8 +70,7 @@ class PickExercisesPage extends ConsumerWidget {
 
               const SizedBox(height: 24),
 
-              SizedBox(
-                height: 480,
+              Expanded(
                 child: SingleChildScrollView(
                   child: Column(
                     children: [
@@ -90,7 +89,6 @@ class PickExercisesPage extends ConsumerWidget {
                   ),
                 ),
               ),
-              const Spacer(),
               _FinishOnboardingButton(dayIds),
             ],
           ),

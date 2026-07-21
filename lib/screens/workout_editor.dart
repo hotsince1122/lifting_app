@@ -3,10 +3,10 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:lifting_tracker_app/providers/persisted/exercise_and_sets/exercises_and_sets.dart';
 import 'package:lifting_tracker_app/widgets/workout_session_screen/add_exercises_card.dart';
 import 'package:lifting_tracker_app/widgets/workout_session_screen/exercise_and_sets_card.dart';
-import 'package:lifting_tracker_app/widgets/appBars/workout_session/active_workout_editor_flow.dart';
-import 'package:lifting_tracker_app/widgets/appBars/workout_session/edit_workout_editor_flow.dart';
-import 'package:lifting_tracker_app/widgets/appBars/workout_session/workout_session_app_bar.dart';
-import 'package:lifting_tracker_app/widgets/appBars/workout_session/workout_editor_flow.dart';
+import 'package:lifting_tracker_app/widgets/app_bars/workout_session/active_workout_editor_flow.dart';
+import 'package:lifting_tracker_app/widgets/app_bars/workout_session/edit_workout_editor_flow.dart';
+import 'package:lifting_tracker_app/widgets/app_bars/workout_session/workout_session_app_bar.dart';
+import 'package:lifting_tracker_app/widgets/app_bars/workout_session/workout_editor_flow.dart';
 import 'package:lifting_tracker_app/widgets/workout_session_screen/session_summary_card.dart';
 
 class WorkoutEditorScreen extends ConsumerWidget {

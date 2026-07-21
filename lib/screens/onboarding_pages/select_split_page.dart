@@ -2,12 +2,11 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:lifting_tracker_app/models/entity/custom_split.dart';
 import 'package:lifting_tracker_app/widgets/core/gradient_button.dart';
+import 'package:lifting_tracker_app/widgets/profile_setup/custom_split_selector.dart';
 import 'package:lifting_tracker_app/widgets/profile_setup/preset_splits.dart';
-
 import 'package:lifting_tracker_app/theme/app_gradients.dart';
 import 'package:lifting_tracker_app/providers/persisted/active_split_plan.dart';
 import 'package:lifting_tracker_app/theme/app_colors.dart';
-import 'package:lifting_tracker_app/widgets/profile_setup/custom_split_selector.dart';
 import 'package:lifting_tracker_app/widgets/core/gradient_cards.dart';
 import 'package:lifting_tracker_app/widgets/core/solid_button.dart';
 
@@ -18,20 +17,6 @@ class SelectSplitPage extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    Future<CustomSplit?> openCustomSplitSelector(
-      BuildContext context,
-      double screenWidth,
-    ) {
-      return showModalBottomSheet<CustomSplit>(
-        context: context,
-        isDismissible: false,
-        enableDrag: false,
-        backgroundColor: Colors.transparent,
-        barrierColor: Colors.black12,
-        isScrollControlled: true,
-        builder: (ctx) => CustomSplitSelector(screenWidth: screenWidth),
-      );
-    }
 
     final screenWidth = MediaQuery.of(context).size.width;
     final splitPlanAsync = ref.watch(activeSplitPlanProvider);
@@ -115,7 +100,7 @@ class SelectSplitPage extends ConsumerWidget {
                     !activeSplitPlan.isPreset),
                 onPressed: () async {
                   final CustomSplit? customSplit =
-                      await openCustomSplitSelector(context, screenWidth);
+                      await CustomSplitSelector.show(context);
                   if (customSplit != null) {
                     ref.read(activeSplitPlanProvider.notifier).addAndChangeToCustom(customSplit);
                   }
@@ -138,6 +123,8 @@ class SelectSplitPage extends ConsumerWidget {
                   ],
                 ),
               ),
+
+
               const SizedBox(height: 8),
               Text(
                 'Pick how many days it has, then name each one.',
