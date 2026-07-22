@@ -5,7 +5,7 @@ class SplitPlan {
     required this.isPreset,
     required this.isActive,
     required this.cycleLengthInDays,
-    required this.nrOfExercises
+    required this.nrOfExercises,
   });
 
   final int id;

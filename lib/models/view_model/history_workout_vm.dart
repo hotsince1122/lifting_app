@@ -9,7 +9,7 @@ class HistoryWorkoutVm {
     String? weekdayLabel,
     int? dayOfMonth,
     required int durationSeconds,
-    required this.exercisesLabel
+    required this.exercisesLabel,
   }) : weekdayLabel = toUpperFirst(DateFormat.E('en_US').format(startedAt)),
        dayOfMonth = startedAt.day,
        durationMinutes = (durationSeconds / 60).round();

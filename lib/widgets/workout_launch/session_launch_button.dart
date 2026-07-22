@@ -84,11 +84,7 @@ class SessionLaunchButton extends ConsumerWidget {
     required bool isSessionAlreadyActive,
     required String workoutName,
   }) {
-    final child = contentBuilder(
-      context,
-      isSessionAlreadyActive,
-      workoutName,
-    );
+    final child = contentBuilder(context, isSessionAlreadyActive, workoutName);
 
     return buttonBuilder(
       context,
@@ -99,47 +95,55 @@ class SessionLaunchButton extends ConsumerWidget {
   }
 
   Widget _buildActiveSessionButton(BuildContext context, WidgetRef ref) {
-    return ref.watch(activeSessionIdProvider).when(
-      loading: _loading,
-      error: (_, _) => _error(),
-      data: (activeSessionId) {
-        if (activeSessionId == null) return _error();
-
-        return ref.watch(workoutNameProvider(activeSessionId)).when(
+    return ref
+        .watch(activeSessionIdProvider)
+        .when(
           loading: _loading,
           error: (_, _) => _error(),
-          data: (workoutName) => _buildLaunchButton(
-            context,
-            ref,
-            isSessionAlreadyActive: true,
-            workoutName: workoutName,
-          ),
+          data: (activeSessionId) {
+            if (activeSessionId == null) return _error();
+
+            return ref
+                .watch(workoutNameProvider(activeSessionId))
+                .when(
+                  loading: _loading,
+                  error: (_, _) => _error(),
+                  data: (workoutName) => _buildLaunchButton(
+                    context,
+                    ref,
+                    isSessionAlreadyActive: true,
+                    workoutName: workoutName,
+                  ),
+                );
+          },
         );
-      },
-    );
   }
 
   Widget _buildNewSessionButton(BuildContext context, WidgetRef ref) {
-    return ref.watch(workoutFocusProvider).when(
-      loading: _loading,
-      error: (_, _) => _error(),
-      data: (workoutFocus) => _buildLaunchButton(
-        context,
-        ref,
-        isSessionAlreadyActive: false,
-        workoutName: workoutFocus.workoutName,
-      ),
-    );
+    return ref
+        .watch(workoutFocusProvider)
+        .when(
+          loading: _loading,
+          error: (_, _) => _error(),
+          data: (workoutFocus) => _buildLaunchButton(
+            context,
+            ref,
+            isSessionAlreadyActive: false,
+            workoutName: workoutFocus.workoutName,
+          ),
+        );
   }
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    return ref.watch(activeSessionLifecycleProvider).when(
-      loading: _loading,
-      error: (_, _) => _error(),
-      data: (isSessionAlreadyActive) => isSessionAlreadyActive
-          ? _buildActiveSessionButton(context, ref)
-          : _buildNewSessionButton(context, ref),
-    );
+    return ref
+        .watch(activeSessionLifecycleProvider)
+        .when(
+          loading: _loading,
+          error: (_, _) => _error(),
+          data: (isSessionAlreadyActive) => isSessionAlreadyActive
+              ? _buildActiveSessionButton(context, ref)
+              : _buildNewSessionButton(context, ref),
+        );
   }
 }

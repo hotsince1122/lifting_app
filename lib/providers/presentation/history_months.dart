@@ -1,7 +1,7 @@
 import 'dart:async';
 
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:lifting_tracker_app/data/app_databases.dart';
+import 'package:lifting_tracker_app/core/database/app_database.dart';
 import 'package:lifting_tracker_app/data/workout_session_statuses.dart';
 import 'package:lifting_tracker_app/models/view_model/history_month_vm.dart';
 import 'package:lifting_tracker_app/models/view_model/history_workout_vm.dart';
@@ -13,7 +13,7 @@ final historyMonthsProvider =
     );
 
 Future<List<String>> exercisesLabelFromAWorkoutin(int workoutId) async {
-  final db = await AppDatabases.getDatabase();
+  final db = await AppDatabase.getDatabase();
 
   final data = await db.rawQuery(
     '''
@@ -49,7 +49,7 @@ class HistoryMonthsNotifier extends AsyncNotifier<List<HistoryMonthVm>> {
   }
 
   Future<List<HistoryMonthVm>> _loadHistoryMonths() async {
-    final db = await AppDatabases.getDatabase();
+    final db = await AppDatabase.getDatabase();
     final rows = await db.rawQuery(
       '''
       SELECT id,

@@ -13,9 +13,7 @@ class ChangeSplitNameFlow extends ChangeNameFlow {
 
   @override
   Future<void> changeName(WidgetRef ref, String newName) async {
-    await ref
-        .read(splitNameProvider(splitId).notifier)
-        .renameSplit(newName);
+    await ref.read(splitNameProvider(splitId).notifier).renameSplit(newName);
   }
 
   @override

@@ -40,9 +40,7 @@ class _InsertedSetAnimationState extends State<InsertedSetAnimation>
     _slide = Tween<Offset>(
       begin: const Offset(0, 0.12),
       end: Offset.zero,
-    ).animate(
-      CurvedAnimation(parent: _controller, curve: Curves.easeOutCubic),
-    );
+    ).animate(CurvedAnimation(parent: _controller, curve: Curves.easeOutCubic));
 
     _controller.addStatusListener((status) {
       if (status == AnimationStatus.completed) {
@@ -61,10 +59,7 @@ class _InsertedSetAnimationState extends State<InsertedSetAnimation>
         child: SizeTransition(
           sizeFactor: _size,
           axisAlignment: -1,
-          child: SlideTransition(
-            position: _slide,
-            child: widget.child,
-          ),
+          child: SlideTransition(position: _slide, child: widget.child),
         ),
       ),
     );

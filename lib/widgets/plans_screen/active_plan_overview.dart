@@ -4,9 +4,9 @@ import 'package:lifting_tracker_app/providers/persisted/active_split_plan.dart';
 import 'package:lifting_tracker_app/providers/presentation/active_split_days_options.dart';
 import 'package:lifting_tracker_app/screens/plans/edit_day.dart';
 import 'package:lifting_tracker_app/screens/plans/edit_split.dart';
-import 'package:lifting_tracker_app/theme/app_colors.dart';
-import 'package:lifting_tracker_app/theme/app_gradients.dart';
-import 'package:lifting_tracker_app/widgets/core/gradient_cards.dart';
+import 'package:lifting_tracker_app/core/theme/app_colors.dart';
+import 'package:lifting_tracker_app/core/theme/app_gradients.dart';
+import 'package:lifting_tracker_app/core/ui/cards/gradient_card.dart';
 import 'package:phosphor_flutter/phosphor_flutter.dart';
 
 class ActivePlanOverview extends StatelessWidget {

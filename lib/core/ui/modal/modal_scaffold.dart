@@ -1,6 +1,6 @@
 import 'dart:ui';
 import 'package:flutter/material.dart';
-import 'package:lifting_tracker_app/theme/app_colors.dart';
+import 'package:lifting_tracker_app/core/theme/app_colors.dart';
 
 class ModalScaffold extends StatelessWidget {
   const ModalScaffold(

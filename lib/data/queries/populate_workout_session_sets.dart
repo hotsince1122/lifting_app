@@ -1,4 +1,4 @@
-import 'package:lifting_tracker_app/data/app_databases.dart';
+import 'package:lifting_tracker_app/core/database/app_database.dart';
 import 'package:lifting_tracker_app/data/queries/aux_functions_for_pop.dart';
 import 'package:lifting_tracker_app/data/workout_session_statuses.dart';
 import 'package:lifting_tracker_app/models/entity/exercise.dart';
@@ -165,7 +165,7 @@ Future<int?> loadLastCompletedWorkoutIdForSameDay(
 Future<List<Exercise>> _loadExercisesFromWorkoutSession(
   int workoutSessionId,
 ) async {
-  final db = await AppDatabases.getDatabase();
+  final db = await AppDatabase.getDatabase();
 
   final dataExercises = await db.rawQuery(
     '''
@@ -343,7 +343,7 @@ Future<List<Exercise>> _loadRepetedWorkoutHints(
 Future<List<Exercise>> loadOrCreateWorkoutSessionEditorSets(
   int workoutSessionId,
 ) async {
-  final db = await AppDatabases.getDatabase();
+  final db = await AppDatabase.getDatabase();
 
   final currentExercises = await loadExistingWorkoutSessionSets(
     db,
@@ -372,7 +372,7 @@ Future<List<Exercise>> loadOrCreateWorkoutSessionEditorSets(
 }
 
 Future<List<Exercise>> loadSetsForEdit(int workoutSessionId) async {
-  final db = await AppDatabases.getDatabase();
+  final db = await AppDatabase.getDatabase();
 
   final didPopulateEditDraft = await db.transaction((txn) async {
     final executedExercisesData = await txn.rawQuery(

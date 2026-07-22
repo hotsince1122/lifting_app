@@ -1,6 +1,6 @@
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
-import 'package:lifting_tracker_app/theme/app_colors.dart';
+import 'package:lifting_tracker_app/core/theme/app_colors.dart';
 import 'package:phosphor_flutter/phosphor_flutter.dart';
 
 class ExerciseForm extends StatelessWidget {
@@ -95,7 +95,7 @@ class ExerciseForm extends StatelessWidget {
               ),
             ),
           ),
-          const SizedBox(height: 6,),
+          const SizedBox(height: 6),
           if (onDelete != null)
             Padding(
               padding: const EdgeInsets.symmetric(horizontal: 16),

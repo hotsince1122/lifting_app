@@ -2,7 +2,7 @@ import 'dart:async';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:lifting_tracker_app/theme/app_colors.dart';
+import 'package:lifting_tracker_app/core/theme/app_colors.dart';
 import 'package:lifting_tracker_app/widgets/plans_screen/change_name_flow.dart/change_name_contract.dart';
 
 class ChangeName extends ConsumerStatefulWidget {

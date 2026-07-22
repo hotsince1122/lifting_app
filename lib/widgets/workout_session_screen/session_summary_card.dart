@@ -5,10 +5,10 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:intl/intl.dart';
 import 'package:lifting_tracker_app/providers/persisted/workout_name.dart';
 import 'package:lifting_tracker_app/providers/presentation/workout_header_summary_card.dart';
-import 'package:lifting_tracker_app/theme/app_colors.dart';
-import 'package:lifting_tracker_app/theme/app_gradients.dart';
+import 'package:lifting_tracker_app/core/theme/app_colors.dart';
+import 'package:lifting_tracker_app/core/theme/app_gradients.dart';
 import 'package:lifting_tracker_app/widgets/app_bars/workout_session/workout_editor_flow.dart';
-import 'package:lifting_tracker_app/widgets/core/gradient_cards.dart';
+import 'package:lifting_tracker_app/core/ui/cards/gradient_card.dart';
 
 class SessionSummaryCard extends ConsumerStatefulWidget {
   const SessionSummaryCard(this.flow, {required this.sessionId, super.key});

@@ -1,13 +1,13 @@
 import 'dart:async';
 
-import 'package:lifting_tracker_app/data/app_databases.dart';
+import 'package:lifting_tracker_app/core/database/app_database.dart';
 import 'package:lifting_tracker_app/data/workout_session_statuses.dart';
 import 'package:lifting_tracker_app/models/view_model/last_workout_completed_card_vm.dart';
 import 'package:lifting_tracker_app/providers/persisted/active_session_lifecycle.dart';
 import 'package:riverpod/riverpod.dart';
 
 Future<LastWorkoutCompletedCardVm?> _loadLastWorkout() async {
-  final db = await AppDatabases.getDatabase();
+  final db = await AppDatabase.getDatabase();
 
   final workoutData = await db.rawQuery(
     '''

@@ -1,12 +1,12 @@
 import 'package:flutter/material.dart';
-import 'package:lifting_tracker_app/data/app_databases.dart';
+import 'package:lifting_tracker_app/core/database/app_database.dart';
 import 'package:sqflite/sqflite.dart';
 
 Future<bool> removeSetFromExerciseDb(
   int workoutSessionSetId,
   int workoutSessionId,
 ) async {
-  final db = await AppDatabases.getDatabase();
+  final db = await AppDatabase.getDatabase();
 
   try {
     final rowsDeleted = await db.transaction((txn) async {
@@ -82,7 +82,7 @@ Future<bool> deleteExerciseFromDb(
   int exerciseOrderIndex,
   int workoutSessionId,
 ) async {
-  final db = await AppDatabases.getDatabase();
+  final db = await AppDatabase.getDatabase();
 
   try {
     final rowsDeleted = await db.transaction((txn) async {

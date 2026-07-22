@@ -1,7 +1,7 @@
 import 'dart:async';
 
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:lifting_tracker_app/data/app_databases.dart';
+import 'package:lifting_tracker_app/core/database/app_database.dart';
 import 'package:lifting_tracker_app/data/queries/aux_funcs.dart';
 import 'package:lifting_tracker_app/data/queries/aux_functions_for_pop.dart';
 import 'package:lifting_tracker_app/data/queries/repeat_workout.dart';
@@ -12,7 +12,7 @@ import 'package:lifting_tracker_app/providers/presentation/workout_header_summar
 import 'package:sqflite/sqflite.dart';
 
 FutureOr<bool> _hasActiveSession() async {
-  final db = await AppDatabases.getDatabase();
+  final db = await AppDatabase.getDatabase();
 
   final data = await db.rawQuery(
     '''
@@ -133,7 +133,7 @@ class ActiveSessionLifecycleNotifier extends AsyncNotifier<bool> {
   }
 
   Future<int> startSession() async {
-    final db = await AppDatabases.getDatabase();
+    final db = await AppDatabase.getDatabase();
 
     final activeSplitDaysIds = await loadActiveSplitDaysIds(db);
     final pickedWorkoutDayId = await ref.read(pickedNextSessionProvider.future);
@@ -186,7 +186,7 @@ class ActiveSessionLifecycleNotifier extends AsyncNotifier<bool> {
   Future<int> startQuickWorkout({
     String workoutName = _quickWorkoutName,
   }) async {
-    final db = await AppDatabases.getDatabase();
+    final db = await AppDatabase.getDatabase();
 
     final sessionId = await db.transaction<int>(
       (txn) => _insertQuickWorkout(txn, workoutName: workoutName),
@@ -197,7 +197,7 @@ class ActiveSessionLifecycleNotifier extends AsyncNotifier<bool> {
   }
 
   Future<int?> startRepeatedWorkout(int sourceWorkoutId) async {
-    final db = await AppDatabases.getDatabase();
+    final db = await AppDatabase.getDatabase();
 
     final newWorkoutId = await db.transaction<int?>((txn) async {
       final workoutName = await getWorkoutNameFromWorkoutID(
@@ -228,7 +228,7 @@ class ActiveSessionLifecycleNotifier extends AsyncNotifier<bool> {
   }
 
   Future<void> endSession(int workoutSessionId) async {
-    final db = await AppDatabases.getDatabase();
+    final db = await AppDatabase.getDatabase();
     final finishedWeekday = DateTime.now().weekday;
 
     final didEndSession = await db.transaction<bool>((txn) async {

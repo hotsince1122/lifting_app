@@ -1,7 +1,7 @@
 import 'package:path/path.dart' as path;
 import 'package:sqflite/sqflite.dart' as sql;
 
-class AppDatabases {
+class AppDatabase {
   static sql.Database? _db;
 
   static const _presetSplitPlans = <Map<String, Object?>>[
@@ -270,8 +270,7 @@ class AppDatabases {
 
             UNIQUE(workout_session_id, exercise_order_index, set_index)
           )
-        '''
-        );
+        ''');
 
         final batch = db.batch();
         for (final splitPlan in _presetSplitPlans) {

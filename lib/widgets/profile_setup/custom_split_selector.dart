@@ -1,25 +1,23 @@
 import 'package:flutter/material.dart';
 import 'package:lifting_tracker_app/models/entity/custom_split.dart';
 import 'package:lifting_tracker_app/models/entity/split_day.dart';
-import 'package:lifting_tracker_app/theme/app_colors.dart';
-import 'package:lifting_tracker_app/widgets/core/modal_scaffold.dart';
+import 'package:lifting_tracker_app/core/theme/app_colors.dart';
+import 'package:lifting_tracker_app/core/ui/modal/modal_scaffold.dart';
 
 class CustomSplitSelector extends StatefulWidget {
   const CustomSplitSelector({super.key});
 
-  static Future<CustomSplit?> show(
-      BuildContext context,
-    ) {
-      return showModalBottomSheet<CustomSplit>(
-        context: context,
-        isDismissible: false,
-        enableDrag: false,
-        backgroundColor: Colors.transparent,
-        barrierColor: Colors.black12,
-        isScrollControlled: true,
-        builder: (ctx) => CustomSplitSelector(),
-      );
-    }
+  static Future<CustomSplit?> show(BuildContext context) {
+    return showModalBottomSheet<CustomSplit>(
+      context: context,
+      isDismissible: false,
+      enableDrag: false,
+      backgroundColor: Colors.transparent,
+      barrierColor: Colors.black12,
+      isScrollControlled: true,
+      builder: (ctx) => CustomSplitSelector(),
+    );
+  }
 
   @override
   State<CustomSplitSelector> createState() => _CustomSplitSelectorState();

@@ -1,7 +1,7 @@
 import 'dart:async';
 
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:lifting_tracker_app/data/app_databases.dart';
+import 'package:lifting_tracker_app/core/database/app_database.dart';
 import 'package:lifting_tracker_app/providers/persisted/exercise_and_sets/exercises_and_sets.dart';
 import 'package:lifting_tracker_app/providers/persisted/week_progress.dart';
 import 'package:lifting_tracker_app/providers/persisted/workout_name.dart';
@@ -22,7 +22,7 @@ class HistoryWorkoutActionsNotifier extends AsyncNotifier<void> {
   }
 
   Future<bool> clearActiveSessionSets(int workoutSessionId) async {
-    final db = await AppDatabases.getDatabase();
+    final db = await AppDatabase.getDatabase();
 
     try {
       await db.transaction((txn) async {
@@ -46,7 +46,7 @@ class HistoryWorkoutActionsNotifier extends AsyncNotifier<void> {
     int workoutSessionId, {
     required String workoutName,
   }) async {
-    final db = await AppDatabases.getDatabase();
+    final db = await AppDatabase.getDatabase();
     final normalizedWorkoutName = normalizeWorkoutName(workoutName);
 
     try {
@@ -115,7 +115,7 @@ class HistoryWorkoutActionsNotifier extends AsyncNotifier<void> {
   }
 
   Future<bool> deleteWorkout(int workoutId) async {
-    final db = await AppDatabases.getDatabase();
+    final db = await AppDatabase.getDatabase();
 
     try {
       final didSucceed = await db.transaction((txn) async {
@@ -161,7 +161,7 @@ class HistoryWorkoutActionsNotifier extends AsyncNotifier<void> {
     }
 
     ref.invalidate(lastWorkoutCompletedProvider);
-    ref.invalidate(workoutFocusProvider );
+    ref.invalidate(workoutFocusProvider);
 
     ref.invalidate(historyMonthsProvider);
     ref.invalidate(workoutHeaderSummaryCardProvider);

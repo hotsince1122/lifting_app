@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:lifting_tracker_app/models/entity/exercise.dart';
-import 'package:lifting_tracker_app/theme/app_colors.dart';
+import 'package:lifting_tracker_app/core/theme/app_colors.dart';
 import 'package:phosphor_flutter/phosphor_flutter.dart';
 
 class ExerciseTileHeader extends StatelessWidget {
@@ -8,7 +8,7 @@ class ExerciseTileHeader extends StatelessWidget {
 
   final Exercise exercise;
   final double iconSize;
-  
+
   @override
   Widget build(BuildContext context) {
     return Row(
@@ -28,6 +28,5 @@ class ExerciseTileHeader extends StatelessWidget {
         ),
       ],
     );
-
   }
 }

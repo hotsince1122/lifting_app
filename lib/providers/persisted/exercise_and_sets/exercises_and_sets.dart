@@ -1,6 +1,6 @@
 import 'dart:async';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:lifting_tracker_app/data/app_databases.dart';
+import 'package:lifting_tracker_app/core/database/app_database.dart';
 import 'package:lifting_tracker_app/data/queries/interact_with_workout_session/add_sets_or_exercises.dart';
 import 'package:lifting_tracker_app/data/queries/interact_with_workout_session/delete_sets_or_exercises.dart';
 import 'package:lifting_tracker_app/data/queries/interact_with_workout_session/miscellaneous_funcs.dart';
@@ -12,7 +12,7 @@ import 'package:lifting_tracker_app/models/entity/exercise.dart';
 import 'package:lifting_tracker_app/providers/persisted/exercise_and_sets/update_state_fuctions.dart';
 
 FutureOr<String?> _checkWorkoutStatus(int workoutSessionId) async {
-  final db = await AppDatabases.getDatabase();
+  final db = await AppDatabase.getDatabase();
 
   final data = await db.rawQuery(
     '''
@@ -29,9 +29,8 @@ FutureOr<String?> _checkWorkoutStatus(int workoutSessionId) async {
   return row['status'] as String;
 }
 
-final exercisesAndSetsProvider =
-    AsyncNotifierProvider.autoDispose
-        .family<ExercisesAndSetsProvider, List<Exercise>, int>(
+final exercisesAndSetsProvider = AsyncNotifierProvider.autoDispose
+    .family<ExercisesAndSetsProvider, List<Exercise>, int>(
       ExercisesAndSetsProvider.new,
     );
 

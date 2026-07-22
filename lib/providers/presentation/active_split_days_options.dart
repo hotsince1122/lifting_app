@@ -1,7 +1,7 @@
 import 'dart:async';
 
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:lifting_tracker_app/data/app_databases.dart';
+import 'package:lifting_tracker_app/core/database/app_database.dart';
 import 'package:lifting_tracker_app/models/view_model/workout_focus_vm.dart';
 import 'package:lifting_tracker_app/providers/persisted/active_split_days.dart';
 
@@ -16,7 +16,7 @@ class ActiveSplitDaysOptionsNotifier
   FutureOr<List<WorkoutFocusVm>> build() async {
     final activeSplitDays = await ref.watch(activeSplitDaysProvider.future);
 
-    final db = await AppDatabases.getDatabase();
+    final db = await AppDatabase.getDatabase();
 
     final workouts = <WorkoutFocusVm>[];
 

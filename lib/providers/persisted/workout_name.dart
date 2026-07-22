@@ -1,7 +1,7 @@
 import 'dart:async';
 
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:lifting_tracker_app/data/app_databases.dart';
+import 'package:lifting_tracker_app/core/database/app_database.dart';
 
 const _fallbackWorkoutName = 'Workout';
 
@@ -10,10 +10,8 @@ String normalizeWorkoutName(String workoutName) {
   return trimmedWorkoutName.isEmpty ? _fallbackWorkoutName : trimmedWorkoutName;
 }
 
-final workoutNameProvider =
-    AsyncNotifierProvider.autoDispose.family<WorkoutNameNotifier, String, int>(
-      WorkoutNameNotifier.new,
-    );
+final workoutNameProvider = AsyncNotifierProvider.autoDispose
+    .family<WorkoutNameNotifier, String, int>(WorkoutNameNotifier.new);
 
 class WorkoutNameNotifier extends AsyncNotifier<String> {
   WorkoutNameNotifier(this.workoutId);
@@ -22,7 +20,7 @@ class WorkoutNameNotifier extends AsyncNotifier<String> {
 
   @override
   FutureOr<String> build() async {
-    final db = await AppDatabases.getDatabase();
+    final db = await AppDatabase.getDatabase();
 
     final data = await db.rawQuery(
       '''
@@ -53,7 +51,7 @@ class WorkoutNameNotifier extends AsyncNotifier<String> {
     }
 
     try {
-      final db = await AppDatabases.getDatabase();
+      final db = await AppDatabase.getDatabase();
 
       await db.rawUpdate(
         '''

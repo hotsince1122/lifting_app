@@ -1,13 +1,13 @@
 import 'dart:async';
 
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:lifting_tracker_app/data/app_databases.dart';
+import 'package:lifting_tracker_app/core/database/app_database.dart';
 import 'package:lifting_tracker_app/models/entity/exercise.dart';
 
 Future<List<Exercise>> _loadAllExercisesInAMuscleGroupFromDb(
   String muscleGroup,
 ) async {
-  final db = await AppDatabases.getDatabase();
+  final db = await AppDatabase.getDatabase();
   final data = await db.query(
     'exercises',
     where: 'muscle_group = ?',
@@ -43,7 +43,7 @@ class ExercisesFromAMuscleGroupNotifier extends AsyncNotifier<List<Exercise>> {
   }
 
   Future<Exercise> addCustomExercise(String name, String muscleGroup) async {
-    final db = await AppDatabases.getDatabase();
+    final db = await AppDatabase.getDatabase();
     final newExercise = Exercise(name: name, muscleGroup: muscleGroup);
 
     await db.transaction((txn) async {
@@ -65,7 +65,7 @@ class ExercisesFromAMuscleGroupNotifier extends AsyncNotifier<List<Exercise>> {
     String name,
     String muscleGroup,
   ) async {
-    final db = await AppDatabases.getDatabase();
+    final db = await AppDatabase.getDatabase();
 
     final updatedExercise = exercise.copyWith(
       name: name,
@@ -88,7 +88,7 @@ class ExercisesFromAMuscleGroupNotifier extends AsyncNotifier<List<Exercise>> {
   }
 
   Future<void> removeExercise(String exerciseId) async {
-    final db = await AppDatabases.getDatabase();
+    final db = await AppDatabase.getDatabase();
 
     await db.transaction((txn) async {
       await txn.delete('exercises', where: 'id = ?', whereArgs: [exerciseId]);

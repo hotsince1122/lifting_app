@@ -1,5 +1,5 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:lifting_tracker_app/data/app_databases.dart';
+import 'package:lifting_tracker_app/core/database/app_database.dart';
 import 'package:lifting_tracker_app/providers/persisted/exercises_in_a_day.dart';
 import 'package:lifting_tracker_app/providers/persisted/picked_next_session_provider.dart';
 import 'package:lifting_tracker_app/providers/persisted/split_days.dart';
@@ -19,7 +19,7 @@ class DayNameNotifier extends AsyncNotifier<String> {
 
   @override
   Future<String> build() async {
-    final db = await AppDatabases.getDatabase();
+    final db = await AppDatabase.getDatabase();
 
     final data = await db.rawQuery(
       '''
@@ -38,7 +38,7 @@ class DayNameNotifier extends AsyncNotifier<String> {
   }
 
   Future<void> renameDay(String newName) async {
-    final db = await AppDatabases.getDatabase();
+    final db = await AppDatabase.getDatabase();
 
     final splitId = await db.transaction((txn) async {
       await txn.rawUpdate(

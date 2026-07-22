@@ -1,14 +1,14 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:lifting_tracker_app/models/entity/custom_split.dart';
-import 'package:lifting_tracker_app/widgets/core/gradient_button.dart';
+import 'package:lifting_tracker_app/core/ui/buttons/gradient_button.dart';
 import 'package:lifting_tracker_app/widgets/profile_setup/custom_split_selector.dart';
 import 'package:lifting_tracker_app/widgets/profile_setup/preset_splits.dart';
-import 'package:lifting_tracker_app/theme/app_gradients.dart';
+import 'package:lifting_tracker_app/core/theme/app_gradients.dart';
 import 'package:lifting_tracker_app/providers/persisted/active_split_plan.dart';
-import 'package:lifting_tracker_app/theme/app_colors.dart';
-import 'package:lifting_tracker_app/widgets/core/gradient_cards.dart';
-import 'package:lifting_tracker_app/widgets/core/solid_button.dart';
+import 'package:lifting_tracker_app/core/theme/app_colors.dart';
+import 'package:lifting_tracker_app/core/ui/cards/gradient_card.dart';
+import 'package:lifting_tracker_app/core/ui/buttons/solid_button.dart';
 
 class SelectSplitPage extends ConsumerWidget {
   const SelectSplitPage(this.controller, {super.key});

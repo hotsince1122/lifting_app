@@ -120,9 +120,7 @@ class EditWorkoutEditorFlow extends WorkoutEditorFlow {
             ScaffoldMessenger.of(context)
               ..hideCurrentSnackBar()
               ..showSnackBar(
-                const SnackBar(
-                  content: Text('Could not repeat this workout.'),
-                ),
+                const SnackBar(content: Text('Could not repeat this workout.')),
               );
             return;
           }

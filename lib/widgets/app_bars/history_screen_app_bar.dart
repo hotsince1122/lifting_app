@@ -2,9 +2,9 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:lifting_tracker_app/providers/presentation/history_editing_mode.dart';
 import 'package:lifting_tracker_app/providers/presentation/history_months.dart';
-import 'package:lifting_tracker_app/theme/app_colors.dart';
-import 'package:lifting_tracker_app/widgets/app_bars/app_bar_settings.dart';
-import 'package:lifting_tracker_app/widgets/app_bars/screen_app_bar.dart';
+import 'package:lifting_tracker_app/core/theme/app_colors.dart';
+import 'package:lifting_tracker_app/core/ui/app_bars/app_bar_settings.dart';
+import 'package:lifting_tracker_app/core/ui/app_bars/screen_app_bar.dart';
 
 class HistoryAppBar extends ConsumerStatefulWidget
     implements PreferredSizeWidget {
@@ -49,7 +49,9 @@ class HistoryAppBarState extends ConsumerState<HistoryAppBar> {
                     },
               style: TextButton.styleFrom(
                 side: BorderSide(
-                  color: isPressed ? AppColors.secondary.withAlpha(80) : AppColors.cardBorder,
+                  color: isPressed
+                      ? AppColors.secondary.withAlpha(80)
+                      : AppColors.cardBorder,
                 ),
                 backgroundColor: AppColors.onCardTransparent,
               ),

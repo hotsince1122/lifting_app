@@ -6,11 +6,10 @@ const _weekStreakKey = 'week_streak';
 const _resetedStreak = 0;
 
 final weekStreakProvider = AsyncNotifierProvider<WeekStreakNotifier, int>(
-  WeekStreakNotifier.new
+  WeekStreakNotifier.new,
 );
 
 class WeekStreakNotifier extends AsyncNotifier<int> {
-
   @override
   FutureOr<int> build() async {
     final prefs = await SharedPreferences.getInstance();
@@ -19,7 +18,7 @@ class WeekStreakNotifier extends AsyncNotifier<int> {
     return streak ?? _resetedStreak;
   }
 
-  FutureOr<void> incrementStreak () async {
+  FutureOr<void> incrementStreak() async {
     final current = await _loadStoredStreak();
     final incrementedStreak = current + 1;
 
@@ -36,7 +35,7 @@ class WeekStreakNotifier extends AsyncNotifier<int> {
     return prefs.getInt(_weekStreakKey) ?? _resetedStreak;
   }
 
-  Future<void> resetStreak () async {
+  Future<void> resetStreak() async {
     final prefs = await SharedPreferences.getInstance();
     await prefs.setInt(_weekStreakKey, _resetedStreak);
 

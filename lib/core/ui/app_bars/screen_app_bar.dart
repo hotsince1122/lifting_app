@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
-import 'package:lifting_tracker_app/theme/app_colors.dart';
-import 'package:lifting_tracker_app/widgets/app_bars/app_bar_settings.dart';
+import 'package:lifting_tracker_app/core/theme/app_colors.dart';
+import 'package:lifting_tracker_app/core/ui/app_bars/app_bar_settings.dart';
 
 class ScreenAppBar extends StatelessWidget implements PreferredSizeWidget {
   const ScreenAppBar({

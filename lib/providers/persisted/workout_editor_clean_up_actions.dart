@@ -1,5 +1,5 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:lifting_tracker_app/data/app_databases.dart';
+import 'package:lifting_tracker_app/core/database/app_database.dart';
 import 'package:lifting_tracker_app/data/queries/populate_workout_session_sets.dart';
 import 'package:lifting_tracker_app/models/entity/exercise.dart';
 
@@ -15,7 +15,7 @@ class WorkoutEditorCleanUpActionsNotifier extends AsyncNotifier<void> {
   }
 
   Future<String?> _loadWorkoutSessionDayId(int workoutSessionId) async {
-    final db = await AppDatabases.getDatabase();
+    final db = await AppDatabase.getDatabase();
 
     final data = await db.rawQuery(
       '''
@@ -32,7 +32,7 @@ class WorkoutEditorCleanUpActionsNotifier extends AsyncNotifier<void> {
   }
 
   Future<bool> checkIfAnySetEmpty(int workoutSessionId) async {
-    final db = await AppDatabases.getDatabase();
+    final db = await AppDatabase.getDatabase();
 
     return db.transaction((txn) async {
       final data = await txn.rawQuery(
@@ -57,7 +57,7 @@ class WorkoutEditorCleanUpActionsNotifier extends AsyncNotifier<void> {
     final dayId = await _loadWorkoutSessionDayId(workoutSessionId);
     if (dayId == null) return false;
 
-    final db = await AppDatabases.getDatabase();
+    final db = await AppDatabase.getDatabase();
 
     final List<Exercise> exercisesPlanned = await loadPlannedExercises(
       db,
@@ -79,7 +79,7 @@ class WorkoutEditorCleanUpActionsNotifier extends AsyncNotifier<void> {
   }
 
   Future<void> saveEmptySetsWithHints(int workoutSessionId) async {
-    final db = await AppDatabases.getDatabase();
+    final db = await AppDatabase.getDatabase();
 
     await db.transaction((txn) async {
       await txn.rawUpdate(
@@ -97,7 +97,7 @@ class WorkoutEditorCleanUpActionsNotifier extends AsyncNotifier<void> {
   }
 
   Future<void> updateCurrentPlan(int workoutSessionId) async {
-    final db = await AppDatabases.getDatabase();
+    final db = await AppDatabase.getDatabase();
 
     final List<String> exercisesExecutedIdsInOrder =
         await loadExercisesExecutedIds(db, workoutSessionId);

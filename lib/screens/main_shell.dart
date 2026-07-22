@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:lifting_tracker_app/data/animations/tab_body_transition.dart';
+import 'package:lifting_tracker_app/core/ui/transitions/tab_body_transition.dart';
 import 'package:lifting_tracker_app/providers/presentation/history_editing_mode.dart';
 import 'package:lifting_tracker_app/providers/presentation/plans_change_weekly_target_mode.dart';
 import 'package:lifting_tracker_app/screens/history.dart';

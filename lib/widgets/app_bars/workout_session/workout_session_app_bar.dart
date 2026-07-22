@@ -1,10 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:intl/intl.dart';
-import 'package:lifting_tracker_app/theme/app_colors.dart';
+import 'package:lifting_tracker_app/core/theme/app_colors.dart';
 import 'package:lifting_tracker_app/widgets/app_bars/workout_session/workout_editor_flow.dart';
-import 'package:lifting_tracker_app/widgets/core/solid_button.dart';
-import 'package:lifting_tracker_app/widgets/core/solid_card.dart';
+import 'package:lifting_tracker_app/core/ui/buttons/solid_button.dart';
+import 'package:lifting_tracker_app/core/ui/cards/solid_card.dart';
 
 class WorkoutSessionAppBar extends ConsumerWidget
     implements PreferredSizeWidget {

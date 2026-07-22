@@ -4,7 +4,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:lifting_tracker_app/data/queries/save_progress.dart';
 import 'package:lifting_tracker_app/models/entity/training_set.dart';
 import 'package:lifting_tracker_app/providers/persisted/exercise_and_sets/exercises_and_sets.dart';
-import 'package:lifting_tracker_app/theme/app_colors.dart';
+import 'package:lifting_tracker_app/core/theme/app_colors.dart';
 import 'package:lifting_tracker_app/widgets/workout_session_screen/set_settings.dart';
 import 'package:phosphor_flutter/phosphor_flutter.dart';
 import 'package:flutter/services.dart';
@@ -65,10 +65,7 @@ class _ExerciseSetTileState extends ConsumerState<ExerciseSetTile> {
         : actualWeight.toString();
   }
 
-  void _syncControllerText(
-    TextEditingController controller,
-    String text,
-  ) {
+  void _syncControllerText(TextEditingController controller, String text) {
     if (controller.text == text) return;
 
     controller.value = TextEditingValue(
@@ -78,7 +75,10 @@ class _ExerciseSetTileState extends ConsumerState<ExerciseSetTile> {
   }
 
   void _syncControllersWithSet() {
-    _syncControllerText(_weightController, _weightText(widget.set.actualWeight));
+    _syncControllerText(
+      _weightController,
+      _weightText(widget.set.actualWeight),
+    );
     _syncControllerText(
       _repsController,
       widget.set.actualRepetitions?.toString() ?? '',

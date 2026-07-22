@@ -1,7 +1,7 @@
 import 'dart:async';
 
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:lifting_tracker_app/data/app_databases.dart';
+import 'package:lifting_tracker_app/core/database/app_database.dart';
 import 'package:lifting_tracker_app/data/workout_session_statuses.dart';
 import 'package:lifting_tracker_app/providers/persisted/exercises_in_a_day.dart';
 import 'package:lifting_tracker_app/providers/persisted/split_days.dart';
@@ -11,7 +11,7 @@ import 'package:lifting_tracker_app/providers/presentation/preset_split_vm.dart'
 import 'package:lifting_tracker_app/providers/presentation/split_day_summary_tile.dart';
 
 Future<List<int>> _loadSplitPlanIds() async {
-  final db = await AppDatabases.getDatabase();
+  final db = await AppDatabase.getDatabase();
 
   final data = await db.rawQuery('''
     SELECT id
@@ -24,7 +24,7 @@ Future<List<int>> _loadSplitPlanIds() async {
 enum DeleteSplitPlanResult { success, sessionInSplitActive }
 
 Future<DeleteSplitPlanResult> _deleteSplitPlanFromDb(int splitId) async {
-  final db = await AppDatabases.getDatabase();
+  final db = await AppDatabase.getDatabase();
 
   return db.transaction<DeleteSplitPlanResult>((txn) async {
     final activeSessions = await txn.rawQuery(
@@ -128,10 +128,10 @@ class SplitPlansIdsNotifier extends AsyncNotifier<List<int>> {
   }
 
   Future<bool> hasActiveSessionInSplit(int splitId) async {
-  final db = await AppDatabases.getDatabase();
+    final db = await AppDatabase.getDatabase();
 
-  final activeSessions = await db.rawQuery(
-    '''
+    final activeSessions = await db.rawQuery(
+      '''
     SELECT 1
     FROM workout_sessions ws
     JOIN split_days sd ON sd.id = ws.day_id
@@ -139,9 +139,9 @@ class SplitPlansIdsNotifier extends AsyncNotifier<List<int>> {
       AND ws.status = ?
     LIMIT 1
     ''',
-    [splitId, WorkoutSessionStatuses.activeStatus],
-  );
+      [splitId, WorkoutSessionStatuses.activeStatus],
+    );
 
-  return activeSessions.isNotEmpty;
-}
+    return activeSessions.isNotEmpty;
+  }
 }

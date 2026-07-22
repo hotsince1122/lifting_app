@@ -18,31 +18,32 @@ Future<String?> getWorkoutNameFromWorkoutID(
   return data.first['workout_name'] as String;
 }
 
-Future<String> getWorkoutName (Database db, String dayId) async {
+Future<String> getWorkoutName(Database db, String dayId) async {
   final data = await db.rawQuery(
     '''
     SELECT name
     FROM split_days
     WHERE id = ?
-    ''', [dayId]
+    ''',
+    [dayId],
   );
 
-  if(data.isEmpty) return '';
+  if (data.isEmpty) return '';
 
   return data.first['name'] as String;
 }
 
-Future<int> getWorkoutIndex (Database db, String dayId) async {
+Future<int> getWorkoutIndex(Database db, String dayId) async {
   final data = await db.rawQuery(
     '''
     SELECT order_idx
     FROM split_days
     WHERE id = ?
-    ''', [dayId]
+    ''',
+    [dayId],
   );
 
-  if(data.isEmpty) throw '???';
+  if (data.isEmpty) throw '???';
 
   return data.first['order_idx'] as int;
-
 }

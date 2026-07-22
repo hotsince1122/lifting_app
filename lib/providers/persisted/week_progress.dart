@@ -20,7 +20,6 @@ final weeklyWorkoutProgressProvider =
 class WorkoutsPerWeekNotifier extends AsyncNotifier<WeeklyWorkoutProgress> {
   @override
   FutureOr<WeeklyWorkoutProgress> build() async {
-
     final prefs = await SharedPreferences.getInstance();
 
     // to reset week progress
@@ -137,14 +136,21 @@ class WorkoutsPerWeekNotifier extends AsyncNotifier<WeeklyWorkoutProgress> {
     return currentProgress;
   }
 
-  Future<bool> rollbackProgressIfRequired(DateTime finishedTime, Transaction txn) async {
+  Future<bool> rollbackProgressIfRequired(
+    DateTime finishedTime,
+    Transaction txn,
+  ) async {
     final prefs = await SharedPreferences.getInstance();
 
-    final (isRollbackRequired, hadError) = await checkIfRollbackIsRequired(prefs, finishedTime, txn);
+    final (isRollbackRequired, hadError) = await checkIfRollbackIsRequired(
+      prefs,
+      finishedTime,
+      txn,
+    );
 
     if (hadError) return false;
 
-    if(!isRollbackRequired) return true;
+    if (!isRollbackRequired) return true;
 
     final currentProgressEncoded =
         prefs.getString(_attendanceKey) ?? _emptyAttendance;
@@ -152,11 +158,12 @@ class WorkoutsPerWeekNotifier extends AsyncNotifier<WeeklyWorkoutProgress> {
     currentProgressDecoded[finishedTime.weekday - 1] = false;
     final target = prefs.getInt(_targetKey) ?? _defaultTarget;
 
-    state = AsyncData(
-      WeeklyWorkoutProgress(target, currentProgressDecoded),
-    );
+    state = AsyncData(WeeklyWorkoutProgress(target, currentProgressDecoded));
 
-    await prefs.setString(_attendanceKey, _encodeAttendance(currentProgressDecoded));
+    await prefs.setString(
+      _attendanceKey,
+      _encodeAttendance(currentProgressDecoded),
+    );
     return true;
   }
 }
@@ -179,7 +186,11 @@ String weekStartKey(DateTime date) {
   return '${startOfWeek.year}-$month-$day';
 }
 
-Future<(bool, bool)> checkIfRollbackIsRequired(SharedPreferences prefs, DateTime finishedTime, Transaction txn) async {
+Future<(bool, bool)> checkIfRollbackIsRequired(
+  SharedPreferences prefs,
+  DateTime finishedTime,
+  Transaction txn,
+) async {
   final weekStartToParse = prefs.getString(_attendanceWeekStartKey);
   if (weekStartToParse == null) return (false, true);
 
@@ -195,10 +206,11 @@ Future<(bool, bool)> checkIfRollbackIsRequired(SharedPreferences prefs, DateTime
     SELECT id
     FROM workout_sessions
     WHERE finished_at >= ? AND finished_at < ?
-    ''', [startSeconds, endSeconds]
+    ''',
+    [startSeconds, endSeconds],
   );
 
-  if(anyWorkoutsData.isEmpty) return (true, false);
+  if (anyWorkoutsData.isEmpty) return (true, false);
 
   return (false, false);
 }

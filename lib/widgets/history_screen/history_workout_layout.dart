@@ -4,7 +4,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:lifting_tracker_app/models/view_model/history_workout_vm.dart';
 import 'package:lifting_tracker_app/providers/persisted/history_workout_actions.dart';
 import 'package:lifting_tracker_app/screens/workout_editor.dart';
-import 'package:lifting_tracker_app/theme/app_colors.dart';
+import 'package:lifting_tracker_app/core/theme/app_colors.dart';
 import 'package:lifting_tracker_app/widgets/history_screen/date_of_workout_icon.dart';
 import 'package:lifting_tracker_app/widgets/history_screen/history_month_card.dart';
 
@@ -36,7 +36,9 @@ class HistoryWorkoutLayoutState extends ConsumerState<HistoryWorkoutLayout> {
   static const marginPadding = SizedBox(height: 18);
   static const betweenPadding = SizedBox(height: 12);
 
-  void animateDeletion(HistoryWorkoutActionsNotifier historyWorkoutActionsProvider) async {
+  void animateDeletion(
+    HistoryWorkoutActionsNotifier historyWorkoutActionsProvider,
+  ) async {
     if (isDeleting) return;
 
     if (!(await confirmDeletion())) return;
@@ -85,9 +87,8 @@ class HistoryWorkoutLayoutState extends ConsumerState<HistoryWorkoutLayout> {
       isPreparingEdit = true;
     });
 
-    final didPrepare = await historyWorkoutActionsProvider.clearActiveSessionSets(
-      widget.workoutData.workoutId,
-    );
+    final didPrepare = await historyWorkoutActionsProvider
+        .clearActiveSessionSets(widget.workoutData.workoutId);
 
     if (!mounted) return;
 
@@ -108,9 +109,8 @@ class HistoryWorkoutLayoutState extends ConsumerState<HistoryWorkoutLayout> {
 
     await Navigator.of(context).push(
       MaterialPageRoute(
-        builder: (context) => WorkoutEditorScreen.edit(
-          widget.workoutData.workoutId,
-        ),
+        builder: (context) =>
+            WorkoutEditorScreen.edit(widget.workoutData.workoutId),
       ),
     );
   }
@@ -177,7 +177,9 @@ class HistoryWorkoutLayoutState extends ConsumerState<HistoryWorkoutLayout> {
 
   @override
   Widget build(BuildContext context) {
-    final historyWorkoutActionsNotifier = ref.read(historyWorkoutActionsProvider.notifier);
+    final historyWorkoutActionsNotifier = ref.read(
+      historyWorkoutActionsProvider.notifier,
+    );
 
     final isEditingMode = widget.isEditingMode;
     final workoutData = widget.workoutData;
@@ -224,7 +226,9 @@ class HistoryWorkoutLayoutState extends ConsumerState<HistoryWorkoutLayout> {
                             highlightColor: Colors.transparent,
                             hoverColor: Colors.transparent,
                             onTap: isEditingMode && !isDeleting
-                                ? () => animateDeletion(historyWorkoutActionsNotifier)
+                                ? () => animateDeletion(
+                                    historyWorkoutActionsNotifier,
+                                  )
                                 : null,
                             child: Container(
                               width: 22,

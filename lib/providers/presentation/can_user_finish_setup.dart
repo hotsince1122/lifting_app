@@ -1,20 +1,18 @@
 import 'dart:async';
 
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:lifting_tracker_app/data/app_databases.dart';
+import 'package:lifting_tracker_app/core/database/app_database.dart';
 import 'package:lifting_tracker_app/providers/persisted/active_split_plan.dart';
 
 Future<bool> _loadIfUserCanFinishSetup() async {
-  final db = await AppDatabases.getDatabase();
-  
-  var rows = await db.rawQuery(
-    '''
+  final db = await AppDatabase.getDatabase();
+
+  var rows = await db.rawQuery('''
     SELECT sd.id
     FROM split_plans sp
     JOIN split_days sd ON sp.id = sd.split_id
     WHERE sp.is_active = 1
-    '''
-  );
+    ''');
 
   final List<String> dayIds = rows.map((row) => row['id'] as String).toList();
 
@@ -41,7 +39,6 @@ final canUserFinishSetupProvider =
     );
 
 class CanUserFinishSetupNotifier extends AsyncNotifier<bool> {
-
   @override
   FutureOr<bool> build() {
     ref.watch(activeSplitPlanProvider);

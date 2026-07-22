@@ -1,6 +1,6 @@
 import 'dart:async';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:lifting_tracker_app/data/app_databases.dart';
+import 'package:lifting_tracker_app/core/database/app_database.dart';
 import 'package:lifting_tracker_app/models/entity/split_day.dart';
 import 'package:lifting_tracker_app/providers/persisted/active_split_id.dart';
 import 'package:lifting_tracker_app/providers/persisted/exercises_in_a_day.dart';
@@ -11,7 +11,7 @@ import 'package:lifting_tracker_app/providers/presentation/split_day_summary_til
 import 'package:lifting_tracker_app/providers/presentation/workout_focus.dart';
 
 Future<List<SplitDay>> _loadSplitDays(int splitId) async {
-  final db = await AppDatabases.getDatabase();
+  final db = await AppDatabase.getDatabase();
 
   final data = await db.rawQuery(
     '''
@@ -48,7 +48,7 @@ class SplitDaysNotifier extends AsyncNotifier<List<SplitDay>> {
   }
 
   Future<void> deleteSplitDay(String splitDayId) async {
-    final db = await AppDatabases.getDatabase();
+    final db = await AppDatabase.getDatabase();
 
     await db.transaction<void>((txn) async {
       final splitDays = await txn.rawQuery(
@@ -179,7 +179,7 @@ class SplitDaysNotifier extends AsyncNotifier<List<SplitDay>> {
 
     state = AsyncData(normalizedDays);
 
-    final db = await AppDatabases.getDatabase();
+    final db = await AppDatabase.getDatabase();
 
     try {
       await db.transaction((txn) async {
@@ -228,7 +228,7 @@ class SplitDaysNotifier extends AsyncNotifier<List<SplitDay>> {
       orderIndex: newDayIndex,
     );
 
-    final db = await AppDatabases.getDatabase();
+    final db = await AppDatabase.getDatabase();
 
     await db.transaction((txn) async {
       await txn.rawInsert(

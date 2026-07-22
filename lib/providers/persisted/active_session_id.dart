@@ -1,12 +1,12 @@
 import 'dart:async';
 
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:lifting_tracker_app/data/app_databases.dart';
+import 'package:lifting_tracker_app/core/database/app_database.dart';
 import 'package:lifting_tracker_app/data/workout_session_statuses.dart';
 import 'package:lifting_tracker_app/providers/persisted/active_session_lifecycle.dart';
 
 FutureOr<int?> _returnActiveSessionId() async {
-  final db = await AppDatabases.getDatabase();
+  final db = await AppDatabase.getDatabase();
 
   final data = await db.rawQuery(
     '''
@@ -26,9 +26,10 @@ FutureOr<int?> _returnActiveSessionId() async {
   return row['id'] as int;
 }
 
-final activeSessionIdProvider = AsyncNotifierProvider<ActiveSessionIdNotifier, int?>(
-  ActiveSessionIdNotifier.new
-);
+final activeSessionIdProvider =
+    AsyncNotifierProvider<ActiveSessionIdNotifier, int?>(
+      ActiveSessionIdNotifier.new,
+    );
 
 class ActiveSessionIdNotifier extends AsyncNotifier<int?> {
   @override
@@ -38,21 +39,22 @@ class ActiveSessionIdNotifier extends AsyncNotifier<int?> {
   }
 
   Future<bool> checkIfSessionIsQuick() async {
-    if(state.value == null) return false;
+    if (state.value == null) return false;
 
-    final db = await AppDatabases.getDatabase();
+    final db = await AppDatabase.getDatabase();
 
     final data = await db.rawQuery(
       '''
       SELECT day_id
       FROM workout_sessions
       WHERE id = ?
-      ''', [state.value!]
+      ''',
+      [state.value!],
     );
 
     final row = data.first;
 
-    if(row['day_id'] == null) return true;
+    if (row['day_id'] == null) return true;
 
     return false;
   }

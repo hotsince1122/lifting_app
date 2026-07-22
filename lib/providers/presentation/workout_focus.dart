@@ -1,7 +1,7 @@
 import 'dart:async';
 
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:lifting_tracker_app/data/app_databases.dart';
+import 'package:lifting_tracker_app/core/database/app_database.dart';
 import 'package:lifting_tracker_app/data/queries/aux_funcs.dart';
 import 'package:lifting_tracker_app/data/queries/aux_functions_for_pop.dart';
 import 'package:lifting_tracker_app/models/view_model/workout_focus_vm.dart';
@@ -67,12 +67,10 @@ Future<String?> _loadMuscleGroups(Database db, List<String> exerciseIds) async {
 }
 
 Future<WorkoutFocusVm> _loadNextWorkout(Ref ref) async {
-  final db = await AppDatabases.getDatabase();
+  final db = await AppDatabase.getDatabase();
 
   final activeSplitDaysIds = await loadActiveSplitDaysIds(db);
-  final pickedWorkoutDayId = await ref.read(
-    pickedNextSessionProvider.future,
-  );
+  final pickedWorkoutDayId = await ref.read(pickedNextSessionProvider.future);
   final shouldUsePickedWorkout =
       pickedWorkoutDayId != null &&
       activeSplitDaysIds.contains(pickedWorkoutDayId);
@@ -118,7 +116,7 @@ Future<WorkoutFocusVm?> _loadActiveWorkoutFocus(Ref ref) async {
 
   if (activeSessionId == null) return null;
 
-  final db = await AppDatabases.getDatabase();
+  final db = await AppDatabase.getDatabase();
 
   final data = await db.rawQuery(
     '''

@@ -1,10 +1,10 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:lifting_tracker_app/data/app_databases.dart';
+import 'package:lifting_tracker_app/core/database/app_database.dart';
 import 'package:lifting_tracker_app/data/queries/aux_functions_for_pop.dart';
 import 'package:lifting_tracker_app/models/entity/split_plan.dart';
 
 Future<SplitPlan?> _loadSplitPlan(int splitId) async {
-  final db = await AppDatabases.getDatabase();
+  final db = await AppDatabase.getDatabase();
   var data = await db.query(
     'split_plans',
     where: 'id = ?',
@@ -37,14 +37,11 @@ Future<SplitPlan?> _loadSplitPlan(int splitId) async {
   if (splitDayIds.isNotEmpty) {
     final placeholder = buildPlaceholder(splitDayIds.length);
 
-    data = await db.rawQuery(
-      '''
+    data = await db.rawQuery('''
       SELECT COUNT(*) AS nrOfExercises
       FROM day_exercises
       WHERE day_id IN ($placeholder)
-      ''',
-      splitDayIds,
-    );
+      ''', splitDayIds);
 
     nrOfExercises = data.first['nrOfExercises'] as int;
   }

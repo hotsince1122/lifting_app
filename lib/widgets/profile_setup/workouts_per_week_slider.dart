@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:lifting_tracker_app/providers/persisted/week_progress.dart';
-import 'package:lifting_tracker_app/theme/app_colors.dart';
+import 'package:lifting_tracker_app/core/theme/app_colors.dart';
 
 class WorkoutsPerWeekSlider extends ConsumerWidget {
   const WorkoutsPerWeekSlider({super.key});
@@ -25,7 +25,7 @@ class WorkoutsPerWeekSlider extends ConsumerWidget {
           inactiveColor: AppColors.surface,
           label: '$target day${target > 1 ? 's' : ''}',
           thumbColor: AppColors.primary,
-          
+
           onChanged: (value) {
             ref
                 .read(weeklyWorkoutProgressProvider.notifier)

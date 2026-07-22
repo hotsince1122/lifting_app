@@ -5,7 +5,7 @@ class WorkoutEditorMenuAction {
   const WorkoutEditorMenuAction({
     required this.label,
     required this.icon,
-    required this.onPressed
+    required this.onPressed,
   });
 
   final String label;
@@ -14,7 +14,8 @@ class WorkoutEditorMenuAction {
     BuildContext context,
     WidgetRef ref,
     int workoutSessionId,
-  ) onPressed;
+  )
+  onPressed;
 }
 
 abstract class WorkoutEditorFlow {

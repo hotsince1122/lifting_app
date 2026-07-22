@@ -28,8 +28,6 @@ class ActiveSplitPlanNotifier extends AsyncNotifier<SplitPlan?> {
   }
 
   Future<void> changeToExisting(int splitId) {
-    return ref
-        .read(activeSplitIdProvider.notifier)
-        .changeToExisting(splitId);
+    return ref.read(activeSplitIdProvider.notifier).changeToExisting(splitId);
   }
 }

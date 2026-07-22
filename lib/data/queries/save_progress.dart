@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:lifting_tracker_app/data/app_databases.dart';
+import 'package:lifting_tracker_app/core/database/app_database.dart';
 
 Future<bool> saveSetCellToDb(
   int workoutSessionSetId,
@@ -7,7 +7,7 @@ Future<bool> saveSetCellToDb(
   int? reps,
   String? notes,
 ) async {
-  final db = await AppDatabases.getDatabase();
+  final db = await AppDatabase.getDatabase();
 
   try {
     final rowsUpdated = await db.transaction((txn) async {

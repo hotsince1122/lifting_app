@@ -1,12 +1,12 @@
 import 'dart:async';
 
-import 'package:lifting_tracker_app/data/app_databases.dart';
+import 'package:lifting_tracker_app/core/database/app_database.dart';
 
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:lifting_tracker_app/models/entity/exercise.dart';
 
 Future<List<Exercise>> _loadExercisesFromADay(String dayId) async {
-  final db = await AppDatabases.getDatabase();
+  final db = await AppDatabase.getDatabase();
 
   final rows = await db.rawQuery(
     '''
@@ -53,7 +53,7 @@ class ExercisesInADayNotifier extends AsyncNotifier<List<Exercise>> {
   }
 
   Future<void> addExerciseToDay(String dayId, String exerciseId) async {
-    final db = await AppDatabases.getDatabase();
+    final db = await AppDatabase.getDatabase();
 
     await db.transaction((txn) async {
       await txn.rawInsert(
@@ -75,7 +75,7 @@ class ExercisesInADayNotifier extends AsyncNotifier<List<Exercise>> {
   }
 
   Future<void> deleteExerciseFromDay(int idInDayExerciseRelation) async {
-    final db = await AppDatabases.getDatabase();
+    final db = await AppDatabase.getDatabase();
 
     await db.transaction((txn) async {
       await txn.delete(
@@ -111,7 +111,7 @@ class ExercisesInADayNotifier extends AsyncNotifier<List<Exercise>> {
 
     final placeholders = List.filled(ids.length, '?').join(', ');
 
-    final db = await AppDatabases.getDatabase();
+    final db = await AppDatabase.getDatabase();
 
     try {
       await db.transaction((txn) async {

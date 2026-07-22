@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:lifting_tracker_app/theme/app_colors.dart';
-import 'package:lifting_tracker_app/theme/app_gradients.dart';
-import 'package:lifting_tracker_app/widgets/core/gradient_cards.dart';
+import 'package:lifting_tracker_app/core/theme/app_colors.dart';
+import 'package:lifting_tracker_app/core/theme/app_gradients.dart';
+import 'package:lifting_tracker_app/core/ui/cards/gradient_card.dart';
 
 class ProgressSpotlight extends ConsumerWidget {
   const ProgressSpotlight({super.key});
@@ -42,19 +42,16 @@ class ProgressSpotlight extends ConsumerWidget {
                     shape: BoxShape.circle,
                     color: AppColors.primaryTransparent,
                   ),
-                  child: Icon(
-                    Icons.trending_up,
-                    color: AppColors.primary,
-                  ),
+                  child: Icon(Icons.trending_up, color: AppColors.primary),
                 ),
               ),
               const SizedBox(height: 12),
               Center(
                 child: Text(
                   'Complete your first session to\nsee your progress here',
-                  style: Theme.of(context).textTheme.bodySmall!.copyWith(
-                    color: AppColors.primary,
-                  ),
+                  style: Theme.of(
+                    context,
+                  ).textTheme.bodySmall!.copyWith(color: AppColors.primary),
                   textAlign: TextAlign.center,
                 ),
               ),

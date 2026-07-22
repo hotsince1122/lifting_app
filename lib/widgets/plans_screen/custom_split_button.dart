@@ -3,7 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:lifting_tracker_app/models/entity/custom_split.dart';
 import 'package:lifting_tracker_app/providers/persisted/active_split_plan.dart';
-import 'package:lifting_tracker_app/theme/app_colors.dart';
+import 'package:lifting_tracker_app/core/theme/app_colors.dart';
 import 'package:lifting_tracker_app/widgets/profile_setup/custom_split_selector.dart';
 
 class CustomSplitButton extends ConsumerWidget {

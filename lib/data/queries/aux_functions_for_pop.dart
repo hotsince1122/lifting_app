@@ -23,7 +23,8 @@ Future<int> loadNextCycleIndex(
 ) async {
   final placeholder = buildPlaceholder(activeSplitDaysIds.length);
 
-  final data = await db.rawQuery('''
+  final data = await db.rawQuery(
+    '''
     SELECT cycle_index
     FROM workout_sessions
     WHERE day_id IN ($placeholder)
@@ -31,7 +32,9 @@ Future<int> loadNextCycleIndex(
       AND finished_at IS NOT NULL
     ORDER BY finished_at DESC
     LIMIT 1
-    ''', [...activeSplitDaysIds, WorkoutSessionStatuses.completedStatus]);
+    ''',
+    [...activeSplitDaysIds, WorkoutSessionStatuses.completedStatus],
+  );
 
   if (data.isEmpty) return 0;
 

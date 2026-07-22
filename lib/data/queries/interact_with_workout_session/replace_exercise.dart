@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:lifting_tracker_app/data/app_databases.dart';
+import 'package:lifting_tracker_app/core/database/app_database.dart';
 import 'package:lifting_tracker_app/data/queries/interact_with_workout_session/aux_functions_workout_session.dart';
 import 'package:lifting_tracker_app/data/queries/populate_workout_session_sets.dart';
 import 'package:lifting_tracker_app/models/entity/exercise.dart';
@@ -26,7 +26,7 @@ Future<Exercise?> replaceExerciseInDb(
     workoutSessionSetIds.add(workoutSessionSetId);
   }
 
-  final db = await AppDatabases.getDatabase();
+  final db = await AppDatabase.getDatabase();
 
   try {
     return db.transaction((txn) async {

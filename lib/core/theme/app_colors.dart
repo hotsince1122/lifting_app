@@ -1,23 +1,19 @@
 import 'package:flutter/material.dart';
 
 class AppColors {
-
   static const background = Color.fromARGB(255, 32, 41, 55);
   static const surface = Color.fromARGB(255, 53, 63, 75);
 
   static const onBackground = Color.fromARGB(255, 244, 238, 235);
   static const onSurface = Color.fromARGB(255, 244, 238, 235);
-  static const onSurfaceSecondary = Color.fromARGB(255, 162, 182, 199); 
+  static const onSurfaceSecondary = Color.fromARGB(255, 162, 182, 199);
   static const onSurfaceMuted = Color.fromARGB(180, 162, 182, 199);
 
   static const primary = Color.fromARGB(255, 162, 182, 199);
-  static const secondary = Color.fromARGB(255, 194, 214, 208);  
-
+  static const secondary = Color.fromARGB(255, 194, 214, 208);
 
   static const primaryTransparent = Color.fromARGB(50, 162, 182, 199);
   static const onCardTransparent = Color.fromARGB(75, 20, 26, 36);
-
-
 
   static const card = Color.fromARGB(255, 20, 26, 36);
   static const cardGradient = Color.fromARGB(255, 31, 39, 51);
@@ -32,5 +28,5 @@ class AppColors {
   static const cardSpotlightEnd = Color.fromARGB(255, 39, 50, 66);
 
   static const cardBorder = Color.fromARGB(15, 255, 255, 255);
-  static const cardShadow = Color.fromARGB(38, 0, 0, 0);  
+  static const cardShadow = Color.fromARGB(38, 0, 0, 0);
 }

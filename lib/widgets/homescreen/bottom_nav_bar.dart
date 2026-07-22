@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:lifting_tracker_app/theme/app_colors.dart';
+import 'package:lifting_tracker_app/core/theme/app_colors.dart';
 import 'package:phosphor_flutter/phosphor_flutter.dart';
 
 class CustomBottomNavBar extends ConsumerWidget {
@@ -10,7 +10,6 @@ class CustomBottomNavBar extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-
     const int homeIndex = 0;
     const int historyIndex = 1;
     const int plansIndex = 2;
@@ -54,9 +53,17 @@ class CustomBottomNavBar extends ConsumerWidget {
             mainAxisAlignment: MainAxisAlignment.spaceAround,
             children: [
               navBarButton('Home', PhosphorIcons.house(), homeIndex),
-              navBarButton('History', PhosphorIcons.clockCounterClockwise(), historyIndex),
+              navBarButton(
+                'History',
+                PhosphorIcons.clockCounterClockwise(),
+                historyIndex,
+              ),
               navBarButton('Plans', PhosphorIcons.squaresFour(), plansIndex),
-              navBarButton('Progress', PhosphorIcons.chartLineUp(), progressIndex),
+              navBarButton(
+                'Progress',
+                PhosphorIcons.chartLineUp(),
+                progressIndex,
+              ),
             ],
           ),
         ),

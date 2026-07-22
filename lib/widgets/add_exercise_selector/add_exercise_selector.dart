@@ -1,16 +1,16 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:lifting_tracker_app/data/animations/custom_nav_animation.dart';
+import 'package:lifting_tracker_app/core/ui/transitions/sheet_parallax_route.dart';
 import 'package:lifting_tracker_app/models/entity/exercise.dart';
 import 'package:lifting_tracker_app/providers/persisted/all_exercises_from_a_muscle_group.dart';
-import 'package:lifting_tracker_app/theme/app_colors.dart';
+import 'package:lifting_tracker_app/core/theme/app_colors.dart';
 import 'package:lifting_tracker_app/widgets/add_exercise_selector/add_exercise_header.dart';
 import 'package:lifting_tracker_app/widgets/add_exercise_selector/add_exercise_step.dart';
 import 'package:lifting_tracker_app/widgets/add_exercise_selector/exercise_form.dart';
 import 'package:lifting_tracker_app/widgets/add_exercise_selector/exercise_validation_dialog.dart';
 import 'package:lifting_tracker_app/widgets/add_exercise_selector/exercises_for_a_group.dart';
 import 'package:lifting_tracker_app/widgets/add_exercise_selector/muscle_groups_list.dart';
-import 'package:lifting_tracker_app/widgets/core/modal_scaffold.dart';
+import 'package:lifting_tracker_app/core/ui/modal/modal_scaffold.dart';
 
 class AddExerciseSelector extends ConsumerStatefulWidget {
   const AddExerciseSelector(this.screenWidth, {super.key});

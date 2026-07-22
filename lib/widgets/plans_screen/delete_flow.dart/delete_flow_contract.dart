@@ -6,7 +6,7 @@ abstract class DeleteFlow {
   String get title;
   String get content;
 
-  Future<bool> canShowConfirmation (BuildContext context) async {
+  Future<bool> canShowConfirmation(BuildContext context) async {
     return true;
   }
 

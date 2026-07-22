@@ -4,11 +4,11 @@ import 'package:lifting_tracker_app/providers/persisted/active_split_days.dart';
 import 'package:lifting_tracker_app/providers/persisted/did_user_finish_setup.dart';
 import 'package:lifting_tracker_app/providers/presentation/can_user_finish_setup.dart';
 import 'package:lifting_tracker_app/screens/main_shell.dart';
-import 'package:lifting_tracker_app/theme/app_gradients.dart';
-import 'package:lifting_tracker_app/theme/app_colors.dart';
-import 'package:lifting_tracker_app/widgets/core/gradient_cards.dart';
+import 'package:lifting_tracker_app/core/theme/app_gradients.dart';
+import 'package:lifting_tracker_app/core/theme/app_colors.dart';
+import 'package:lifting_tracker_app/core/ui/cards/gradient_card.dart';
 import 'package:lifting_tracker_app/widgets/profile_setup/workout_day_expansion_tile.dart';
-import 'package:lifting_tracker_app/widgets/core/solid_button.dart';
+import 'package:lifting_tracker_app/core/ui/buttons/solid_button.dart';
 
 class PickExercisesPage extends ConsumerWidget {
   const PickExercisesPage(this.controller, {super.key});

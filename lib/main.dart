@@ -3,7 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:lifting_tracker_app/providers/persisted/did_user_finish_setup.dart';
 import 'package:lifting_tracker_app/screens/main_shell.dart';
 import 'package:lifting_tracker_app/screens/onboarding.dart';
-import 'package:lifting_tracker_app/theme/app_theme.dart';
+import 'package:lifting_tracker_app/core/theme/app_theme.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -17,7 +17,6 @@ class MainApp extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final goToMenuAsync = ref.watch(didUserFinishSetupProvider);
-    
 
     return MaterialApp(
       theme: AppTheme.dark,

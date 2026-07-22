@@ -2,11 +2,10 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:intl/intl.dart';
 import 'package:lifting_tracker_app/providers/persisted/week_streak.dart';
-import 'package:lifting_tracker_app/theme/app_colors.dart';
+import 'package:lifting_tracker_app/core/theme/app_colors.dart';
 
-import 'package:lifting_tracker_app/widgets/app_bars/app_bar_settings.dart';
-import 'package:lifting_tracker_app/widgets/app_bars/screen_app_bar.dart';
-
+import 'package:lifting_tracker_app/core/ui/app_bars/app_bar_settings.dart';
+import 'package:lifting_tracker_app/core/ui/app_bars/screen_app_bar.dart';
 
 class HomeScreenAppBar extends StatelessWidget implements PreferredSizeWidget {
   const HomeScreenAppBar({super.key});

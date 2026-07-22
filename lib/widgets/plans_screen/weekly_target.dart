@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:lifting_tracker_app/providers/presentation/plans_change_weekly_target_mode.dart';
-import 'package:lifting_tracker_app/theme/app_colors.dart';
-import 'package:lifting_tracker_app/widgets/core/solid_card.dart';
+import 'package:lifting_tracker_app/core/theme/app_colors.dart';
+import 'package:lifting_tracker_app/core/ui/cards/solid_card.dart';
 import 'package:lifting_tracker_app/widgets/profile_setup/workouts_per_week_slider.dart';
 import 'package:phosphor_flutter/phosphor_flutter.dart';
 
@@ -56,7 +56,9 @@ class WeeklyTarget extends ConsumerWidget {
                   ),
                 ),
               ),
-              const SizedBox(height: 16),  //so the card shadow is visiable + space between widgets
+              const SizedBox(
+                height: 16,
+              ), //so the card shadow is visiable + space between widgets
             ],
           ),
         ),

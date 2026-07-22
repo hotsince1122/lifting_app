@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
-import 'package:lifting_tracker_app/theme/app_colors.dart';
-import 'package:lifting_tracker_app/theme/app_gradients.dart';
+import 'package:lifting_tracker_app/core/theme/app_colors.dart';
+import 'package:lifting_tracker_app/core/theme/app_gradients.dart';
 
 class GradientButton extends StatelessWidget {
   const GradientButton({

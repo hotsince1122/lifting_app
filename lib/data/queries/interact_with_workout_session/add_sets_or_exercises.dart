@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:lifting_tracker_app/data/app_databases.dart';
+import 'package:lifting_tracker_app/core/database/app_database.dart';
 import 'package:lifting_tracker_app/data/queries/interact_with_workout_session/aux_functions_workout_session.dart';
 import 'package:lifting_tracker_app/data/queries/populate_workout_session_sets.dart';
 import 'package:lifting_tracker_app/models/entity/exercise.dart';
@@ -14,7 +14,7 @@ Future<Exercise?> addNewExerciseToDb(
   int workoutSessionId,
   Exercise newExercise,
 ) async {
-  final db = await AppDatabases.getDatabase();
+  final db = await AppDatabase.getDatabase();
 
   try {
     final exerciseToAddToUI = await db.transaction((txn) async {
@@ -106,7 +106,7 @@ Future<TrainingSet?> addSetToExerciseInDb(
   final exerciseOrderIndex = exercise.orderIndex;
   if (exerciseOrderIndex == null) return null;
 
-  final db = await AppDatabases.getDatabase();
+  final db = await AppDatabase.getDatabase();
 
   try {
     final setToInsertUI = await db.transaction((txn) async {

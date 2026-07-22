@@ -1,11 +1,11 @@
 import 'dart:async';
 
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:lifting_tracker_app/data/app_databases.dart';
+import 'package:lifting_tracker_app/core/database/app_database.dart';
 import 'package:lifting_tracker_app/models/view_model/split_day_summary.dart';
 
 Future<SplitDaySummary> _loadSummary(String dayId) async {
-  final db = await AppDatabases.getDatabase();
+  final db = await AppDatabase.getDatabase();
 
   final rows = await db.rawQuery(
     '''
@@ -26,10 +26,13 @@ Future<SplitDaySummary> _loadSummary(String dayId) async {
     muscleGroups.add(label);
   }
 
-  return SplitDaySummary(exerciseCount: rows.length, muscleGroups: muscleGroups);
+  return SplitDaySummary(
+    exerciseCount: rows.length,
+    muscleGroups: muscleGroups,
+  );
 }
 
-final splitDaySummaryProvider = 
+final splitDaySummaryProvider =
     AsyncNotifierProvider.family<
       SplitDaySummaryNotifier,
       SplitDaySummary,

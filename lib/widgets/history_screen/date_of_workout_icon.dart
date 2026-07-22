@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
-import 'package:lifting_tracker_app/theme/app_colors.dart';
-import 'package:lifting_tracker_app/theme/app_gradients.dart';
+import 'package:lifting_tracker_app/core/theme/app_colors.dart';
+import 'package:lifting_tracker_app/core/theme/app_gradients.dart';
 
 class DateOfWorkoutIcon extends StatelessWidget {
   const DateOfWorkoutIcon({
@@ -26,14 +26,18 @@ class DateOfWorkoutIcon extends StatelessWidget {
               child: Container(
                 alignment: Alignment.center,
                 decoration: BoxDecoration(
-                  gradient: AppThemeGradients.of(AppGradients.primaryColorTransparent),
-                  border: BoxBorder.all(color: AppColors.cardBorder)
+                  gradient: AppThemeGradients.of(
+                    AppGradients.primaryColorTransparent,
+                  ),
+                  border: BoxBorder.all(color: AppColors.cardBorder),
                 ),
                 child: Text(
                   weekday,
-                  style: Theme.of(
-                    context,
-                  ).textTheme.titleSmall!.copyWith(fontWeight: FontWeight.w900, color: AppColors.card, letterSpacing: 0.5),
+                  style: Theme.of(context).textTheme.titleSmall!.copyWith(
+                    fontWeight: FontWeight.w900,
+                    color: AppColors.card,
+                    letterSpacing: 0.5,
+                  ),
                 ),
               ),
             ),
@@ -43,7 +47,7 @@ class DateOfWorkoutIcon extends StatelessWidget {
                 alignment: Alignment.center,
                 decoration: BoxDecoration(
                   gradient: AppThemeGradients.of(AppGradients.spotlightCard),
-                  border: BoxBorder.all(color: AppColors.cardBorder)
+                  border: BoxBorder.all(color: AppColors.cardBorder),
                 ),
                 child: Text(
                   '$calendarDay',

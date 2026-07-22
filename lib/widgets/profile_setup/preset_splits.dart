@@ -3,21 +3,17 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:lifting_tracker_app/models/entity/split_plan.dart';
 import 'package:lifting_tracker_app/providers/persisted/active_split_plan.dart';
 import 'package:lifting_tracker_app/providers/presentation/preset_split_vm.dart';
-import 'package:lifting_tracker_app/theme/app_colors.dart';
-import 'package:lifting_tracker_app/theme/app_gradients.dart';
-import 'package:lifting_tracker_app/widgets/core/gradient_button.dart';
+import 'package:lifting_tracker_app/core/theme/app_colors.dart';
+import 'package:lifting_tracker_app/core/theme/app_gradients.dart';
+import 'package:lifting_tracker_app/core/ui/buttons/gradient_button.dart';
 
 class PresetSplits extends ConsumerWidget {
-  const PresetSplits({
-    super.key,
-    required this.currentSplit,
-  });
+  const PresetSplits({super.key, required this.currentSplit});
 
   final SplitPlan? currentSplit;
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-
     final presetSplitVmAsync = ref.watch(presetSplitVmProvider);
 
     return presetSplitVmAsync.when(
@@ -32,8 +28,11 @@ class PresetSplits extends ConsumerWidget {
             for (final preset in presetSplitVm)
               GradientButton(
                 gradientVariant: AppGradients.card,
-                isActive: currentSplit != null && preset.splitId == currentSplit!.id,
-                onPressed: () => ref.read(activeSplitPlanProvider.notifier).changeToExisting(preset.splitId),
+                isActive:
+                    currentSplit != null && preset.splitId == currentSplit!.id,
+                onPressed: () => ref
+                    .read(activeSplitPlanProvider.notifier)
+                    .changeToExisting(preset.splitId),
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.stretch,
                   children: [

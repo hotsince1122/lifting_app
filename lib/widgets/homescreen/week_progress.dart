@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:intl/intl.dart';
 import 'package:lifting_tracker_app/providers/persisted/week_progress.dart';
-import 'package:lifting_tracker_app/theme/app_colors.dart';
+import 'package:lifting_tracker_app/core/theme/app_colors.dart';
 
 class WeekProgress extends ConsumerWidget {
   const WeekProgress({super.key});
@@ -131,7 +131,9 @@ class WeekProgress extends ConsumerWidget {
                       ),
                       Text(
                         '${ref.read(weeklyWorkoutProgressProvider.notifier).returnCurrentProgress()}/${weeklyWorkoutProgress.target}',
-                        style: Theme.of(context).textTheme.titleSmall!.copyWith(fontWeight: FontWeight.w900),
+                        style: Theme.of(context).textTheme.titleSmall!.copyWith(
+                          fontWeight: FontWeight.w900,
+                        ),
                       ),
                     ],
                   ),

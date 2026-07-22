@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
-import 'package:lifting_tracker_app/theme/app_colors.dart';
-import 'package:lifting_tracker_app/theme/app_gradients.dart';
+import 'package:lifting_tracker_app/core/theme/app_colors.dart';
+import 'package:lifting_tracker_app/core/theme/app_gradients.dart';
 
 class GradientCard extends StatelessWidget {
   const GradientCard({
@@ -27,10 +27,7 @@ class GradientCard extends StatelessWidget {
         decoration: BoxDecoration(
           borderRadius: radius,
           gradient: AppThemeGradients.of(gradientVariant),
-          border: Border.all(
-            color: borderColor,
-            width: 1,
-          ),
+          border: Border.all(color: borderColor, width: 1),
           boxShadow: const [
             BoxShadow(
               color: AppColors.cardShadow,
@@ -40,10 +37,7 @@ class GradientCard extends StatelessWidget {
             ),
           ],
         ),
-        child: Padding(
-          padding: padding,
-          child: child,
-        ),
+        child: Padding(padding: padding, child: child),
       ),
     );
   }

@@ -1,7 +1,7 @@
 import 'dart:async';
 
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:lifting_tracker_app/data/app_databases.dart';
+import 'package:lifting_tracker_app/core/database/app_database.dart';
 import 'package:lifting_tracker_app/models/entity/custom_split.dart';
 import 'package:lifting_tracker_app/providers/persisted/picked_next_session_provider.dart';
 import 'package:lifting_tracker_app/providers/persisted/split_plan.dart';
@@ -9,7 +9,7 @@ import 'package:lifting_tracker_app/providers/persisted/split_plans_ids.dart';
 import 'package:lifting_tracker_app/providers/presentation/workout_focus.dart';
 
 Future<int?> _loadActiveSplitId() async {
-  final db = await AppDatabases.getDatabase();
+  final db = await AppDatabase.getDatabase();
   final data = await db.query(
     'split_plans',
     where: 'is_active = ?',
@@ -33,7 +33,7 @@ class ActiveSplitIdNotifier extends AsyncNotifier<int?> {
   }
 
   Future<void> addAndChangeToCustom(CustomSplit newSplit) async {
-    final db = await AppDatabases.getDatabase();
+    final db = await AppDatabase.getDatabase();
     final previousSplitId = state.value;
 
     final newSplitPlanId = await db.transaction((txn) async {
@@ -70,7 +70,7 @@ class ActiveSplitIdNotifier extends AsyncNotifier<int?> {
   }
 
   Future<void> changeToExisting(int splitId) async {
-    final db = await AppDatabases.getDatabase();
+    final db = await AppDatabase.getDatabase();
     final previousSplitId = state.value;
 
     await db.transaction((txn) async {

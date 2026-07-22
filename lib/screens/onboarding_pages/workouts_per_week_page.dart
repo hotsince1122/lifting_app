@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
-import 'package:lifting_tracker_app/theme/app_colors.dart';
-import 'package:lifting_tracker_app/theme/app_gradients.dart';
+import 'package:lifting_tracker_app/core/theme/app_colors.dart';
+import 'package:lifting_tracker_app/core/theme/app_gradients.dart';
 
-import 'package:lifting_tracker_app/widgets/core/gradient_cards.dart';
-import 'package:lifting_tracker_app/widgets/core/solid_button.dart';
+import 'package:lifting_tracker_app/core/ui/cards/gradient_card.dart';
+import 'package:lifting_tracker_app/core/ui/buttons/solid_button.dart';
 import 'package:lifting_tracker_app/widgets/profile_setup/workouts_per_week_slider.dart';
 
 class WorkoutsPerWeekPage extends StatelessWidget {
@@ -56,7 +56,9 @@ class WorkoutsPerWeekPage extends StatelessWidget {
                 children: [
                   Text(
                     "How many days do you train per week?",
-                    style: Theme.of(context).textTheme.titleLarge!.copyWith(fontSize: 17),
+                    style: Theme.of(
+                      context,
+                    ).textTheme.titleLarge!.copyWith(fontSize: 17),
                   ),
                   const SizedBox(height: 20),
                   WorkoutsPerWeekSlider(),
@@ -83,7 +85,7 @@ class WorkoutsPerWeekPage extends StatelessWidget {
                   ).textTheme.titleLarge!.copyWith(color: AppColors.background),
                 ),
                 SizedBox(width: 8),
-                Icon(Icons.arrow_forward_rounded, color: AppColors.background,),
+                Icon(Icons.arrow_forward_rounded, color: AppColors.background),
               ],
             ),
           ),

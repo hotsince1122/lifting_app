@@ -13,9 +13,7 @@ class ChangeDayNameFlow extends ChangeNameFlow {
 
   @override
   Future<void> changeName(WidgetRef ref, String newName) async {
-    await ref
-        .read(dayNameProvider(dayId).notifier)
-        .renameDay(newName);
+    await ref.read(dayNameProvider(dayId).notifier).renameDay(newName);
   }
 
   @override

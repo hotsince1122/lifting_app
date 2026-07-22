@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:lifting_tracker_app/data/muscle_groups.dart';
-import 'package:lifting_tracker_app/theme/app_colors.dart';
+import 'package:lifting_tracker_app/core/theme/app_colors.dart';
 
 class MuscleGroupList extends StatelessWidget {
   const MuscleGroupList({required this.onSelectGroup, super.key});

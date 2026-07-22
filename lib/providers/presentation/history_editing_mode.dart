@@ -5,7 +5,6 @@ final historyEditModeProvider = NotifierProvider<HistoryEditModeNotifier, bool>(
 );
 
 class HistoryEditModeNotifier extends Notifier<bool> {
-
   @override
   bool build() => false;
 

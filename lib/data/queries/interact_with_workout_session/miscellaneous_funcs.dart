@@ -1,12 +1,12 @@
 import 'package:flutter/foundation.dart';
-import 'package:lifting_tracker_app/data/app_databases.dart';
+import 'package:lifting_tracker_app/core/database/app_database.dart';
 import 'package:lifting_tracker_app/models/entity/exercise.dart';
 
 Future<bool> toggleSetWarmupInDb(
   int workoutSessionSetId,
   int workoutSessionId,
 ) async {
-  final db = await AppDatabases.getDatabase();
+  final db = await AppDatabase.getDatabase();
 
   try {
     final rowsUpdated = await db.transaction((txn) async {
@@ -59,7 +59,7 @@ Future<bool> reorderExercisesInDb(
 
   if (setUpdates.isEmpty) return true;
 
-  final db = await AppDatabases.getDatabase();
+  final db = await AppDatabase.getDatabase();
 
   try {
     final rowsMovedToTempIndexes = await db.transaction((txn) async {

@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:lifting_tracker_app/theme/app_colors.dart';
+import 'package:lifting_tracker_app/core/theme/app_colors.dart';
 
 class SolidCard extends StatelessWidget {
   const SolidCard({
@@ -26,10 +26,7 @@ class SolidCard extends StatelessWidget {
         decoration: BoxDecoration(
           borderRadius: radius,
           color: color,
-          border: Border.all(
-            color: borderColor,
-            width: 1,
-          ),
+          border: Border.all(color: borderColor, width: 1),
           boxShadow: const [
             BoxShadow(
               color: AppColors.cardShadow,
@@ -39,10 +36,7 @@ class SolidCard extends StatelessWidget {
             ),
           ],
         ),
-        child: Padding(
-          padding: padding,
-          child: child,
-        ),
+        child: Padding(padding: padding, child: child),
       ),
     );
   }
