@@ -2,10 +2,10 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:lifting_tracker_app/features/workouts/application/active_session_lifecycle_controller.dart';
-import 'package:lifting_tracker_app/providers/persisted/history_workout_actions.dart';
+import 'package:lifting_tracker_app/features/history/application/history_workout_actions_controller.dart';
 import 'package:lifting_tracker_app/features/workouts/application/workout_name_controller.dart';
 import 'package:lifting_tracker_app/features/workouts/presentation/pages/workout_editor_page.dart';
-import 'package:lifting_tracker_app/features/workouts/presentation/widgets/app_bar/workout_editor_flow.dart';
+import 'package:lifting_tracker_app/features/workouts/presentation/editor/workout_editor_flow.dart';
 import 'package:lifting_tracker_app/features/workouts/presentation/widgets/reorder_exercises_sheet.dart';
 import 'package:phosphor_flutter/phosphor_flutter.dart';
 

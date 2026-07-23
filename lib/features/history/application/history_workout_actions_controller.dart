@@ -5,17 +5,17 @@ import 'package:lifting_tracker_app/core/database/app_database.dart';
 import 'package:lifting_tracker_app/features/workouts/application/exercise_and_sets/workout_session_exercises_controller.dart';
 import 'package:lifting_tracker_app/providers/persisted/week_progress.dart';
 import 'package:lifting_tracker_app/features/workouts/application/workout_name_controller.dart';
-import 'package:lifting_tracker_app/providers/presentation/history_months.dart';
+import 'package:lifting_tracker_app/features/history/application/history_months_provider.dart';
 import 'package:lifting_tracker_app/providers/presentation/last_workout_completed.dart';
 import 'package:lifting_tracker_app/providers/presentation/workout_focus.dart';
 import 'package:lifting_tracker_app/features/workouts/presentation/state/workout_header_summary_provider.dart';
 
 final historyWorkoutActionsProvider =
-    AsyncNotifierProvider<HistoryWorkoutActionsNotifier, void>(
-      HistoryWorkoutActionsNotifier.new,
+    AsyncNotifierProvider<HistoryWorkoutActionsController, void>(
+      HistoryWorkoutActionsController.new,
     );
 
-class HistoryWorkoutActionsNotifier extends AsyncNotifier<void> {
+class HistoryWorkoutActionsController extends AsyncNotifier<void> {
   @override
   FutureOr<void> build() {
     return null;

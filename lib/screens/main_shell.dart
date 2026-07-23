@@ -1,12 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:lifting_tracker_app/core/ui/transitions/tab_body_transition.dart';
-import 'package:lifting_tracker_app/providers/presentation/history_editing_mode.dart';
+import 'package:lifting_tracker_app/features/history/presentation/state/history_editing_mode_controller.dart';
 import 'package:lifting_tracker_app/providers/presentation/plans_change_weekly_target_mode.dart';
-import 'package:lifting_tracker_app/screens/history.dart';
+import 'package:lifting_tracker_app/features/history/presentation/pages/history_page.dart';
 import 'package:lifting_tracker_app/screens/home.dart';
 import 'package:lifting_tracker_app/screens/plans/plans.dart';
-import 'package:lifting_tracker_app/widgets/app_bars/history_screen_app_bar.dart';
+import 'package:lifting_tracker_app/features/history/presentation/widgets/history_app_bar.dart';
 import 'package:lifting_tracker_app/widgets/app_bars/plans_screen/plans_screen_app_bar.dart';
 import 'package:lifting_tracker_app/widgets/homescreen/bottom_nav_bar.dart';
 import 'package:lifting_tracker_app/widgets/app_bars/home_screen_app_bar.dart';
@@ -53,7 +53,7 @@ class _MainShellState extends State<MainShell> {
         animationKey: _currentIndex,
         child: IndexedStack(
           index: _currentIndex,
-          children: const [Home(), History(), Plans()],
+          children: const [Home(), HistoryPage(), Plans()],
         ),
       ),
     );

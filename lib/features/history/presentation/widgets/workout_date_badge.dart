@@ -2,8 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:lifting_tracker_app/core/theme/app_colors.dart';
 import 'package:lifting_tracker_app/core/theme/app_gradients.dart';
 
-class DateOfWorkoutIcon extends StatelessWidget {
-  const DateOfWorkoutIcon({
+class WorkoutDateBadge extends StatelessWidget {
+  const WorkoutDateBadge({
     required this.weekday,
     required this.calendarDay,
     super.key,

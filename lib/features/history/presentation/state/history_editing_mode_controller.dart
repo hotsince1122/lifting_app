@@ -1,10 +1,10 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
-final historyEditModeProvider = NotifierProvider<HistoryEditModeNotifier, bool>(
-  HistoryEditModeNotifier.new,
+final historyEditModeProvider = NotifierProvider<HistoryEditModeController, bool>(
+  HistoryEditModeController.new,
 );
 
-class HistoryEditModeNotifier extends Notifier<bool> {
+class HistoryEditModeController extends Notifier<bool> {
   @override
   bool build() => false;
 

@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:lifting_tracker_app/providers/presentation/history_editing_mode.dart';
-import 'package:lifting_tracker_app/providers/presentation/history_months.dart';
+import 'package:lifting_tracker_app/features/history/presentation/state/history_editing_mode_controller.dart';
+import 'package:lifting_tracker_app/features/history/application/history_months_provider.dart';
 import 'package:lifting_tracker_app/core/theme/app_colors.dart';
 import 'package:lifting_tracker_app/core/ui/app_bars/app_bar_settings.dart';
 import 'package:lifting_tracker_app/core/ui/app_bars/screen_app_bar.dart';
@@ -14,10 +14,10 @@ class HistoryAppBar extends ConsumerStatefulWidget
   Size get preferredSize => appBarHeight;
 
   @override
-  ConsumerState<ConsumerStatefulWidget> createState() => HistoryAppBarState();
+  ConsumerState<ConsumerStatefulWidget> createState() => _HistoryAppBarState();
 }
 
-class HistoryAppBarState extends ConsumerState<HistoryAppBar> {
+class _HistoryAppBarState extends ConsumerState<HistoryAppBar> {
   bool isPressed = false;
 
   @override

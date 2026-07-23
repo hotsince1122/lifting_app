@@ -1,6 +1,6 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:lifting_tracker_app/core/database/app_database.dart';
-import 'package:lifting_tracker_app/fa_wrong_folder/exercises_in_a_day_controller.dart';
+import 'package:lifting_tracker_app/wrong_folder/exercises_in_a_day_controller.dart';
 import 'package:lifting_tracker_app/features/workouts/application/picked_next_session_controller.dart';
 import 'package:lifting_tracker_app/providers/persisted/split_days.dart';
 import 'package:lifting_tracker_app/providers/persisted/split_plan.dart';

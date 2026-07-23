@@ -5,7 +5,7 @@ import 'package:lifting_tracker_app/core/database/app_database.dart';
 import 'package:lifting_tracker_app/core/utils/build_placeholder_for_sqlite.dart';
 import 'package:lifting_tracker_app/features/workouts/data/workout_cycle_queries.dart';
 import 'package:lifting_tracker_app/features/workouts/data/workout_session_editor_queries.dart';
-import 'package:lifting_tracker_app/fa_wrong_folder/for%20plans/aux_functions_for_pop.dart';
+import 'package:lifting_tracker_app/wrong_folder/for%20plans/aux_functions_for_pop.dart';
 import 'package:lifting_tracker_app/models/view_model/workout_focus_view_data.dart';
 import 'package:lifting_tracker_app/features/workouts/application/active_session_id_controller.dart';
 import 'package:lifting_tracker_app/features/workouts/application/active_session_lifecycle_controller.dart';

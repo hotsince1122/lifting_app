@@ -4,7 +4,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:lifting_tracker_app/features/workouts/application/active_session_lifecycle_controller.dart';
 import 'package:lifting_tracker_app/features/workouts/application/workout_name_controller.dart';
 import 'package:lifting_tracker_app/features/workouts/application/workout_editor_clean_up_actions_controller.dart';
-import 'package:lifting_tracker_app/features/workouts/presentation/widgets/app_bar/workout_editor_flow.dart';
+import 'package:lifting_tracker_app/features/workouts/presentation/editor/workout_editor_flow.dart';
 import 'package:lifting_tracker_app/features/workouts/presentation/widgets/reorder_exercises_sheet.dart';
 
 class ActiveWorkoutEditorFlow extends WorkoutEditorFlow {

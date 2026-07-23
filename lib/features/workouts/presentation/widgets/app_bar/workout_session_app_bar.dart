@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:intl/intl.dart';
 import 'package:lifting_tracker_app/core/theme/app_colors.dart';
-import 'package:lifting_tracker_app/features/workouts/presentation/widgets/app_bar/workout_editor_flow.dart';
+import 'package:lifting_tracker_app/features/workouts/presentation/editor/workout_editor_flow.dart';
 import 'package:lifting_tracker_app/core/ui/buttons/solid_button.dart';
 import 'package:lifting_tracker_app/core/ui/cards/solid_card.dart';
 

@@ -3,10 +3,9 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:lifting_tracker_app/features/workouts/application/exercise_and_sets/workout_session_exercises_controller.dart';
 import 'package:lifting_tracker_app/features/workouts/presentation/widgets/add_exercises_to_workout.dart';
 import 'package:lifting_tracker_app/features/workouts/presentation/widgets/workout_exercise_card.dart';
-import 'package:lifting_tracker_app/features/workouts/presentation/widgets/app_bar/active_workout_editor_flow.dart';
-import 'package:lifting_tracker_app/features/workouts/presentation/widgets/app_bar/edit_workout_editor_flow.dart';
+import 'package:lifting_tracker_app/features/workouts/presentation/editor/active_workout_editor_flow.dart';
 import 'package:lifting_tracker_app/features/workouts/presentation/widgets/app_bar/workout_session_app_bar.dart';
-import 'package:lifting_tracker_app/features/workouts/presentation/widgets/app_bar/workout_editor_flow.dart';
+import 'package:lifting_tracker_app/features/workouts/presentation/editor/workout_editor_flow.dart';
 import 'package:lifting_tracker_app/features/workouts/presentation/widgets/session_summary_card.dart';
 
 class WorkoutEditorPage extends ConsumerWidget {
@@ -14,9 +13,6 @@ class WorkoutEditorPage extends ConsumerWidget {
 
   const WorkoutEditorPage.active(this.workoutSessionId, {super.key})
     : flow = const ActiveWorkoutEditorFlow();
-
-  const WorkoutEditorPage.edit(this.workoutSessionId, {super.key})
-    : flow = const EditWorkoutEditorFlow();
 
   final int workoutSessionId;
   final WorkoutEditorFlow flow;

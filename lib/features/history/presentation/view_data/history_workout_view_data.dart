@@ -1,5 +1,5 @@
 import 'package:intl/intl.dart';
-import 'package:lifting_tracker_app/models/view_model/history_month_view_data.dart';
+import 'package:lifting_tracker_app/core/utils/to_upper_first.dart';
 
 class HistoryWorkoutViewData {
   HistoryWorkoutViewData({

@@ -2,18 +2,18 @@ import 'dart:math' as math;
 
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:lifting_tracker_app/providers/presentation/history_months.dart';
+import 'package:lifting_tracker_app/features/history/application/history_months_provider.dart';
 import 'package:lifting_tracker_app/core/theme/app_colors.dart';
 import 'package:lifting_tracker_app/core/theme/app_gradients.dart';
 import 'package:lifting_tracker_app/core/ui/buttons/gradient_button.dart';
 import 'package:lifting_tracker_app/core/ui/cards/gradient_card.dart';
-import 'package:lifting_tracker_app/widgets/history_screen/history_month_card.dart';
+import 'package:lifting_tracker_app/features/history/presentation/widgets/history_month_card.dart';
 import 'package:lifting_tracker_app/features/workouts/presentation/widgets/workout_launch/session_launch_button.dart';
 import 'package:lifting_tracker_app/features/workouts/presentation/widgets/workout_launch/split_workout_launch_strategy.dart';
 import 'package:phosphor_flutter/phosphor_flutter.dart';
 
-class History extends ConsumerWidget {
-  const History({super.key});
+class HistoryPage extends ConsumerWidget {
+  const HistoryPage({super.key});
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {

@@ -1,10 +1,5 @@
 import 'package:intl/intl.dart';
-import 'package:lifting_tracker_app/models/view_model/history_workout_view_data.dart';
-
-String toUpperFirst(String label) {
-  if (label.isEmpty) return label;
-  return label[0].toUpperCase() + label.substring(1);
-}
+import 'package:lifting_tracker_app/features/history/presentation/view_data/history_workout_view_data.dart';
 
 class HistoryMonthViewData {
   HistoryMonthViewData({

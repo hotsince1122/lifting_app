@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:lifting_tracker_app/providers/presentation/can_user_finish_setup.dart';
-import 'package:lifting_tracker_app/fa_wrong_folder/exercises_in_a_day_controller.dart';
+import 'package:lifting_tracker_app/wrong_folder/exercises_in_a_day_controller.dart';
 import 'package:lifting_tracker_app/providers/presentation/split_day_summary_tile.dart';
 import 'package:lifting_tracker_app/core/theme/app_colors.dart';
 

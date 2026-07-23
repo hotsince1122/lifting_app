@@ -7,7 +7,7 @@ import 'package:lifting_tracker_app/features/workouts/application/workout_name_c
 import 'package:lifting_tracker_app/features/workouts/presentation/state/workout_header_summary_provider.dart';
 import 'package:lifting_tracker_app/core/theme/app_colors.dart';
 import 'package:lifting_tracker_app/core/theme/app_gradients.dart';
-import 'package:lifting_tracker_app/features/workouts/presentation/widgets/app_bar/workout_editor_flow.dart';
+import 'package:lifting_tracker_app/features/workouts/presentation/editor/workout_editor_flow.dart';
 import 'package:lifting_tracker_app/core/ui/cards/gradient_card.dart';
 
 class SessionSummaryCard extends ConsumerStatefulWidget {

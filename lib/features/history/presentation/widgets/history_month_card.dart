@@ -1,11 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:lifting_tracker_app/models/view_model/history_month_view_data.dart';
-import 'package:lifting_tracker_app/providers/presentation/history_editing_mode.dart';
+import 'package:lifting_tracker_app/features/history/presentation/view_data/history_month_view_data.dart';
+import 'package:lifting_tracker_app/features/history/presentation/state/history_editing_mode_controller.dart';
 import 'package:lifting_tracker_app/core/theme/app_colors.dart';
 import 'package:lifting_tracker_app/core/theme/app_gradients.dart';
 import 'package:lifting_tracker_app/core/ui/cards/gradient_card.dart';
-import 'package:lifting_tracker_app/widgets/history_screen/history_workout_layout.dart';
+import 'package:lifting_tracker_app/features/history/presentation/widgets/history_workout_layout.dart';
 
 class HistoryMonthCard extends ConsumerWidget {
   const HistoryMonthCard(this.historyMonthData, {super.key});
