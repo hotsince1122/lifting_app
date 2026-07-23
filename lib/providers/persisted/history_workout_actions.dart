@@ -2,13 +2,13 @@ import 'dart:async';
 
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:lifting_tracker_app/core/database/app_database.dart';
-import 'package:lifting_tracker_app/providers/persisted/exercise_and_sets/exercises_and_sets.dart';
+import 'package:lifting_tracker_app/features/workouts/application/exercise_and_sets/workout_session_exercises_controller.dart';
 import 'package:lifting_tracker_app/providers/persisted/week_progress.dart';
-import 'package:lifting_tracker_app/providers/persisted/workout_name.dart';
+import 'package:lifting_tracker_app/features/workouts/application/workout_name_controller.dart';
 import 'package:lifting_tracker_app/providers/presentation/history_months.dart';
 import 'package:lifting_tracker_app/providers/presentation/last_workout_completed.dart';
 import 'package:lifting_tracker_app/providers/presentation/workout_focus.dart';
-import 'package:lifting_tracker_app/providers/presentation/workout_header_summary_card.dart';
+import 'package:lifting_tracker_app/features/workouts/presentation/state/workout_header_summary_provider.dart';
 
 final historyWorkoutActionsProvider =
     AsyncNotifierProvider<HistoryWorkoutActionsNotifier, void>(
@@ -38,7 +38,7 @@ class HistoryWorkoutActionsNotifier extends AsyncNotifier<void> {
       return false;
     }
 
-    ref.invalidate(exercisesAndSetsProvider(workoutSessionId));
+    ref.invalidate(workoutSessionExercisesProvider(workoutSessionId));
     return true;
   }
 
@@ -108,9 +108,9 @@ class HistoryWorkoutActionsNotifier extends AsyncNotifier<void> {
 
     ref.invalidate(historyMonthsProvider);
     ref.invalidate(lastWorkoutCompletedProvider);
-    ref.invalidate(workoutHeaderSummaryCardProvider);
+    ref.invalidate(workoutHeaderSummaryProvider);
     ref.invalidate(workoutNameProvider(workoutSessionId));
-    ref.invalidate(exercisesAndSetsProvider(workoutSessionId));
+    ref.invalidate(workoutSessionExercisesProvider(workoutSessionId));
     return true;
   }
 
@@ -164,7 +164,7 @@ class HistoryWorkoutActionsNotifier extends AsyncNotifier<void> {
     ref.invalidate(workoutFocusProvider);
 
     ref.invalidate(historyMonthsProvider);
-    ref.invalidate(workoutHeaderSummaryCardProvider);
+    ref.invalidate(workoutHeaderSummaryProvider);
 
     return true;
   }

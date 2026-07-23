@@ -3,7 +3,7 @@ import 'dart:async';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:lifting_tracker_app/core/database/app_database.dart';
 import 'package:lifting_tracker_app/models/entity/custom_split.dart';
-import 'package:lifting_tracker_app/providers/persisted/picked_next_session_provider.dart';
+import 'package:lifting_tracker_app/features/workouts/application/picked_next_session_controller.dart';
 import 'package:lifting_tracker_app/providers/persisted/split_plan.dart';
 import 'package:lifting_tracker_app/providers/persisted/split_plans_ids.dart';
 import 'package:lifting_tracker_app/providers/presentation/workout_focus.dart';

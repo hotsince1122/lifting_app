@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:lifting_tracker_app/models/view_model/history_month_vm.dart';
+import 'package:lifting_tracker_app/models/view_model/history_month_view_data.dart';
 import 'package:lifting_tracker_app/providers/presentation/history_editing_mode.dart';
 import 'package:lifting_tracker_app/core/theme/app_colors.dart';
 import 'package:lifting_tracker_app/core/theme/app_gradients.dart';
@@ -10,7 +10,7 @@ import 'package:lifting_tracker_app/widgets/history_screen/history_workout_layou
 class HistoryMonthCard extends ConsumerWidget {
   const HistoryMonthCard(this.historyMonthData, {super.key});
 
-  final HistoryMonthVm historyMonthData;
+  final HistoryMonthViewData historyMonthData;
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {

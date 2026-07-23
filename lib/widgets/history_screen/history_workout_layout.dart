@@ -1,9 +1,9 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:lifting_tracker_app/models/view_model/history_workout_vm.dart';
+import 'package:lifting_tracker_app/models/view_model/history_workout_view_data.dart';
 import 'package:lifting_tracker_app/providers/persisted/history_workout_actions.dart';
-import 'package:lifting_tracker_app/screens/workout_editor.dart';
+import 'package:lifting_tracker_app/features/workouts/presentation/pages/workout_editor_page.dart';
 import 'package:lifting_tracker_app/core/theme/app_colors.dart';
 import 'package:lifting_tracker_app/widgets/history_screen/date_of_workout_icon.dart';
 import 'package:lifting_tracker_app/widgets/history_screen/history_month_card.dart';
@@ -16,7 +16,7 @@ class HistoryWorkoutLayout extends ConsumerStatefulWidget {
     super.key,
   });
 
-  final HistoryWorkoutVm workoutData;
+  final HistoryWorkoutViewData workoutData;
   final bool isEditingMode;
   final WorkoutPositionInLayout position;
 
@@ -110,7 +110,7 @@ class HistoryWorkoutLayoutState extends ConsumerState<HistoryWorkoutLayout> {
     await Navigator.of(context).push(
       MaterialPageRoute(
         builder: (context) =>
-            WorkoutEditorScreen.edit(widget.workoutData.workoutId),
+            WorkoutEditorPage.edit(widget.workoutData.workoutId),
       ),
     );
   }

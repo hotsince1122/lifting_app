@@ -1,7 +1,7 @@
 import 'dart:async';
 
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:lifting_tracker_app/models/entity/weekly_workout_progress.dart';
+import 'package:lifting_tracker_app/features/workouts/domain/weekly_workout_progress.dart';
 import 'package:lifting_tracker_app/providers/persisted/week_streak.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:sqflite/sqflite.dart';

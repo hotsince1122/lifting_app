@@ -3,8 +3,8 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:lifting_tracker_app/core/theme/app_colors.dart';
 import 'package:lifting_tracker_app/core/theme/app_gradients.dart';
 import 'package:lifting_tracker_app/core/ui/buttons/gradient_button.dart';
-import 'package:lifting_tracker_app/widgets/workout_launch/quick_workout_launch_flow.dart';
-import 'package:lifting_tracker_app/widgets/workout_launch/session_launch_button.dart';
+import 'package:lifting_tracker_app/features/workouts/presentation/widgets/workout_launch/quick_workout_launch_strategy.dart';
+import 'package:lifting_tracker_app/features/workouts/presentation/widgets/workout_launch/session_launch_button.dart';
 import 'package:phosphor_flutter/phosphor_flutter.dart';
 
 class QuickWorkout extends ConsumerWidget {
@@ -13,7 +13,7 @@ class QuickWorkout extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     return SessionLaunchButton(
-      launchFlow: const QuickWorkoutLaunchFlow(),
+      launchFlow: const QuickWorkoutLaunchStrategy(),
       buttonBuilder: (context, onPressed, isSessionAlreadyActive, child) {
         return isSessionAlreadyActive
             ? const SizedBox()

@@ -2,13 +2,13 @@ import 'dart:async';
 
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:lifting_tracker_app/core/database/app_database.dart';
-import 'package:lifting_tracker_app/data/workout_session_statuses.dart';
-import 'package:lifting_tracker_app/models/view_model/history_month_vm.dart';
-import 'package:lifting_tracker_app/models/view_model/history_workout_vm.dart';
-import 'package:lifting_tracker_app/providers/persisted/active_session_lifecycle.dart';
+import 'package:lifting_tracker_app/features/workouts/domain/workout_session_statuses.dart';
+import 'package:lifting_tracker_app/models/view_model/history_month_view_data.dart';
+import 'package:lifting_tracker_app/models/view_model/history_workout_view_data.dart';
+import 'package:lifting_tracker_app/features/workouts/application/active_session_lifecycle_controller.dart';
 
 final historyMonthsProvider =
-    AsyncNotifierProvider<HistoryMonthsNotifier, List<HistoryMonthVm>>(
+    AsyncNotifierProvider<HistoryMonthsNotifier, List<HistoryMonthViewData>>(
       HistoryMonthsNotifier.new,
     );
 
@@ -40,15 +40,15 @@ Future<List<String>> exercisesLabelFromAWorkoutin(int workoutId) async {
   return exercisesLabels;
 }
 
-class HistoryMonthsNotifier extends AsyncNotifier<List<HistoryMonthVm>> {
+class HistoryMonthsNotifier extends AsyncNotifier<List<HistoryMonthViewData>> {
   @override
-  FutureOr<List<HistoryMonthVm>> build() async {
+  FutureOr<List<HistoryMonthViewData>> build() async {
     ref.watch(activeSessionLifecycleProvider);
 
     return _loadHistoryMonths();
   }
 
-  Future<List<HistoryMonthVm>> _loadHistoryMonths() async {
+  Future<List<HistoryMonthViewData>> _loadHistoryMonths() async {
     final db = await AppDatabase.getDatabase();
     final rows = await db.rawQuery(
       '''
@@ -64,7 +64,7 @@ class HistoryMonthsNotifier extends AsyncNotifier<List<HistoryMonthVm>> {
       [WorkoutSessionStatuses.completedStatus],
     );
 
-    final workoutsByMonth = <DateTime, List<HistoryWorkoutVm>>{};
+    final workoutsByMonth = <DateTime, List<HistoryWorkoutViewData>>{};
 
     for (final row in rows) {
       final startedAt = DateTime.fromMillisecondsSinceEpoch(
@@ -75,7 +75,7 @@ class HistoryMonthsNotifier extends AsyncNotifier<List<HistoryMonthVm>> {
       workoutsByMonth
           .putIfAbsent(monthKey, () => [])
           .add(
-            HistoryWorkoutVm(
+            HistoryWorkoutViewData(
               workoutId: row['id'] as int,
               workoutName: row['workoutName'] as String,
               startedAt: startedAt,
@@ -89,7 +89,7 @@ class HistoryMonthsNotifier extends AsyncNotifier<List<HistoryMonthVm>> {
 
     return workoutsByMonth.entries
         .map(
-          (entry) => HistoryMonthVm(
+          (entry) => HistoryMonthViewData(
             year: entry.key.year,
             month: entry.key.month,
             workoutCount: entry.value.length,

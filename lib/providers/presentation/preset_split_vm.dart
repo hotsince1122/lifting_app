@@ -2,9 +2,9 @@ import 'dart:async';
 
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:lifting_tracker_app/core/database/app_database.dart';
-import 'package:lifting_tracker_app/models/view_model/preset_split_plans_card_vm.dart';
+import 'package:lifting_tracker_app/models/view_model/preset_split_plans_card_view_data.dart';
 
-Future<List<PresetSplitPlanCardVm>> _loadPresetsFromDb() async {
+Future<List<PresetSplitPlanCardViewData>> _loadPresetsFromDb() async {
   final db = await AppDatabase.getDatabase();
 
   final data = await db.rawQuery('''
@@ -31,7 +31,7 @@ Future<List<PresetSplitPlanCardVm>> _loadPresetsFromDb() async {
 
   return data
       .map(
-        (row) => PresetSplitPlanCardVm(
+        (row) => PresetSplitPlanCardViewData(
           splitId: row['splitId'] as int,
           splitPlanName: row['splitPlanName'] as String,
           splitDaysNames: row['splitDaysNames'] as String,
@@ -42,13 +42,13 @@ Future<List<PresetSplitPlanCardVm>> _loadPresetsFromDb() async {
 }
 
 final presetSplitVmProvider =
-    AsyncNotifierProvider<PresetSplitVmNotifier, List<PresetSplitPlanCardVm>>(
+    AsyncNotifierProvider<PresetSplitVmNotifier, List<PresetSplitPlanCardViewData>>(
       PresetSplitVmNotifier.new,
     );
 
-class PresetSplitVmNotifier extends AsyncNotifier<List<PresetSplitPlanCardVm>> {
+class PresetSplitVmNotifier extends AsyncNotifier<List<PresetSplitPlanCardViewData>> {
   @override
-  FutureOr<List<PresetSplitPlanCardVm>> build() {
+  FutureOr<List<PresetSplitPlanCardViewData>> build() {
     return _loadPresetsFromDb();
   }
 

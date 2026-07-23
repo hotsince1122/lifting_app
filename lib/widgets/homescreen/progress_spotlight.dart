@@ -42,16 +42,19 @@ class ProgressSpotlight extends ConsumerWidget {
                     shape: BoxShape.circle,
                     color: AppColors.primaryTransparent,
                   ),
-                  child: Icon(Icons.trending_up, color: AppColors.primary),
+                  child: Icon(
+                    Icons.trending_up,
+                    color: AppColors.primary,
+                  ),
                 ),
               ),
               const SizedBox(height: 12),
               Center(
                 child: Text(
                   'Complete your first session to\nsee your progress here',
-                  style: Theme.of(
-                    context,
-                  ).textTheme.bodySmall!.copyWith(color: AppColors.primary),
+                  style: Theme.of(context).textTheme.bodySmall!.copyWith(
+                    color: AppColors.primary,
+                  ),
                   textAlign: TextAlign.center,
                 ),
               ),

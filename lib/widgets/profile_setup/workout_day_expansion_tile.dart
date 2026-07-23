@@ -2,11 +2,11 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:lifting_tracker_app/models/entity/split_day.dart';
 import 'package:lifting_tracker_app/providers/presentation/can_user_finish_setup.dart';
-import 'package:lifting_tracker_app/providers/persisted/exercises_in_a_day.dart';
+import 'package:lifting_tracker_app/fa_wrong_folder/exercises_in_a_day_controller.dart';
 import 'package:lifting_tracker_app/providers/presentation/split_day_summary_tile.dart';
 import 'package:lifting_tracker_app/core/theme/app_colors.dart';
-import 'package:lifting_tracker_app/widgets/add_exercise_selector/add_exercise_selector.dart';
-import 'package:lifting_tracker_app/widgets/profile_setup/added_exercises.dart';
+import 'package:lifting_tracker_app/features/exercises/presentation/widgets/add_exercise_selector/add_exercise_selector.dart';
+import 'package:lifting_tracker_app/fa_wrong_folder/added_exercises_list_view.dart';
 
 class WorkoutDayExpansionTile extends ConsumerWidget {
   const WorkoutDayExpansionTile(this.screenWidth, this.workoutDay, {super.key});
@@ -75,7 +75,7 @@ class WorkoutDayExpansionTile extends ConsumerWidget {
               indent: 16,
               endIndent: 16,
             ),
-            AddedExercises(workoutDay.id),
+            AddedExercisesListView(workoutDay.id),
             Divider(
               height: 0.5,
               color: AppColors.cardBorder,

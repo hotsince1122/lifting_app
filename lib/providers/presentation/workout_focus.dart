@@ -2,12 +2,14 @@ import 'dart:async';
 
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:lifting_tracker_app/core/database/app_database.dart';
-import 'package:lifting_tracker_app/data/queries/aux_funcs.dart';
-import 'package:lifting_tracker_app/data/queries/aux_functions_for_pop.dart';
-import 'package:lifting_tracker_app/models/view_model/workout_focus_vm.dart';
-import 'package:lifting_tracker_app/providers/persisted/active_session_id.dart';
-import 'package:lifting_tracker_app/providers/persisted/active_session_lifecycle.dart';
-import 'package:lifting_tracker_app/providers/persisted/picked_next_session_provider.dart';
+import 'package:lifting_tracker_app/core/utils/build_placeholder_for_sqlite.dart';
+import 'package:lifting_tracker_app/features/workouts/data/workout_cycle_queries.dart';
+import 'package:lifting_tracker_app/features/workouts/data/workout_session_editor_queries.dart';
+import 'package:lifting_tracker_app/fa_wrong_folder/for%20plans/aux_functions_for_pop.dart';
+import 'package:lifting_tracker_app/models/view_model/workout_focus_view_data.dart';
+import 'package:lifting_tracker_app/features/workouts/application/active_session_id_controller.dart';
+import 'package:lifting_tracker_app/features/workouts/application/active_session_lifecycle_controller.dart';
+import 'package:lifting_tracker_app/features/workouts/application/picked_next_session_controller.dart';
 import 'package:sqflite/sqflite.dart';
 
 Future<Map<String, String>> _loadNextWorkoutData(
@@ -66,7 +68,7 @@ Future<String?> _loadMuscleGroups(Database db, List<String> exerciseIds) async {
   return data.first['muscleGroups'] as String?;
 }
 
-Future<WorkoutFocusVm> _loadNextWorkout(Ref ref) async {
+Future<WorkoutFocusViewData> _loadNextWorkout(Ref ref) async {
   final db = await AppDatabase.getDatabase();
 
   final activeSplitDaysIds = await loadActiveSplitDaysIds(db);
@@ -91,7 +93,7 @@ Future<WorkoutFocusVm> _loadNextWorkout(Ref ref) async {
   } else {
     workoutDayId = pickedWorkoutDayId;
 
-    nextWorkoutName = await getWorkoutName(db, workoutDayId);
+    nextWorkoutName = await loadSpliDayName(db, workoutDayId);
   }
 
   final exercisesInNextWorkoutIds = await _loadExerciseIdsForWorkout(
@@ -103,7 +105,7 @@ Future<WorkoutFocusVm> _loadNextWorkout(Ref ref) async {
     exercisesInNextWorkoutIds,
   );
 
-  return WorkoutFocusVm(
+  return WorkoutFocusViewData(
     workoutName: nextWorkoutName,
     muscleGroups: muscleGroupInNextWorkout,
     nrOfExercises: exercisesInNextWorkoutIds.length,
@@ -111,7 +113,7 @@ Future<WorkoutFocusVm> _loadNextWorkout(Ref ref) async {
   );
 }
 
-Future<WorkoutFocusVm?> _loadActiveWorkoutFocus(Ref ref) async {
+Future<WorkoutFocusViewData?> _loadActiveWorkoutFocus(Ref ref) async {
   final activeSessionId = await ref.watch(activeSessionIdProvider.future);
 
   if (activeSessionId == null) return null;
@@ -134,7 +136,7 @@ Future<WorkoutFocusVm?> _loadActiveWorkoutFocus(Ref ref) async {
   final dayId = row['day_id'] as String?;
 
   if (dayId == null) {
-    return WorkoutFocusVm(
+    return WorkoutFocusViewData(
       workoutName: workoutName,
       muscleGroups: null,
       nrOfExercises: null,
@@ -145,7 +147,7 @@ Future<WorkoutFocusVm?> _loadActiveWorkoutFocus(Ref ref) async {
   final exerciseIds = await _loadExerciseIdsForWorkout(db, dayId);
   final muscleGroups = await _loadMuscleGroups(db, exerciseIds);
 
-  return WorkoutFocusVm(
+  return WorkoutFocusViewData(
     workoutName: workoutName,
     muscleGroups: muscleGroups,
     nrOfExercises: exerciseIds.length,
@@ -154,13 +156,13 @@ Future<WorkoutFocusVm?> _loadActiveWorkoutFocus(Ref ref) async {
 }
 
 final workoutFocusProvider =
-    AsyncNotifierProvider<WorkoutFocusNotifier, WorkoutFocusVm>(
+    AsyncNotifierProvider<WorkoutFocusNotifier, WorkoutFocusViewData>(
       WorkoutFocusNotifier.new,
     );
 
-class WorkoutFocusNotifier extends AsyncNotifier<WorkoutFocusVm> {
+class WorkoutFocusNotifier extends AsyncNotifier<WorkoutFocusViewData> {
   @override
-  FutureOr<WorkoutFocusVm> build() async {
+  FutureOr<WorkoutFocusViewData> build() async {
     ref.watch(activeSessionLifecycleProvider);
     ref.watch(pickedNextSessionProvider);
 

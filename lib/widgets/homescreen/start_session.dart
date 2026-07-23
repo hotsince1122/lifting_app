@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:lifting_tracker_app/core/theme/app_colors.dart';
-import 'package:lifting_tracker_app/widgets/workout_launch/session_launch_button.dart';
+import 'package:lifting_tracker_app/features/workouts/presentation/widgets/workout_launch/session_launch_button.dart';
 import 'package:lifting_tracker_app/core/ui/buttons/solid_button.dart';
-import 'package:lifting_tracker_app/widgets/workout_launch/split_workout_launch_flow.dart';
+import 'package:lifting_tracker_app/features/workouts/presentation/widgets/workout_launch/split_workout_launch_strategy.dart';
 
 class StartSession extends ConsumerWidget {
   const StartSession({super.key});
@@ -11,7 +11,7 @@ class StartSession extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     return SessionLaunchButton(
-      launchFlow: const SplitWorkoutLaunchFlow(),
+      launchFlow: const SplitWorkoutLaunchStrategy(),
       buttonBuilder: (context, onPressed, isSessionAlreadyActive, child) {
         return SolidButton(
           isActive: false,

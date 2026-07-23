@@ -1,12 +1,12 @@
 import 'dart:async';
 
 import 'package:lifting_tracker_app/core/database/app_database.dart';
-import 'package:lifting_tracker_app/data/workout_session_statuses.dart';
-import 'package:lifting_tracker_app/models/view_model/last_workout_completed_card_vm.dart';
-import 'package:lifting_tracker_app/providers/persisted/active_session_lifecycle.dart';
+import 'package:lifting_tracker_app/features/workouts/domain/workout_session_statuses.dart';
+import 'package:lifting_tracker_app/models/view_model/last_workout_completed_card_view_data.dart';
+import 'package:lifting_tracker_app/features/workouts/application/active_session_lifecycle_controller.dart';
 import 'package:riverpod/riverpod.dart';
 
-Future<LastWorkoutCompletedCardVm?> _loadLastWorkout() async {
+Future<LastWorkoutCompletedCardViewData?> _loadLastWorkout() async {
   final db = await AppDatabase.getDatabase();
 
   final workoutData = await db.rawQuery(
@@ -41,7 +41,7 @@ Future<LastWorkoutCompletedCardVm?> _loadLastWorkout() async {
 
   final nrOfExercises = exerciseCountData.first['nrOfExercises'] as int;
 
-  return LastWorkoutCompletedCardVm(
+  return LastWorkoutCompletedCardViewData(
     workoutName: workoutName,
     nrOfExercises: nrOfExercises,
     workoutDuration: workoutDuration,
@@ -51,13 +51,13 @@ Future<LastWorkoutCompletedCardVm?> _loadLastWorkout() async {
 final lastWorkoutCompletedProvider =
     AsyncNotifierProvider<
       LastWorkoutCompletedNotifier,
-      LastWorkoutCompletedCardVm?
+      LastWorkoutCompletedCardViewData?
     >(LastWorkoutCompletedNotifier.new);
 
 class LastWorkoutCompletedNotifier
-    extends AsyncNotifier<LastWorkoutCompletedCardVm?> {
+    extends AsyncNotifier<LastWorkoutCompletedCardViewData?> {
   @override
-  FutureOr<LastWorkoutCompletedCardVm?> build() {
+  FutureOr<LastWorkoutCompletedCardViewData?> build() {
     ref.watch(activeSessionLifecycleProvider);
     return _loadLastWorkout();
   }

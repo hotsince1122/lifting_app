@@ -12,18 +12,19 @@ class EditAppBar extends StatelessWidget implements PreferredSizeWidget {
   @override
   Widget build(BuildContext context) {
     return AppBar(
-      title: Text(
-        title,
-        style: Theme.of(context).textTheme.headlineSmall!.copyWith(
-          fontWeight: FontWeight.w900,
-          letterSpacing: 0.3,
+        title: Text(
+          title,
+          style: Theme.of(context).textTheme.headlineSmall!.copyWith(
+            fontWeight: FontWeight.w900,
+            letterSpacing: 0.3,
+          ),
         ),
-      ),
-      centerTitle: true,
-      leading: IconButton(
-        onPressed: Navigator.of(context).pop,
-        icon: Icon(Icons.arrow_back_ios_rounded, size: 18),
-      ),
-    );
+        centerTitle: true,
+        leading: IconButton(
+          onPressed: Navigator.of(context).pop,
+          icon: Icon(Icons.arrow_back_ios_rounded, size: 18),
+        ),
+      );
   }
+
 }

@@ -22,6 +22,7 @@ class SelectSplitPage extends ConsumerWidget {
     final splitPlanAsync = ref.watch(activeSplitPlanProvider);
 
     return splitPlanAsync.when(
+      skipLoadingOnReload: true,
       loading: () => Center(child: CircularProgressIndicator()),
       error: (error, stackTrace) => Center(child: Text(error.toString())),
       data: (activeSplitPlan) {

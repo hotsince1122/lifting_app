@@ -2,23 +2,23 @@ import 'dart:async';
 
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:lifting_tracker_app/core/database/app_database.dart';
-import 'package:lifting_tracker_app/models/view_model/workout_focus_vm.dart';
+import 'package:lifting_tracker_app/models/view_model/workout_focus_view_data.dart';
 import 'package:lifting_tracker_app/providers/persisted/active_split_days.dart';
 
 final activeSplitDaysOptionsProvider =
-    AsyncNotifierProvider<ActiveSplitDaysOptionsNotifier, List<WorkoutFocusVm>>(
+    AsyncNotifierProvider<ActiveSplitDaysOptionsNotifier, List<WorkoutFocusViewData>>(
       ActiveSplitDaysOptionsNotifier.new,
     );
 
 class ActiveSplitDaysOptionsNotifier
-    extends AsyncNotifier<List<WorkoutFocusVm>> {
+    extends AsyncNotifier<List<WorkoutFocusViewData>> {
   @override
-  FutureOr<List<WorkoutFocusVm>> build() async {
+  FutureOr<List<WorkoutFocusViewData>> build() async {
     final activeSplitDays = await ref.watch(activeSplitDaysProvider.future);
 
     final db = await AppDatabase.getDatabase();
 
-    final workouts = <WorkoutFocusVm>[];
+    final workouts = <WorkoutFocusViewData>[];
 
     await db.transaction((txn) async {
       for (final splitDay in activeSplitDays) {
@@ -55,7 +55,7 @@ class ActiveSplitDaysOptionsNotifier
             : data.first['nrOfExercises'] as int;
 
         workouts.add(
-          WorkoutFocusVm(
+          WorkoutFocusViewData(
             workoutName: splitDay.name,
             muscleGroups: muscleGroup ?? 'no muscle groups',
             nrOfExercises: nrOfExercises,

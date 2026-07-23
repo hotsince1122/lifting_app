@@ -1,6 +1,6 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:lifting_tracker_app/core/database/app_database.dart';
-import 'package:lifting_tracker_app/data/queries/aux_functions_for_pop.dart';
+import 'package:lifting_tracker_app/core/utils/build_placeholder_for_sqlite.dart';
 import 'package:lifting_tracker_app/models/entity/split_plan.dart';
 
 Future<SplitPlan?> _loadSplitPlan(int splitId) async {
