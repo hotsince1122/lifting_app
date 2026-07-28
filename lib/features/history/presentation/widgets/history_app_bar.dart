@@ -6,31 +6,29 @@ import 'package:lifting_tracker_app/core/theme/app_colors.dart';
 import 'package:lifting_tracker_app/core/ui/app_bars/app_bar_settings.dart';
 import 'package:lifting_tracker_app/core/ui/app_bars/screen_app_bar.dart';
 
-class HistoryAppBar extends ConsumerStatefulWidget
-    implements PreferredSizeWidget {
+class HistoryAppBar extends ConsumerWidget implements PreferredSizeWidget {
   const HistoryAppBar({super.key});
 
   @override
   Size get preferredSize => appBarHeight;
 
   @override
-  ConsumerState<ConsumerStatefulWidget> createState() => _HistoryAppBarState();
-}
-
-class _HistoryAppBarState extends ConsumerState<HistoryAppBar> {
-  bool isPressed = false;
-
-  @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
     final historyMonthsAsync = ref.watch(historyMonthsProvider);
+    final isEditingMode = ref.watch(historyEditModeProvider);
+
+    ref.listen(historyMonthsProvider, (_, next) {
+      if (next.value?.isEmpty ?? false) {
+        ref.read(historyEditModeProvider.notifier).exit();
+      }
+    });
 
     final Widget editButton = historyMonthsAsync.when(
-      loading: () => Center(child: CircularProgressIndicator()),
-      error: (_, _) => Center(child: Text('An error has occured! Try again.')),
+      loading: () => const Center(child: CircularProgressIndicator()),
+      error: (_, _) =>
+          const Center(child: Text('An error has occured! Try again.')),
       data: (historyMonthsData) {
-        bool isNotTappable = historyMonthsData.isEmpty;
-
-        if (isNotTappable) ref.invalidate(historyEditModeProvider);
+        final isNotTappable = historyMonthsData.isEmpty;
 
         return AnimatedScale(
           scale: isNotTappable ? 0.95 : 1.0,
@@ -40,16 +38,11 @@ class _HistoryAppBarState extends ConsumerState<HistoryAppBar> {
             duration: const Duration(milliseconds: 120),
             child: TextButton(
               onPressed: isNotTappable
-                  ? () {}
-                  : () {
-                      setState(() {
-                        isPressed = !isPressed;
-                        ref.read(historyEditModeProvider.notifier).toggle();
-                      });
-                    },
+                  ? null
+                  : ref.read(historyEditModeProvider.notifier).toggle,
               style: TextButton.styleFrom(
                 side: BorderSide(
-                  color: isPressed
+                  color: isEditingMode
                       ? AppColors.secondary.withAlpha(80)
                       : AppColors.cardBorder,
                 ),

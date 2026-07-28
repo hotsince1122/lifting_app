@@ -1,15 +1,16 @@
 import 'package:flutter/material.dart';
 import 'package:lifting_tracker_app/core/database/app_database.dart';
 import 'package:lifting_tracker_app/core/utils/read_write_sql_bool.dart';
+import 'package:lifting_tracker_app/features/exercises/domain/catalog_exercise.dart';
 import 'package:lifting_tracker_app/features/workouts/data/populate_workout_session_sets.dart';
-import 'package:lifting_tracker_app/features/exercises/domain/exercise.dart';
 import 'package:lifting_tracker_app/features/workouts/data/workout_session_editor_queries.dart';
 import 'package:lifting_tracker_app/features/workouts/data/workout_session_queries.dart';
 import 'package:lifting_tracker_app/features/workouts/domain/training_set.dart';
+import 'package:lifting_tracker_app/features/workouts/domain/workout_exercise.dart';
 
-Future<Exercise?> addNewExerciseToDb(
+Future<WorkoutExercise?> addNewExerciseToDb(
   int workoutSessionId,
-  Exercise newExercise,
+  CatalogExercise newExercise,
 ) async {
   final db = await AppDatabase.getDatabase();
 
@@ -60,12 +61,13 @@ Future<Exercise?> addNewExerciseToDb(
       }
 
       if (setsToInsert.isEmpty) {
-        setsToInsert = [emptySet(setIndex: 1)];
+        setsToInsert = [TrainingSet.empty(setIndex: 1)];
       }
 
       await populateWorkoutSessionSets(
         [
-          newExercise.copyWith(
+          WorkoutExercise(
+            catalogExercise: newExercise,
             orderIndex: nextExerciseOrderIndex,
             sets: setsToInsert,
           ),
@@ -82,7 +84,8 @@ Future<Exercise?> addNewExerciseToDb(
         nextExerciseOrderIndex,
       );
 
-      return newExercise.copyWith(
+      return WorkoutExercise(
+        catalogExercise: newExercise,
         orderIndex: nextExerciseOrderIndex,
         sets: workoutSets,
       );
@@ -97,11 +100,11 @@ Future<Exercise?> addNewExerciseToDb(
 }
 
 Future<TrainingSet?> addSetToExerciseInDb(
-  Exercise exercise,
+  WorkoutExercise exercise,
   int workoutSessionId,
 ) async {
   final exerciseOrderIndex = exercise.orderIndex;
-  if (exerciseOrderIndex == null) return null;
+  final exerciseId = exercise.catalogExercise.id;
 
   final db = await AppDatabase.getDatabase();
 
@@ -122,7 +125,7 @@ Future<TrainingSet?> addSetToExerciseInDb(
       final occurrenceIndex = await loadExerciseOccurrenceIndex(
         txn,
         workoutSessionId,
-        exercise.id,
+        exerciseId,
         exerciseOrderIndex,
       );
 
@@ -137,7 +140,7 @@ Future<TrainingSet?> addSetToExerciseInDb(
         WHERE session_id = ? AND ex_id = ? AND exercise_occurrence_index = ? AND set_index = ?
         LIMIT 1
         ''',
-          [lastCompletedWorkoutId, exercise.id, occurrenceIndex, nextSetIndex],
+          [lastCompletedWorkoutId, exerciseId, occurrenceIndex, nextSetIndex],
         );
 
         if (dataPreviousWorkoutSet.isNotEmpty) {
@@ -152,11 +155,11 @@ Future<TrainingSet?> addSetToExerciseInDb(
         }
       }
 
-      setToInsert ??= emptySet(setIndex: nextSetIndex);
+      setToInsert ??= TrainingSet.empty(setIndex: nextSetIndex);
 
       final workoutSessionSetId = await txn.insert('active_session_sets', {
         'workout_session_id': workoutSessionId,
-        'exercise_id': exercise.id,
+        'exercise_id': exerciseId,
         'exercise_order_index': exerciseOrderIndex,
         'exercise_occurrence_index': occurrenceIndex,
         'set_index': setToInsert.setIndex ?? nextSetIndex,

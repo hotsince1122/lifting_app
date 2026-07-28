@@ -3,7 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:lifting_tracker_app/features/plans/domain/custom_split.dart';
 import 'package:lifting_tracker_app/core/ui/buttons/gradient_button.dart';
 import 'package:lifting_tracker_app/features/plans/presentation/widgets/custom_split_selector.dart';
-import 'package:lifting_tracker_app/features/plans/presentation/widgets/preset_splits.dart';
+import 'package:lifting_tracker_app/flows/onboarding/presentation/widgets/preset_splits.dart';
 import 'package:lifting_tracker_app/core/theme/app_gradients.dart';
 import 'package:lifting_tracker_app/features/plans/application/active_split_plan_controller.dart';
 import 'package:lifting_tracker_app/core/theme/app_colors.dart';
@@ -17,7 +17,6 @@ class SelectSplitPage extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-
     final screenWidth = MediaQuery.of(context).size.width;
     final splitPlanAsync = ref.watch(activeSplitPlanProvider);
 
@@ -26,7 +25,6 @@ class SelectSplitPage extends ConsumerWidget {
       loading: () => Center(child: CircularProgressIndicator()),
       error: (error, stackTrace) => Center(child: Text(error.toString())),
       data: (activeSplitPlan) {
-
         return Padding(
           padding: const EdgeInsets.fromLTRB(18, 32, 18, 46),
           child: Column(
@@ -40,7 +38,7 @@ class SelectSplitPage extends ConsumerWidget {
                       "Choose your training split",
                       style: Theme.of(context).textTheme.headlineMedium,
                     ),
-                    const SizedBox(height: 12,),
+                    const SizedBox(height: 12),
                     Text(
                       "Set up your workout week with:",
                       style: Theme.of(context).textTheme.titleMedium!.copyWith(
@@ -97,13 +95,14 @@ class SelectSplitPage extends ConsumerWidget {
               GradientButton(
                 gradientVariant: AppGradients.card,
                 isActive:
-                    (activeSplitPlan != null &&
-                    !activeSplitPlan.isPreset),
+                    (activeSplitPlan != null && !activeSplitPlan.isPreset),
                 onPressed: () async {
                   final CustomSplit? customSplit =
                       await CustomSplitSelector.show(context);
                   if (customSplit != null) {
-                    ref.read(activeSplitPlanProvider.notifier).addAndChangeToCustom(customSplit);
+                    ref
+                        .read(activeSplitPlanProvider.notifier)
+                        .addAndChangeToCustom(customSplit);
                   }
                 },
                 buttonWidth: screenWidth - 172,
@@ -112,10 +111,7 @@ class SelectSplitPage extends ConsumerWidget {
                   mainAxisSize: MainAxisSize.min,
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
-                    Icon(
-                      Icons.add_circle_rounded,
-                      color: AppColors.primary,
-                    ),
+                    Icon(Icons.add_circle_rounded, color: AppColors.primary),
                     SizedBox(width: 8),
                     Text(
                       'Creat Custom Split',
@@ -124,7 +120,6 @@ class SelectSplitPage extends ConsumerWidget {
                   ],
                 ),
               ),
-
 
               const SizedBox(height: 8),
               Text(
@@ -148,9 +143,17 @@ class SelectSplitPage extends ConsumerWidget {
                   mainAxisSize: MainAxisSize.min,
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
-                    Text('Continue', style: Theme.of(context).textTheme.titleLarge!.copyWith(color: AppColors.background)),
+                    Text(
+                      'Continue',
+                      style: Theme.of(context).textTheme.titleLarge!.copyWith(
+                        color: AppColors.background,
+                      ),
+                    ),
                     SizedBox(width: 8),
-                    Icon(Icons.arrow_forward_rounded, color: AppColors.background,),
+                    Icon(
+                      Icons.arrow_forward_rounded,
+                      color: AppColors.background,
+                    ),
                   ],
                 ),
               ),

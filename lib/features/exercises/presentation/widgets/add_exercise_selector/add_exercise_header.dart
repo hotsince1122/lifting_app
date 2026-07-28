@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 
-class SheetHeaderConfig {
-  const SheetHeaderConfig({
+class AddExerciseHeaderConfig {
+  const AddExerciseHeaderConfig({
     required this.title,
     required this.leading,
     required this.trailing,
@@ -12,10 +12,10 @@ class SheetHeaderConfig {
   final Widget? trailing;
 }
 
-class SheetHeader extends StatelessWidget {
-  const SheetHeader({required this.config, super.key});
+class AddExerciseHeader extends StatelessWidget {
+  const AddExerciseHeader({required this.config, super.key});
 
-  final SheetHeaderConfig config;
+  final AddExerciseHeaderConfig config;
 
   @override
   Widget build(BuildContext context) {

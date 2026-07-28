@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:lifting_tracker_app/core/ui/transitions/sheet_parallax_route.dart';
-import 'package:lifting_tracker_app/features/exercises/domain/exercise.dart';
+import 'package:lifting_tracker_app/features/exercises/domain/catalog_exercise.dart';
 import 'package:lifting_tracker_app/features/exercises/application/exercises_by_muscle_group_controller.dart';
 import 'package:lifting_tracker_app/core/theme/app_colors.dart';
 import 'package:lifting_tracker_app/features/exercises/presentation/widgets/add_exercise_selector/add_exercise_header.dart';
@@ -17,11 +17,11 @@ class AddExerciseSelector extends ConsumerStatefulWidget {
 
   final double screenWidth;
 
-  static Future<Exercise?> openExercisePickerSheet(
+  static Future<CatalogExercise?> openExercisePickerSheet(
     BuildContext context,
     double screenWidth,
   ) {
-    return showModalBottomSheet<Exercise>(
+    return showModalBottomSheet<CatalogExercise>(
       context: context,
       isDismissible: false,
       enableDrag: false,
@@ -46,12 +46,12 @@ class _AddExerciseSelectorState extends ConsumerState<AddExerciseSelector> {
   String? _muscleGroupPickedTitle;
   String? _muscleGroupSelected;
 
-  Exercise? _editingExercise;
+  CatalogExercise? _editingExercise;
 
   @override
   void initState() {
     super.initState();
-    _step = AddExerciseStep.selectMuscleGroupStep;
+    _step = AddExerciseStep.selectMuscleGroup;
   }
 
   @override
@@ -71,7 +71,7 @@ class _AddExerciseSelectorState extends ConsumerState<AddExerciseSelector> {
     _newExerciseMuscleGroup.value = fromMuscleGroup;
 
     setState(() {
-      _step = AddExerciseStep.createExerciseStep;
+      _step = AddExerciseStep.createExercise;
     });
 
     _navKey.currentState?.push(
@@ -86,13 +86,13 @@ class _AddExerciseSelectorState extends ConsumerState<AddExerciseSelector> {
     );
   }
 
-  void _openEditExercise(Exercise exercise) {
+  void _openEditExercise(CatalogExercise exercise) {
     _editingExercise = exercise;
     _exerciseNameController.text = exercise.name;
     _newExerciseMuscleGroup.value = exercise.muscleGroup;
 
     setState(() {
-      _step = AddExerciseStep.editExerciseStep;
+      _step = AddExerciseStep.editExercise;
     });
 
     _navKey.currentState?.push(
@@ -109,7 +109,7 @@ class _AddExerciseSelectorState extends ConsumerState<AddExerciseSelector> {
 
   Future<void> _selectMuscleGroupForNewExercise() async {
     setState(() {
-      _step = AddExerciseStep.selectMuscleGroupForNewExerciseStep;
+      _step = AddExerciseStep.selectMuscleGroupForNewExercise;
     });
 
     final pickedMuscleGroup = await _navKey.currentState?.push<String>(
@@ -132,8 +132,8 @@ class _AddExerciseSelectorState extends ConsumerState<AddExerciseSelector> {
 
     setState(() {
       _step = _editingExercise == null
-          ? AddExerciseStep.createExerciseStep
-          : AddExerciseStep.editExerciseStep;
+          ? AddExerciseStep.createExercise
+          : AddExerciseStep.editExercise;
     });
   }
 
@@ -141,7 +141,7 @@ class _AddExerciseSelectorState extends ConsumerState<AddExerciseSelector> {
     setState(() {
       _muscleGroupPickedTitle = label;
       _muscleGroupSelected = muscleGroup;
-      _step = AddExerciseStep.exercisesForGroupStep;
+      _step = AddExerciseStep.exercisesForGroup;
     });
 
     _navKey.currentState?.push(
@@ -158,9 +158,9 @@ class _AddExerciseSelectorState extends ConsumerState<AddExerciseSelector> {
 
     setState(() {
       if (canPop) {
-        _step = AddExerciseStep.exercisesForGroupStep;
+        _step = AddExerciseStep.exercisesForGroup;
       } else {
-        _step = AddExerciseStep.selectMuscleGroupStep;
+        _step = AddExerciseStep.selectMuscleGroup;
       }
     });
   }
@@ -210,7 +210,7 @@ class _AddExerciseSelectorState extends ConsumerState<AddExerciseSelector> {
 
     _navKey.currentState?.pop();
     setState(() {
-      _step = AddExerciseStep.exercisesForGroupStep;
+      _step = AddExerciseStep.exercisesForGroup;
       _editingExercise = null;
     });
   }
@@ -227,15 +227,15 @@ class _AddExerciseSelectorState extends ConsumerState<AddExerciseSelector> {
 
     _navKey.currentState?.pop();
     setState(() {
-      _step = AddExerciseStep.exercisesForGroupStep;
+      _step = AddExerciseStep.exercisesForGroup;
       _editingExercise = null;
     });
   }
 
-  SheetHeaderConfig _headerFor(AddExerciseStep currentStep) {
+  AddExerciseHeaderConfig _headerFor(AddExerciseStep currentStep) {
     switch (currentStep) {
-      case AddExerciseStep.selectMuscleGroupStep:
-        return SheetHeaderConfig(
+      case AddExerciseStep.selectMuscleGroup:
+        return AddExerciseHeaderConfig(
           title: 'Select Muscle Group',
           leading: IconButton(
             onPressed: _closeSheet,
@@ -246,8 +246,8 @@ class _AddExerciseSelectorState extends ConsumerState<AddExerciseSelector> {
             icon: const Icon(Icons.add),
           ),
         );
-      case AddExerciseStep.createExerciseStep:
-        return SheetHeaderConfig(
+      case AddExerciseStep.createExercise:
+        return AddExerciseHeaderConfig(
           title: 'Add Exercise',
           leading: TextButton(
             onPressed: _backToMuscleGroupsOrExercises,
@@ -276,8 +276,8 @@ class _AddExerciseSelectorState extends ConsumerState<AddExerciseSelector> {
             ),
           ),
         );
-      case AddExerciseStep.exercisesForGroupStep:
-        return SheetHeaderConfig(
+      case AddExerciseStep.exercisesForGroup:
+        return AddExerciseHeaderConfig(
           title: _muscleGroupPickedTitle ?? 'Select Exercise',
           leading: IconButton(
             onPressed: _backToMuscleGroupsOrExercises,
@@ -291,8 +291,8 @@ class _AddExerciseSelectorState extends ConsumerState<AddExerciseSelector> {
             icon: const Icon(Icons.add),
           ),
         );
-      case AddExerciseStep.selectMuscleGroupForNewExerciseStep:
-        return SheetHeaderConfig(
+      case AddExerciseStep.selectMuscleGroupForNewExercise:
+        return AddExerciseHeaderConfig(
           title: 'Select Muscle Group',
           leading: IconButton(
             onPressed: () {
@@ -303,8 +303,8 @@ class _AddExerciseSelectorState extends ConsumerState<AddExerciseSelector> {
           ),
           trailing: null,
         );
-      case AddExerciseStep.editExerciseStep:
-        return SheetHeaderConfig(
+      case AddExerciseStep.editExercise:
+        return AddExerciseHeaderConfig(
           title: 'Edit Exercise',
           leading: IconButton(
             onPressed: _backToMuscleGroupsOrExercises,
@@ -338,7 +338,7 @@ class _AddExerciseSelectorState extends ConsumerState<AddExerciseSelector> {
         children: [
           Padding(
             padding: const EdgeInsets.fromLTRB(8, 8, 8, 0),
-            child: SheetHeader(config: _headerFor(_step)),
+            child: AddExerciseHeader(config: _headerFor(_step)),
           ),
           const SizedBox(height: 6),
           Expanded(

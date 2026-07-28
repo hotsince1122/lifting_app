@@ -2,13 +2,15 @@ import 'dart:async';
 
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:lifting_tracker_app/core/database/app_database.dart';
+import 'package:lifting_tracker_app/features/workouts/application/active_session_lifecycle_controller.dart';
 import 'package:lifting_tracker_app/features/workouts/domain/workout_session_statuses.dart';
 import 'package:lifting_tracker_app/features/history/presentation/view_data/history_month_view_data.dart';
 import 'package:lifting_tracker_app/features/history/presentation/view_data/history_workout_view_data.dart';
 
-final historyMonthsProvider = FutureProvider<List<HistoryMonthViewData>>(
-  (ref) => _loadHistoryMonths(),
-);
+final historyMonthsProvider = FutureProvider<List<HistoryMonthViewData>>((ref) {
+  ref.watch(activeSessionLifecycleProvider);
+  return _loadHistoryMonths();
+});
 
 Future<List<String>> _loadWorkoutExerciseLabels(int workoutId) async {
   final db = await AppDatabase.getDatabase();
@@ -70,9 +72,7 @@ Future<List<HistoryMonthViewData>> _loadHistoryMonths() async {
             workoutName: row['workoutName'] as String,
             startedAt: startedAt,
             durationSeconds: row['durationSeconds'] as int,
-            exercisesLabel: await _loadWorkoutExerciseLabels(
-              row['id'] as int,
-            ),
+            exercisesLabel: await _loadWorkoutExerciseLabels(row['id'] as int),
           ),
         );
   }

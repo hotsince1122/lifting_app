@@ -3,7 +3,7 @@ import 'dart:ui';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:lifting_tracker_app/core/theme/app_colors.dart';
-import 'package:lifting_tracker_app/features/workouts/application/exercise_and_sets/workout_session_exercises_controller.dart';
+import 'package:lifting_tracker_app/features/workouts/application/session_editor/workout_session_exercises_controller.dart';
 import 'package:phosphor_flutter/phosphor_flutter.dart';
 
 class SetSettingsSheet extends ConsumerStatefulWidget {
@@ -48,10 +48,10 @@ class SetSettingsSheet extends ConsumerStatefulWidget {
   }
 
   @override
-  ConsumerState<ConsumerStatefulWidget> createState() => SetSettingsState();
+  ConsumerState<ConsumerStatefulWidget> createState() => _SetSettingsState();
 }
 
-class SetSettingsState extends ConsumerState<SetSettingsSheet> {
+class _SetSettingsState extends ConsumerState<SetSettingsSheet> {
   Widget markIfSelected(bool isSelected, String label) {
     return Expanded(
       child: GestureDetector(
@@ -60,7 +60,9 @@ class SetSettingsState extends ConsumerState<SetSettingsSheet> {
           if (!isSelected) {
             await ref
                 .read(
-                  workoutSessionExercisesProvider(widget.workoutSessionId).notifier,
+                  workoutSessionExercisesProvider(
+                    widget.workoutSessionId,
+                  ).notifier,
                 )
                 .toggleSetWarmup(widget.workoutSessionSetId);
           }

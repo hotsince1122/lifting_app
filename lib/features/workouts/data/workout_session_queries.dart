@@ -1,6 +1,6 @@
 import 'package:sqflite/sqflite.dart';
 
-Future<String?> loadWorkoutNameFromWorkoutID(
+Future<String?> loadWorkoutNameFromWorkoutId(
   DatabaseExecutor db,
   int sourceWorkoutId,
 ) async {
@@ -24,7 +24,6 @@ Future<int?> loadExerciseOccurrenceIndex(
   String exerciseId,
   int exerciseOrderIndex,
 ) async {
-
   final data = await db.rawQuery(
     '''
     SELECT exercise_occurrence_index

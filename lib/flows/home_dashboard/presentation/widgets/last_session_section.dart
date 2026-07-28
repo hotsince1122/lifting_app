@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:lifting_tracker_app/flows/home_dashboard/application/last_workout_completed.dart';
+import 'package:lifting_tracker_app/flows/home_dashboard/application/last_workout_completed_controller.dart';
 import 'package:lifting_tracker_app/core/theme/app_colors.dart';
 import 'package:lifting_tracker_app/core/theme/app_gradients.dart';
 import 'package:lifting_tracker_app/core/ui/cards/gradient_card.dart';
@@ -78,8 +78,8 @@ class _LastSessionInfoAsync extends ConsumerWidget {
 
         final String workoutDurationLabel =
             '${(lastWorkoutCompleted.workoutDuration / 60).toInt().toString()} min workout';
-        final String nrOfExercisesFinishedLabel =
-            '${lastWorkoutCompleted.nrOfExercises} exercise${lastWorkoutCompleted.nrOfExercises == 1 ? '' : 's'} finished';
+        final String finishedExerciseCountLabel =
+            '${lastWorkoutCompleted.exerciseCount} exercise${lastWorkoutCompleted.exerciseCount == 1 ? '' : 's'} finished';
 
         return Column(
           crossAxisAlignment: CrossAxisAlignment.start,
@@ -99,7 +99,7 @@ class _LastSessionInfoAsync extends ConsumerWidget {
             ),
             const SizedBox(height: 6),
             Text(
-              nrOfExercisesFinishedLabel,
+              finishedExerciseCountLabel,
               style: Theme.of(
                 context,
               ).textTheme.labelMedium!.copyWith(color: AppColors.primary),

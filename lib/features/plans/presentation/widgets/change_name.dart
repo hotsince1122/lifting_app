@@ -3,7 +3,7 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:lifting_tracker_app/core/theme/app_colors.dart';
-import 'package:lifting_tracker_app/features/workouts/presentation/editor/change_name_flow.dart/change_name_contract.dart';
+import 'package:lifting_tracker_app/features/plans/presentation/editor/change_name_flow/change_name_contract.dart';
 
 class ChangeName extends ConsumerStatefulWidget {
   const ChangeName({required this.flow, required super.key});

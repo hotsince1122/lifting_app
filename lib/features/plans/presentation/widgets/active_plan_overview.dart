@@ -1,9 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:lifting_tracker_app/features/plans/application/active_split_days_provider.dart';
 import 'package:lifting_tracker_app/features/plans/application/active_split_plan_controller.dart';
-import 'package:lifting_tracker_app/flows/home_dashboard/application/active_split_days_options_provider.dart';
-import 'package:lifting_tracker_app/features/plans/presentation/pages/edit_day.dart';
-import 'package:lifting_tracker_app/features/plans/presentation/pages/edit_split.dart';
+import 'package:lifting_tracker_app/features/plans/application/split_day_summary_controller.dart';
+import 'package:lifting_tracker_app/features/plans/domain/split_day.dart';
+import 'package:lifting_tracker_app/features/plans/presentation/pages/edit_day_page.dart';
+import 'package:lifting_tracker_app/features/plans/presentation/pages/edit_split_page.dart';
 import 'package:lifting_tracker_app/core/theme/app_colors.dart';
 import 'package:lifting_tracker_app/core/theme/app_gradients.dart';
 import 'package:lifting_tracker_app/core/ui/cards/gradient_card.dart';
@@ -79,7 +81,7 @@ class _SplitPlanSummary extends ConsumerWidget {
         }
 
         final cycleLengthInDays = activeSplitPlanData.cycleLengthInDays;
-        final nrOfExercises = activeSplitPlanData.nrOfExercises;
+        final exerciseCount = activeSplitPlanData.exerciseCount;
 
         return Column(
           crossAxisAlignment: CrossAxisAlignment.start,
@@ -93,7 +95,7 @@ class _SplitPlanSummary extends ConsumerWidget {
             ),
             const SizedBox(height: 6),
             Text(
-              '$cycleLengthInDays-day cycle · $nrOfExercises exercise${nrOfExercises > 1 ? 's' : ''}',
+              '$cycleLengthInDays-day cycle · $exerciseCount exercise${exerciseCount > 1 ? 's' : ''}',
               style: Theme.of(
                 context,
               ).textTheme.labelLarge!.copyWith(color: AppColors.primary),
@@ -110,7 +112,7 @@ class _SplitDays extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final activeSplitDaysAsync = ref.watch(activeSplitDaysOptionsProvider);
+    final activeSplitDaysAsync = ref.watch(activeSplitDaysProvider);
 
     return activeSplitDaysAsync.when(
       loading: () => const Center(child: CircularProgressIndicator()),
@@ -129,41 +131,11 @@ class _SplitDays extends ConsumerWidget {
                 onTap: () => Navigator.of(context).push(
                   MaterialPageRoute(
                     builder: (context) =>
-                        EditDayPage(activeSplitDaysData[i].dayId!),
+                        EditDayPage(activeSplitDaysData[i].id),
                   ),
                 ),
                 borderRadius: BorderRadius.circular(12),
-                child: Padding(
-                  padding: const EdgeInsets.symmetric(vertical: 10),
-                  child: Row(
-                    crossAxisAlignment: CrossAxisAlignment.center,
-                    children: [
-                      Expanded(
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Text(
-                              activeSplitDaysData[i].workoutName,
-                              style: Theme.of(context).textTheme.titleMedium,
-                            ),
-                            Text(
-                              '${activeSplitDaysData[i].muscleGroups} · '
-                              '${activeSplitDaysData[i].nrOfExercises} exercise${activeSplitDaysData[i].nrOfExercises != 1 ? 's' : ''}',
-                              style: Theme.of(context).textTheme.labelLarge!
-                                  .copyWith(color: AppColors.primary),
-                            ),
-                          ],
-                        ),
-                      ),
-                      const SizedBox(width: 12),
-                      const Icon(
-                        Icons.keyboard_arrow_right_rounded,
-                        size: 24,
-                        color: AppColors.primary,
-                      ),
-                    ],
-                  ),
-                ),
+                child: _SplitDayOverview(activeSplitDaysData[i]),
               ),
               if (i != activeSplitDaysData.length - 1)
                 Divider(
@@ -174,6 +146,70 @@ class _SplitDays extends ConsumerWidget {
                 ),
             ],
           ],
+        );
+      },
+    );
+  }
+}
+
+class _SplitDayOverview extends ConsumerWidget {
+  const _SplitDayOverview(this.splitDay);
+
+  final SplitDay splitDay;
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final summaryAsync = ref.watch(splitDaySummaryProvider(splitDay.id));
+
+    return summaryAsync.when(
+      loading: () => const Padding(
+        padding: EdgeInsets.symmetric(vertical: 10),
+        child: Center(child: CircularProgressIndicator()),
+      ),
+      error: (_, _) => const Padding(
+        padding: EdgeInsets.symmetric(vertical: 10),
+        child: Center(child: Text('An error has occurred!')),
+      ),
+      data: (summary) {
+        var muscleGroups = summary.muscleGroups.join(' / ');
+        if (muscleGroups.isNotEmpty && !muscleGroups.contains(' ')) {
+          muscleGroups += ' focused';
+        }
+        if (muscleGroups.isEmpty) {
+          muscleGroups = 'no muscle groups';
+        }
+
+        return Padding(
+          padding: const EdgeInsets.symmetric(vertical: 10),
+          child: Row(
+            crossAxisAlignment: CrossAxisAlignment.center,
+            children: [
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      splitDay.name,
+                      style: Theme.of(context).textTheme.titleMedium,
+                    ),
+                    Text(
+                      '$muscleGroups · '
+                      '${summary.exerciseCount} exercise${summary.exerciseCount != 1 ? 's' : ''}',
+                      style: Theme.of(context).textTheme.labelLarge!.copyWith(
+                        color: AppColors.primary,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              const SizedBox(width: 12),
+              const Icon(
+                Icons.keyboard_arrow_right_rounded,
+                size: 24,
+                color: AppColors.primary,
+              ),
+            ],
+          ),
         );
       },
     );
@@ -210,9 +246,9 @@ class _EditSplitButton extends ConsumerWidget {
 
         return TextButton.icon(
           onPressed: () {
-            Navigator.of(
-              context,
-            ).push(MaterialPageRoute(builder: (context) => EditSplitPage(planId)));
+            Navigator.of(context).push(
+              MaterialPageRoute(builder: (context) => EditSplitPage(planId)),
+            );
           },
           style: TextButton.styleFrom(
             side: BorderSide(color: AppColors.cardBorder),

@@ -1,58 +1,39 @@
 import 'dart:async';
 
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:lifting_tracker_app/core/database/app_database.dart';
-import 'package:lifting_tracker_app/flows/onboarding/domain/preset_split_plans_card_view_data.dart';
+import 'package:lifting_tracker_app/features/plans/application/split_days_controller.dart';
+import 'package:lifting_tracker_app/features/plans/application/split_plan_provider.dart';
+import 'package:lifting_tracker_app/features/plans/application/split_plans_ids_controller.dart';
+import 'package:lifting_tracker_app/flows/onboarding/presentation/view_data/preset_split_plans_card_view_data.dart';
 
-Future<List<PresetSplitPlanCardViewData>> _loadPresetsFromDb() async {
-  final db = await AppDatabase.getDatabase();
+final presetSplitViewDataProvider =
+    AsyncNotifierProvider<
+      PresetSplitViewDataController,
+      List<PresetSplitPlanCardViewData>
+    >(PresetSplitViewDataController.new);
 
-  final data = await db.rawQuery('''
-  SELECT
-   ordered.splitId,
-   ordered.splitPlanName,
-   GROUP_CONCAT(ordered.dayName, ' / ') AS splitDaysNames,
-   COUNT(*) AS nrOfDays
-  FROM (
-    SELECT
-      sp.id AS splitId,
-      sp.name AS splitPlanName,
-      sd.name AS dayName
-    FROM split_plans sp
-    JOIN split_days sd ON sp.id = sd.split_id
-    WHERE sp.is_preset = 1
-    ORDER BY sp.id, sd.order_idx
-  ) ordered
-  GROUP BY
-    ordered.splitId,
-    ordered.splitPlanName
-  ORDER BY ordered.splitId;
-  ''');
-
-  return data
-      .map(
-        (row) => PresetSplitPlanCardViewData(
-          splitId: row['splitId'] as int,
-          splitPlanName: row['splitPlanName'] as String,
-          splitDaysNames: row['splitDaysNames'] as String,
-          nrOfDays: row['nrOfDays'] as int,
-        ),
-      )
-      .toList();
-}
-
-final presetSplitVmProvider =
-    AsyncNotifierProvider<PresetSplitViewDataController, List<PresetSplitPlanCardViewData>>(
-      PresetSplitViewDataController.new,
-    );
-
-class PresetSplitViewDataController extends AsyncNotifier<List<PresetSplitPlanCardViewData>> {
+class PresetSplitViewDataController
+    extends AsyncNotifier<List<PresetSplitPlanCardViewData>> {
   @override
-  FutureOr<List<PresetSplitPlanCardViewData>> build() {
-    return _loadPresetsFromDb();
-  }
+  FutureOr<List<PresetSplitPlanCardViewData>> build() async {
+    final splitIds = [...await ref.watch(splitPlansIdsProvider.future)]..sort();
+    final presets = <PresetSplitPlanCardViewData>[];
 
-  FutureOr<void> refresh() async {
-    state = AsyncData(await _loadPresetsFromDb());
+    for (final splitId in splitIds) {
+      final splitPlan = await ref.watch(splitPlanProvider(splitId).future);
+      if (splitPlan == null || !splitPlan.isPreset) continue;
+
+      final splitDays = await ref.watch(splitDaysProvider(splitId).future);
+      presets.add(
+        PresetSplitPlanCardViewData(
+          splitId: splitId,
+          splitPlanName: splitPlan.name,
+          splitDaysNames: splitDays.map((day) => day.name).join(' / '),
+          dayCount: splitDays.length,
+        ),
+      );
+    }
+
+    return presets;
   }
 }

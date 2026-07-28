@@ -1,7 +1,7 @@
 enum AddExerciseStep {
-  selectMuscleGroupStep,
-  exercisesForGroupStep,
-  createExerciseStep,
-  selectMuscleGroupForNewExerciseStep,
-  editExerciseStep,
+  selectMuscleGroup,
+  exercisesForGroup,
+  createExercise,
+  selectMuscleGroupForNewExercise,
+  editExercise,
 }

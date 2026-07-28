@@ -25,6 +25,15 @@ class TrainingSet {
   final int? actualRepetitions;
   final String? actualNotes;
 
+  TrainingSet.empty({int? setIndex})
+    : this(
+        setIndex: setIndex,
+        isWarmup: false,
+        hintRepetitions: 0,
+        hintWeight: 0,
+        hintNotes: '',
+      );
+
   TrainingSet copyWith({
     Object? workoutSessionSetId = _copyWithSentinel,
     Object? setIndex = _copyWithSentinel,
@@ -62,12 +71,12 @@ class TrainingSet {
   }
 }
 
-TrainingSet emptySet({int? setIndex}) {
-  return TrainingSet(
-    setIndex: setIndex,
-    isWarmup: false,
-    hintRepetitions: 0,
-    hintWeight: 0,
-    hintNotes: '',
-  );
-}
+// TrainingSet emptySet({int? setIndex}) {
+//   return TrainingSet(
+//     setIndex: setIndex,
+//     isWarmup: false,
+//     hintRepetitions: 0,
+//     hintWeight: 0,
+//     hintNotes: '',
+//   );
+// }

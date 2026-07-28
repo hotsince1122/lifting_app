@@ -1,11 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:lifting_tracker_app/features/history/presentation/state/history_workout_position.dart';
 import 'package:lifting_tracker_app/features/history/presentation/view_data/history_month_view_data.dart';
 import 'package:lifting_tracker_app/features/history/presentation/state/history_editing_mode_controller.dart';
 import 'package:lifting_tracker_app/core/theme/app_colors.dart';
 import 'package:lifting_tracker_app/core/theme/app_gradients.dart';
 import 'package:lifting_tracker_app/core/ui/cards/gradient_card.dart';
-import 'package:lifting_tracker_app/features/history/presentation/widgets/history_workout_layout.dart';
+import 'package:lifting_tracker_app/features/history/presentation/widgets/history_workout_tile.dart';
 
 class HistoryMonthCard extends ConsumerWidget {
   const HistoryMonthCard(this.historyMonthData, {super.key});
@@ -50,7 +51,7 @@ class HistoryMonthCard extends ConsumerWidget {
           child: Column(
             children: [
               for (int i = 0; i < historyMonthData.workouts.length; i++) ...[
-                HistoryWorkoutLayout(
+                HistoryWorkoutTile(
                   key: ValueKey(historyMonthData.workouts[i].workoutId),
                   historyMonthData.workouts[i],
                   isEditingMode,
@@ -71,20 +72,18 @@ class HistoryMonthCard extends ConsumerWidget {
   }
 }
 
-enum WorkoutPositionInLayout { first, between, last, only }
-
-WorkoutPositionInLayout _positionFor(int index, int length) {
+HistoryWorkoutPosition _positionFor(int index, int length) {
   if (index == 0) {
     if (length == 1) {
-      return WorkoutPositionInLayout.only;
+      return HistoryWorkoutPosition.only;
     } else {
-      return WorkoutPositionInLayout.first;
+      return HistoryWorkoutPosition.first;
     }
   }
 
   if (index == length - 1) {
-    return WorkoutPositionInLayout.last;
+    return HistoryWorkoutPosition.last;
   }
 
-  return WorkoutPositionInLayout.between;
+  return HistoryWorkoutPosition.between;
 }

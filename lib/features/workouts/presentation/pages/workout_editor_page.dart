@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:lifting_tracker_app/features/workouts/application/exercise_and_sets/workout_session_exercises_controller.dart';
+import 'package:lifting_tracker_app/features/workouts/application/session_editor/workout_session_exercises_controller.dart';
 import 'package:lifting_tracker_app/features/workouts/presentation/widgets/add_exercises_to_workout.dart';
 import 'package:lifting_tracker_app/features/workouts/presentation/widgets/workout_exercise_card.dart';
 import 'package:lifting_tracker_app/features/workouts/presentation/editor/active_workout_editor_flow.dart';
@@ -56,7 +56,7 @@ class WorkoutEditorPage extends ConsumerWidget {
                         workoutSessionId,
                         horizontalPadding,
                         key: ValueKey((
-                          exerciseAndSets[i].id,
+                          exerciseAndSets[i].catalogExercise.id,
                           exerciseAndSets[i].orderIndex,
                         )),
                       ),

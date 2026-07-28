@@ -126,8 +126,8 @@ class _SessionSummaryCardState extends ConsumerState<SessionSummaryCard> {
         controller: controller,
         onChanged: _handleWorkoutNameChanged,
         onSubmitted: (_) {
-                  unawaited(_savePendingName());
-                },
+          unawaited(_savePendingName());
+        },
         keyboardType: TextInputType.text,
         textInputAction: TextInputAction.done,
         maxLines: 2,

@@ -22,7 +22,7 @@ class AddDayToSplit extends ConsumerWidget {
         ),
         child: InkWell(
           onTap: () async {
-            await ref.read(splitDaysController(splitId).notifier).createNewDay();
+            await ref.read(splitDaysProvider(splitId).notifier).createNewDay();
           },
           borderRadius: BorderRadius.circular(20),
           child: Padding(

@@ -1,9 +1,9 @@
 import 'dart:ui';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:lifting_tracker_app/features/workouts/application/exercise_and_sets/workout_session_exercises_controller.dart';
-import 'package:lifting_tracker_app/features/exercises/domain/exercise.dart';
+import 'package:lifting_tracker_app/features/workouts/application/session_editor/workout_session_exercises_controller.dart';
 import 'package:lifting_tracker_app/core/theme/app_colors.dart';
+import 'package:lifting_tracker_app/features/workouts/domain/workout_exercise.dart';
 import 'package:lifting_tracker_app/features/workouts/presentation/widgets/reorder_exercises_sheet.dart';
 import 'package:lifting_tracker_app/features/exercises/presentation/widgets/add_exercise_selector/add_exercise_selector.dart';
 import 'package:phosphor_flutter/phosphor_flutter.dart';
@@ -19,14 +19,14 @@ class ExerciseSettingsSheet extends ConsumerStatefulWidget {
 
   final double screenWidth;
   final int workoutSessionId;
-  final Exercise exercise;
+  final WorkoutExercise exercise;
   final Future<void> Function() onDelete;
 
   static Future<void> openExerciseSettings(
     BuildContext context,
     double screenWidth,
     int workoutSessionId,
-    Exercise exercise,
+    WorkoutExercise exercise,
     Future<void> Function() onDelete,
   ) {
     return showModalBottomSheet(
@@ -47,10 +47,10 @@ class ExerciseSettingsSheet extends ConsumerStatefulWidget {
 
   @override
   ConsumerState<ConsumerStatefulWidget> createState() =>
-      ExerciseSettingsState();
+      _ExerciseSettingsState();
 }
 
-class ExerciseSettingsState extends ConsumerState<ExerciseSettingsSheet> {
+class _ExerciseSettingsState extends ConsumerState<ExerciseSettingsSheet> {
   Widget _settingCell(
     String settingName,
     IconData settingIcon,
@@ -109,7 +109,7 @@ class ExerciseSettingsState extends ConsumerState<ExerciseSettingsSheet> {
                       alignment: Alignment.center,
                       children: [
                         Text(
-                          widget.exercise.name,
+                          widget.exercise.catalogExercise.name,
                           style: Theme.of(context).textTheme.headlineSmall,
                           textAlign: TextAlign.center,
                         ),

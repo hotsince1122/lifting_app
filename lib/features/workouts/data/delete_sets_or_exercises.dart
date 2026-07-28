@@ -133,7 +133,6 @@ Future<bool> deleteExerciseFromDb(
   }
 }
 
-
 Future<int> _deleteExerciseRows(
   DatabaseExecutor db,
   int workoutSessionId,

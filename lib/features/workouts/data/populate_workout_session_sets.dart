@@ -1,13 +1,15 @@
 import 'package:lifting_tracker_app/core/database/app_database.dart';
 import 'package:lifting_tracker_app/core/utils/build_placeholder_for_sqlite.dart';
 import 'package:lifting_tracker_app/core/utils/read_write_sql_bool.dart';
+import 'package:lifting_tracker_app/features/exercises/domain/catalog_exercise.dart';
+import 'package:lifting_tracker_app/features/plans/domain/planned_exercise.dart';
+import 'package:lifting_tracker_app/features/workouts/domain/workout_exercise.dart';
 import 'package:lifting_tracker_app/features/workouts/domain/workout_session_statuses.dart';
-import 'package:lifting_tracker_app/features/exercises/domain/exercise.dart';
 import 'package:lifting_tracker_app/features/workouts/domain/training_set.dart';
 import 'package:sqflite/sqflite.dart';
 
-List<Exercise> _addDefaultSetToExercisesIfEmpty(
-  List<Exercise> exercisesPlanned,
+List<WorkoutExercise> _addDefaultSetToExercisesIfEmpty(
+  List<WorkoutExercise> exercisesPlanned,
 ) {
   return exercisesPlanned.map((exercise) {
     if (exercise.sets.isNotEmpty) return exercise;
@@ -26,22 +28,22 @@ List<Exercise> _addDefaultSetToExercisesIfEmpty(
   }).toList();
 }
 
-List<Exercise> _addSetsToExerciseFromDbData(
-  List<Exercise> exercisesPlanned,
+List<WorkoutExercise> _addSetsToExerciseFromDbData(
+  List<WorkoutExercise> exercisesPlanned,
   List<Map<String, Object?>> data, {
   bool includeActualValues = false,
 }) {
   if (data.isEmpty) return exercisesPlanned;
 
   final occurrenceIndexes = _buildExerciseOccurrenceIndexes(exercisesPlanned);
-  final updatedExercises = <Exercise>[];
+  final updatedExercises = <WorkoutExercise>[];
 
   for (int i = 0; i < exercisesPlanned.length; i++) {
     final exercise = exercisesPlanned[i];
     final updatedSets = [...exercise.sets];
 
     for (final set in data) {
-      if (exercise.id == set['exerciseId'] as String &&
+      if (exercise.catalogExercise.id == set['exerciseId'] as String &&
           occurrenceIndexes[i] == set['occurrenceIndex'] as int) {
         updatedSets.add(
           TrainingSet(
@@ -71,21 +73,22 @@ List<Exercise> _addSetsToExerciseFromDbData(
   return updatedExercises;
 }
 
-List<int> _buildExerciseOccurrenceIndexes(List<Exercise> exercises) {
+List<int> _buildExerciseOccurrenceIndexes(List<WorkoutExercise> exercises) {
   final occurrenceCounts = <String, int>{};
   final occurrenceIndexes = <int>[];
 
   for (final exercise in exercises) {
-    final occurrenceIndex = occurrenceCounts[exercise.id] ?? 0;
+    final exerciseId = exercise.catalogExercise.id;
+    final occurrenceIndex = occurrenceCounts[exerciseId] ?? 0;
     occurrenceIndexes.add(occurrenceIndex);
-    occurrenceCounts[exercise.id] = occurrenceIndex + 1;
+    occurrenceCounts[exerciseId] = occurrenceIndex + 1;
   }
 
   return occurrenceIndexes;
 }
 
 Future<void> populateWorkoutSessionSets(
-  List<Exercise> exercisesPlanned,
+  List<WorkoutExercise> exercisesPlanned,
   DatabaseExecutor db,
   int sessionId, {
   int? exerciseOccurrenceIndexOverride,
@@ -110,7 +113,7 @@ Future<void> populateWorkoutSessionSets(
 
       batch.insert('active_session_sets', ({
         'workout_session_id': sessionId,
-        'exercise_id': exercise.id,
+        'exercise_id': exercise.catalogExercise.id,
         'exercise_order_index': exercise.orderIndex,
         'exercise_occurrence_index': exerciseOccurrenceIndexes[exerciseIndex],
         'set_index': set.setIndex ?? i + 1,
@@ -159,7 +162,7 @@ Future<int?> loadLastCompletedWorkoutIdForSameDay(
   return dataLastWorkoutIdWithSameDayId.first['id'] as int;
 }
 
-Future<List<Exercise>> _loadExercisesFromWorkoutSession(
+Future<List<WorkoutExercise>> _loadExercisesFromWorkoutSession(
   int workoutSessionId,
 ) async {
   final db = await AppDatabase.getDatabase();
@@ -181,13 +184,16 @@ Future<List<Exercise>> _loadExercisesFromWorkoutSession(
 
   if (dataExercises.isEmpty) return [];
 
-  var currentExercises = <Exercise>[];
+  final currentExercises = <WorkoutExercise>[];
   for (final exercise in dataExercises) {
     currentExercises.add(
-      Exercise(
-        name: exercise['exerciseName'] as String,
-        muscleGroup: exercise['exerciseMuscleGroup'] as String,
-        id: exercise['exerciseId'] as String,
+      WorkoutExercise(
+        catalogExercise: CatalogExercise(
+          name: exercise['exerciseName'] as String,
+          muscleGroup: exercise['exerciseMuscleGroup'] as String,
+          id: exercise['exerciseId'] as String,
+        ),
+        sets: const [],
         orderIndex: exercise['orderIndex'] as int,
       ),
     );
@@ -196,7 +202,7 @@ Future<List<Exercise>> _loadExercisesFromWorkoutSession(
   return currentExercises;
 }
 
-Future<List<Exercise>> loadExistingWorkoutSessionSets(
+Future<List<WorkoutExercise>> loadExistingWorkoutSessionSets(
   Database db,
   int workoutSessionId,
 ) async {
@@ -234,7 +240,7 @@ Future<List<Exercise>> loadExistingWorkoutSessionSets(
   return currentExercises;
 }
 
-Future<List<Exercise>> loadPlannedExercises(
+Future<List<PlannedExercise>> loadPlannedExercises(
   Database db,
   int workoutSessionId,
 ) async {
@@ -243,6 +249,7 @@ Future<List<Exercise>> loadPlannedExercises(
     SELECT e.id AS exerciseId,
       e.name AS exerciseName,
       e.muscle_group AS exerciseMuscleGroup,
+      de.id AS relationId,
       de.order_idx AS exerciseOrderIndex
     FROM workout_sessions ws
     JOIN day_exercises de ON ws.day_id = de.day_id
@@ -257,10 +264,13 @@ Future<List<Exercise>> loadPlannedExercises(
 
   return dataAllExercisesInCurrentDay
       .map(
-        (row) => Exercise(
-          id: row['exerciseId'] as String,
-          name: row['exerciseName'] as String,
-          muscleGroup: row['exerciseMuscleGroup'] as String,
+        (row) => PlannedExercise(
+          catalogExercise: CatalogExercise(
+            id: row['exerciseId'] as String,
+            name: row['exerciseName'] as String,
+            muscleGroup: row['exerciseMuscleGroup'] as String,
+          ),
+          relationId: row['relationId'] as int,
           orderIndex: row['exerciseOrderIndex'] as int,
         ),
       )
@@ -289,9 +299,9 @@ Future<List<String>> loadExercisesExecutedIds(
   }).toList();
 }
 
-Future<List<Exercise>> _loadRepetedWorkoutHints(
+Future<List<WorkoutExercise>> _loadRepeatedWorkoutHints(
   Database db,
-  List<Exercise> exercisesPlanned,
+  List<WorkoutExercise> exercisesPlanned,
   int workoutSessionId,
 ) async {
   final lastWorkoutIdWithSameDayId = await loadLastCompletedWorkoutIdForSameDay(
@@ -306,7 +316,7 @@ Future<List<Exercise>> _loadRepetedWorkoutHints(
 
   final placeholder = buildPlaceholder(exercisesPlanned.length);
   final exercisesPlannedIds = exercisesPlanned
-      .map((exercise) => exercise.id)
+      .map((exercise) => exercise.catalogExercise.id)
       .toList();
 
   final dataLastWorkoutSets = await db.rawQuery(
@@ -337,7 +347,7 @@ Future<List<Exercise>> _loadRepetedWorkoutHints(
   return exercisesPlanned;
 }
 
-Future<List<Exercise>> loadOrCreateWorkoutSessionEditorSets(
+Future<List<WorkoutExercise>> loadOrCreateWorkoutSessionEditorSets(
   int workoutSessionId,
 ) async {
   final db = await AppDatabase.getDatabase();
@@ -348,27 +358,33 @@ Future<List<Exercise>> loadOrCreateWorkoutSessionEditorSets(
   );
   if (currentExercises.isNotEmpty) return currentExercises;
 
-  List<Exercise> exercisesPlanned = await loadPlannedExercises(
-    db,
-    workoutSessionId,
-  );
+  final plannedExercises = await loadPlannedExercises(db, workoutSessionId);
 
-  if (exercisesPlanned.isEmpty) {
+  if (plannedExercises.isEmpty) {
     return [];
   }
 
-  exercisesPlanned = await _loadRepetedWorkoutHints(
+  var workoutExercises = [
+    for (final plannedExercise in plannedExercises)
+      WorkoutExercise(
+        catalogExercise: plannedExercise.catalogExercise,
+        sets: const [],
+        orderIndex: plannedExercise.orderIndex,
+      ),
+  ];
+
+  workoutExercises = await _loadRepeatedWorkoutHints(
     db,
-    exercisesPlanned,
+    workoutExercises,
     workoutSessionId,
   );
 
-  await populateWorkoutSessionSets(exercisesPlanned, db, workoutSessionId);
+  await populateWorkoutSessionSets(workoutExercises, db, workoutSessionId);
 
   return loadExistingWorkoutSessionSets(db, workoutSessionId);
 }
 
-Future<List<Exercise>> loadSetsForEdit(int workoutSessionId) async {
+Future<List<WorkoutExercise>> loadSetsForEdit(int workoutSessionId) async {
   final db = await AppDatabase.getDatabase();
 
   final didPopulateEditDraft = await db.transaction((txn) async {

@@ -1,36 +1,24 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:lifting_tracker_app/features/progress/application/workouts_per_week_controller.dart';
-import 'package:lifting_tracker_app/features/plans/presentation/state/change_weekly_target_mode_controller.dart';
+import 'package:lifting_tracker_app/features/progress/application/weekly_workout_progress_controller.dart';
+import 'package:lifting_tracker_app/features/progress/presentation/state/change_weekly_target_mode_controller.dart';
 import 'package:lifting_tracker_app/core/theme/app_colors.dart';
 import 'package:phosphor_flutter/phosphor_flutter.dart';
 
-class TargetWeekButton extends ConsumerStatefulWidget {
+class TargetWeekButton extends ConsumerWidget {
   const TargetWeekButton({super.key});
 
   @override
-  ConsumerState<ConsumerStatefulWidget> createState() =>
-      TargetWeekButtonState();
-}
-
-class TargetWeekButtonState extends ConsumerState<TargetWeekButton> {
-  bool isPressed = false;
-
-  @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
     final targetAsync = ref.watch(weeklyWorkoutProgressProvider);
+    final isChangeModeActive = !ref.watch(changeWeeklyTargetModeProvider);
 
     return TextButton.icon(
-      onPressed: () {
-        setState(() {
-          isPressed = !isPressed;
-          ref.read(changeWeeklyTargetMode.notifier).toggle();
-        });
-      },
+      onPressed: ref.read(changeWeeklyTargetModeProvider.notifier).toggle,
       icon: Icon(PhosphorIcons.target(), size: 16, color: AppColors.secondary),
       style: TextButton.styleFrom(
         side: BorderSide(
-          color: isPressed
+          color: isChangeModeActive
               ? AppColors.secondary.withAlpha(80)
               : AppColors.cardBorder,
         ),

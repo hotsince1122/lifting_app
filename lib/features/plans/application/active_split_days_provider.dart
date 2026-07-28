@@ -8,5 +8,5 @@ final activeSplitDaysProvider = FutureProvider<List<SplitDay>>((ref) async {
 
   if (activeSplitId == null) return const <SplitDay>[];
 
-  return ref.watch(splitDaysController(activeSplitId).future);
+  return ref.watch(splitDaysProvider(activeSplitId).future);
 });

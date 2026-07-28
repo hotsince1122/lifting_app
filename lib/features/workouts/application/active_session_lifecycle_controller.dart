@@ -9,7 +9,7 @@ import 'package:lifting_tracker_app/features/workouts/data/workout_cycle_queries
 import 'package:lifting_tracker_app/features/workouts/data/workout_session_queries.dart';
 import 'package:lifting_tracker_app/features/workouts/domain/workout_session_statuses.dart';
 import 'package:lifting_tracker_app/features/workouts/application/picked_next_session_controller.dart';
-import 'package:lifting_tracker_app/features/progress/application/workouts_per_week_controller.dart';
+import 'package:lifting_tracker_app/features/progress/application/weekly_workout_progress_controller.dart';
 import 'package:lifting_tracker_app/features/workouts/presentation/state/workout_header_summary_provider.dart';
 import 'package:sqflite/sqflite.dart';
 
@@ -202,7 +202,7 @@ class ActiveSessionLifecycleController extends AsyncNotifier<bool> {
     final db = await AppDatabase.getDatabase();
 
     final newWorkoutId = await db.transaction<int?>((txn) async {
-      final workoutName = await loadWorkoutNameFromWorkoutID(
+      final workoutName = await loadWorkoutNameFromWorkoutId(
         txn,
         sourceWorkoutId,
       );

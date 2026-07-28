@@ -3,11 +3,11 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:lifting_tracker_app/features/plans/application/split_days_controller.dart';
 import 'package:lifting_tracker_app/features/plans/application/split_plan_provider.dart';
 import 'package:lifting_tracker_app/features/plans/application/split_day_summary_controller.dart';
-import 'package:lifting_tracker_app/features/plans/presentation/pages/edit_day.dart';
+import 'package:lifting_tracker_app/features/plans/presentation/pages/edit_day_page.dart';
 import 'package:lifting_tracker_app/core/theme/app_colors.dart';
 import 'package:lifting_tracker_app/core/theme/app_gradients.dart';
 import 'package:lifting_tracker_app/core/ui/cards/gradient_card.dart';
-import 'package:lifting_tracker_app/features/plans/presentation/state/delete_flow.dart/delete_day_flow.dart';
+import 'package:lifting_tracker_app/features/plans/presentation/editor/delete/delete_flow/delete_day_flow.dart';
 import 'package:lifting_tracker_app/features/plans/presentation/widgets/delete_validation.dart';
 import 'package:phosphor_flutter/phosphor_flutter.dart';
 
@@ -39,7 +39,7 @@ class _Header extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final nrOfDaysCycleAsync = ref.watch(splitPlanProvider(splitId));
+    final splitPlanAsync = ref.watch(splitPlanProvider(splitId));
 
     return Row(
       crossAxisAlignment: CrossAxisAlignment.center,
@@ -53,13 +53,13 @@ class _Header extends ConsumerWidget {
           ),
         ),
 
-        nrOfDaysCycleAsync.when(
+        splitPlanAsync.when(
           loading: () => const Center(child: CircularProgressIndicator()),
           error: (error, stackTrace) => const Center(
-            child: Text('Could not load nr of split day cycle.'),
+            child: Text('Could not load the split cycle length.'),
           ),
-          data: (nrOfDaysCycleData) {
-            if (nrOfDaysCycleData == null) {
+          data: (splitPlan) {
+            if (splitPlan == null) {
               return Text(
                 'Split has no days',
                 style: Theme.of(context).textTheme.bodyMedium!.copyWith(
@@ -69,10 +69,10 @@ class _Header extends ConsumerWidget {
               );
             }
 
-            final nrOfDaysCycle = nrOfDaysCycleData.cycleLengthInDays;
+            final cycleLengthInDays = splitPlan.cycleLengthInDays;
 
             return Text(
-              '$nrOfDaysCycle-day cycle',
+              '$cycleLengthInDays-day cycle',
               style: Theme.of(context).textTheme.bodyMedium!.copyWith(
                 color: AppColors.onSurfaceMuted,
                 letterSpacing: 0,
@@ -92,7 +92,7 @@ class _Body extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final splitDayAsync = ref.watch(splitDaysController(splitId));
+    final splitDayAsync = ref.watch(splitDaysProvider(splitId));
 
     return splitDayAsync.when(
       loading: () => const SizedBox.shrink(),
@@ -115,7 +115,7 @@ class _Body extends ConsumerWidget {
                         final splitDayId = splitDay[oldIndex].id;
 
                         await ref
-                            .read(splitDaysController(splitId).notifier)
+                            .read(splitDaysProvider(splitId).notifier)
                             .reorderSplitDays(oldIndex, newIndex, splitDayId);
                       },
                       dragBoundaryProvider: (context) =>
@@ -159,10 +159,10 @@ class _Body extends ConsumerWidget {
                                     ),
                                   ),
                                   data: (splitDayInfo) {
-                                    final int nrOfExercises =
+                                    final int exerciseCount =
                                         splitDayInfo.exerciseCount;
                                     return Text(
-                                      '$nrOfExercises exercise${nrOfExercises == 1 ? '' : 's'}',
+                                      '$exerciseCount exercise${exerciseCount == 1 ? '' : 's'}',
                                       style: Theme.of(context)
                                           .textTheme
                                           .bodySmall!

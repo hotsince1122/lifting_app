@@ -3,11 +3,11 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:lifting_tracker_app/features/plans/application/active_split_id_controller.dart';
 import 'package:lifting_tracker_app/features/plans/application/split_plan_provider.dart';
 import 'package:lifting_tracker_app/features/plans/application/split_plans_ids_controller.dart';
-import 'package:lifting_tracker_app/features/plans/presentation/pages/edit_split.dart';
+import 'package:lifting_tracker_app/features/plans/presentation/pages/edit_split_page.dart';
 import 'package:lifting_tracker_app/core/theme/app_colors.dart';
 import 'package:lifting_tracker_app/core/theme/app_gradients.dart';
 import 'package:lifting_tracker_app/core/ui/cards/gradient_card.dart';
-import 'package:lifting_tracker_app/features/plans/presentation/state/delete_flow.dart/delete_split_flow.dart';
+import 'package:lifting_tracker_app/features/plans/presentation/editor/delete/delete_flow/delete_split_flow.dart';
 import 'package:lifting_tracker_app/features/plans/presentation/widgets/delete_validation.dart';
 import 'package:phosphor_flutter/phosphor_flutter.dart';
 
@@ -90,7 +90,7 @@ class _SplitPlanCard extends ConsumerWidget {
 
           final name = splitPlan.name;
           final cycleLengthInDays = splitPlan.cycleLengthInDays;
-          final nrOfExercises = splitPlan.nrOfExercises;
+          final exerciseCount = splitPlan.exerciseCount;
 
           return Stack(
             children: [
@@ -103,7 +103,7 @@ class _SplitPlanCard extends ConsumerWidget {
                     children: [
                       Text(name, style: Theme.of(context).textTheme.titleSmall),
                       Text(
-                        '$cycleLengthInDays-day cycle · $nrOfExercises exercise${nrOfExercises != 1 ? 's' : ''}',
+                        '$cycleLengthInDays-day cycle · $exerciseCount exercise${exerciseCount != 1 ? 's' : ''}',
                         style: Theme.of(context).textTheme.labelLarge!.copyWith(
                           color: AppColors.primary,
                         ),

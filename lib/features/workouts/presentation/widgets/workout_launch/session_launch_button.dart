@@ -2,8 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:lifting_tracker_app/features/workouts/application/active_session_id_controller.dart';
 import 'package:lifting_tracker_app/features/workouts/application/active_session_lifecycle_controller.dart';
+import 'package:lifting_tracker_app/features/workouts/application/next_session_preview_provider.dart';
 import 'package:lifting_tracker_app/features/workouts/application/workout_name_controller.dart';
-import 'package:lifting_tracker_app/flows/home_dashboard/application/workout_focus_provider.dart';
 import 'package:lifting_tracker_app/features/workouts/presentation/pages/workout_editor_page.dart';
 import 'package:lifting_tracker_app/features/workouts/presentation/widgets/workout_launch/workout_launch_strategy.dart';
 
@@ -121,15 +121,15 @@ class SessionLaunchButton extends ConsumerWidget {
 
   Widget _buildNewSessionButton(BuildContext context, WidgetRef ref) {
     return ref
-        .watch(workoutFocusProvider)
+        .watch(nextSessionPreviewProvider)
         .when(
           loading: _loading,
           error: (_, _) => _error(),
-          data: (workoutFocus) => _buildLaunchButton(
+          data: (nextSession) => _buildLaunchButton(
             context,
             ref,
             isSessionAlreadyActive: false,
-            workoutName: workoutFocus.workoutName,
+            workoutName: nextSession.workoutName,
           ),
         );
   }

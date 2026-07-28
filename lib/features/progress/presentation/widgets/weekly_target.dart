@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:lifting_tracker_app/features/plans/presentation/state/change_weekly_target_mode_controller.dart';
+import 'package:lifting_tracker_app/features/progress/presentation/state/change_weekly_target_mode_controller.dart';
 import 'package:lifting_tracker_app/core/theme/app_colors.dart';
 import 'package:lifting_tracker_app/core/ui/cards/solid_card.dart';
 import 'package:lifting_tracker_app/features/progress/presentation/widgets/workouts_per_week_slider.dart';
@@ -27,7 +27,7 @@ class WeeklyTarget extends ConsumerWidget {
       ).textTheme.bodyMedium!.copyWith(color: AppColors.onSurfaceMuted),
     );
 
-    final isNotEnabled = ref.watch(changeWeeklyTargetMode);
+    final isNotEnabled = ref.watch(changeWeeklyTargetModeProvider);
 
     return ClipRect(
       child: AnimatedAlign(

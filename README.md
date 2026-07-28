@@ -15,7 +15,7 @@ Structura proiectului urmărește patru reguli:
    după tipul tehnic al fișierului.
 2. Fiecare concept de business are un singur modul care îl deține.
 3. Flow-urile pot combina mai multe features, fără să le copieze logica.
-4. `core` conține numai cod generic, care nu cunoaște concepte precum workout,
+4. `core` conține numai cod generic, care nu cunoaște concepte precum workouts,
    exercise, split sau history.
 
 ## Structura principală
@@ -101,7 +101,7 @@ Features principale ale aplicației sunt:
 features/
 ├── exercises/
 ├── plans/
-├── workout/
+├── workouts/
 ├── history/
 └── progress/
 ```
@@ -110,7 +110,7 @@ Responsabilitățile lor sunt:
 
 - `exercises`: exerciții, muscle groups, căutare și selectare de exerciții;
 - `plans`: split plans, split days și editarea planurilor;
-- `workout`: sesiunea activă, seturi, pornirea și terminarea antrenamentului;
+- `workouts`: sesiunea activă, seturi, pornirea și terminarea antrenamentului;
 - `history`: sesiunile terminate și istoricul antrenamentelor;
 - `progress`: weekly target, weekly progress și streak.
 
@@ -135,7 +135,7 @@ De exemplu, onboarding-ul folosește:
 finalizării flow-ului și starea „setup completed”. Nu deține modelele sau
 regulile interne ale feature-urilor pe care le folosește.
 
-Similar, `home_dashboard` compune informații din `workout`, `history` și
+Similar, `home_dashboard` compune informații din `workouts`, `history` și
 `progress`, dar deține doar prezentarea dashboardului.
 
 ## Structura internă a unui feature
@@ -166,7 +166,8 @@ Conține conceptele și regulile de business pure:
 - enum-uri și stări de business;
 - validări care nu depind de Flutter, Riverpod sau SQLite.
 
-Exemple: `SplitPlan`, `SplitDay`, `Exercise`, `TrainingSet`.
+Exemple: `SplitPlan`, `SplitDay`, `CatalogExercise`, `PlannedExercise`,
+`WorkoutExercise`, `TrainingSet`.
 
 ### `data/`
 
@@ -245,10 +246,10 @@ Exemple:
 - `GradientCard` → `core/ui/cards`;
 - `SolidButton` → `core/ui/buttons`;
 - `ExerciseSelector` → `features/exercises/presentation/widgets`;
-- `SessionLaunchButton` → `features/workout/presentation/widgets`;
+- `SessionLaunchButton` → `features/workouts/presentation/widgets`;
 - `HistoryMonthCard` → `features/history/presentation/widgets`.
 
-Regulă practică: dacă numele widget-ului conține `workout`, `exercise`,
+Regulă practică: dacă numele widget-ului conține `workouts`, `exercise`,
 `split`, `history` sau alt concept de business, el nu aparține lui `core`.
 
 ## Convenții de nume

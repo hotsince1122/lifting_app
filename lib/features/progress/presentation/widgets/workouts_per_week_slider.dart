@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:lifting_tracker_app/features/progress/application/workouts_per_week_controller.dart';
+import 'package:lifting_tracker_app/features/progress/application/weekly_workout_progress_controller.dart';
 import 'package:lifting_tracker_app/core/theme/app_colors.dart';
 
 class WorkoutsPerWeekSlider extends ConsumerWidget {

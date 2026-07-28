@@ -2,13 +2,7 @@ import 'dart:async';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:lifting_tracker_app/core/database/app_database.dart';
 import 'package:lifting_tracker_app/features/plans/domain/split_day.dart';
-import 'package:lifting_tracker_app/features/plans/application/active_split_id_controller.dart';
-import 'package:lifting_tracker_app/flows/onboarding/application/exercises_in_a_day_controller.dart';
-import 'package:lifting_tracker_app/features/workouts/application/picked_next_session_controller.dart';
-import 'package:lifting_tracker_app/features/plans/application/split_plan_provider.dart';
-import 'package:lifting_tracker_app/flows/onboarding/application/preset_split_view_data_controller.dart';
 import 'package:lifting_tracker_app/features/plans/application/split_day_summary_controller.dart';
-import 'package:lifting_tracker_app/flows/home_dashboard/application/workout_focus_provider.dart';
 
 Future<List<SplitDay>> _loadSplitDays(int splitId) async {
   final db = await AppDatabase.getDatabase();
@@ -34,11 +28,11 @@ Future<List<SplitDay>> _loadSplitDays(int splitId) async {
       .toList();
 }
 
-final splitDaysController = AsyncNotifierProvider.autoDispose
-    .family<SplitDaysNotifier, List<SplitDay>, int>(SplitDaysNotifier.new);
+final splitDaysProvider = AsyncNotifierProvider.autoDispose
+    .family<SplitDaysController, List<SplitDay>, int>(SplitDaysController.new);
 
-class SplitDaysNotifier extends AsyncNotifier<List<SplitDay>> {
-  SplitDaysNotifier(this.splitId);
+class SplitDaysController extends AsyncNotifier<List<SplitDay>> {
+  SplitDaysController(this.splitId);
 
   final int splitId;
 
@@ -124,22 +118,7 @@ class SplitDaysNotifier extends AsyncNotifier<List<SplitDay>> {
 
     state = AsyncData(await _loadSplitDays(splitId));
 
-    ref.invalidate(splitPlanProvider(splitId));
-    ref.invalidate(exercisesInADayProvider(splitDayId));
     ref.invalidate(splitDaySummaryProvider(splitDayId));
-    ref.invalidate(presetSplitVmProvider);
-
-    final activeSplitId = await ref.read(activeSplitIdProvider.future);
-
-    if (activeSplitId == splitId) {
-      ref.invalidate(workoutFocusProvider);
-    }
-
-    final pickedDayId = ref.read(pickedNextSessionProvider).value;
-
-    if (pickedDayId == splitDayId) {
-      await ref.read(pickedNextSessionProvider.notifier).consumeId();
-    }
   }
 
   Future<void> reorderSplitDays(
@@ -204,14 +183,6 @@ class SplitDaysNotifier extends AsyncNotifier<List<SplitDay>> {
       state = AsyncData(currentDays);
       rethrow;
     }
-
-    ref.invalidate(presetSplitVmProvider);
-
-    final activeSplitId = await ref.read(activeSplitIdProvider.future);
-
-    if (activeSplitId == splitId) {
-      ref.invalidate(workoutFocusProvider);
-    }
   }
 
   Future<void> createNewDay() async {
@@ -241,14 +212,5 @@ class SplitDaysNotifier extends AsyncNotifier<List<SplitDay>> {
     });
 
     state = AsyncData([...currentDays, newDay]);
-
-    ref.invalidate(splitPlanProvider(splitId));
-    ref.invalidate(presetSplitVmProvider);
-
-    final activeSplitId = await ref.read(activeSplitIdProvider.future);
-
-    if (activeSplitId == splitId) {
-      ref.invalidate(workoutFocusProvider);
-    }
   }
 }

@@ -1,6 +1,6 @@
 import 'package:flutter/foundation.dart';
 import 'package:lifting_tracker_app/core/database/app_database.dart';
-import 'package:lifting_tracker_app/features/exercises/domain/exercise.dart';
+import 'package:lifting_tracker_app/features/workouts/domain/workout_exercise.dart';
 
 Future<bool> toggleSetWarmupInDb(
   int workoutSessionSetId,
@@ -37,14 +37,13 @@ Future<bool> toggleSetWarmupInDb(
 }
 
 Future<bool> reorderExercisesInDb(
-  List<Exercise> reorderedExercises,
+  List<WorkoutExercise> reorderedExercises,
   int workoutSessionId,
 ) async {
   final setUpdates = <({int workoutSessionSetId, int orderIndex})>[];
 
   for (final exercise in reorderedExercises) {
     final orderIndex = exercise.orderIndex;
-    if (orderIndex == null) return false;
 
     for (final set in exercise.sets) {
       final workoutSessionSetId = set.workoutSessionSetId;

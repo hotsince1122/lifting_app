@@ -100,8 +100,8 @@ class _NextSessionInfoAsync extends ConsumerWidget {
           );
         }
 
-        final String nrOfExercisesLabel =
-            '${workoutFocusInfo.nrOfExercises} exercise${workoutFocusInfo.nrOfExercises == 1 ? '' : 's'} planned.';
+        final String exerciseCountLabel =
+            '${workoutFocusInfo.exerciseCount} exercise${workoutFocusInfo.exerciseCount == 1 ? '' : 's'} planned.';
 
         return Expanded(
           child: Column(
@@ -135,7 +135,7 @@ class _NextSessionInfoAsync extends ConsumerWidget {
                   ),
                   const SizedBox(width: 4),
                   Text(
-                    nrOfExercisesLabel,
+                    exerciseCountLabel,
                     style: Theme.of(
                       context,
                     ).textTheme.labelMedium!.copyWith(color: AppColors.primary),

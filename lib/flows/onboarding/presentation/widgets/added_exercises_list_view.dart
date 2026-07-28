@@ -1,9 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:lifting_tracker_app/flows/onboarding/presentation/state/can_user_finish_setup.dart';
-import 'package:lifting_tracker_app/flows/onboarding/application/exercises_in_a_day_controller.dart';
-import 'package:lifting_tracker_app/features/plans/application/split_day_summary_controller.dart';
 import 'package:lifting_tracker_app/core/theme/app_colors.dart';
+import 'package:lifting_tracker_app/features/plans/application/planned_exercises_controller.dart';
 
 class AddedExercisesListView extends ConsumerWidget {
   const AddedExercisesListView(this.dayId, {super.key});
@@ -12,46 +10,41 @@ class AddedExercisesListView extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final exercisesInADayAsync = ref.watch(exercisesInADayProvider(dayId));
+    final plannedExercisesAsync = ref.watch(plannedExercisesProvider(dayId));
 
-    return exercisesInADayAsync.when(
+    return plannedExercisesAsync.when(
       loading: () => const Center(child: CircularProgressIndicator()),
       error: (_, _) => const Text('An error has occured! Try again.'),
-      data: (exercisesInADay) {
-        if (exercisesInADay.isEmpty) return const SizedBox();
+      data: (plannedExercises) {
+        if (plannedExercises.isEmpty) return const SizedBox();
 
         return DragBoundary(
           child: ReorderableListView.builder(
             shrinkWrap: true,
             physics: const NeverScrollableScrollPhysics(),
             padding: EdgeInsets.zero,
-            itemCount: exercisesInADay.length,
+            itemCount: plannedExercises.length,
             onReorder: (oldIndex, newIndex) async {
               await ref
-                  .read(exercisesInADayProvider(dayId).notifier)
+                  .read(plannedExercisesProvider(dayId).notifier)
                   .reorderExercises(oldIndex, newIndex);
-              await ref.read(splitDaySummaryProvider(dayId).notifier).refresh();
             },
             dragBoundaryProvider: (context) => DragBoundary.forRectOf(context),
             buildDefaultDragHandles: false,
             itemBuilder: (context, i) {
-              final exercise = exercisesInADay[i];
+              final plannedExercise = plannedExercises[i];
+              final catalogExercise = plannedExercise.catalogExercise;
 
-              final label = exercise.name[0] + exercise.name.substring(1);
+              final label =
+                  catalogExercise.name[0] + catalogExercise.name.substring(1);
 
               return Dismissible(
-                key: ValueKey(exercise.idInDayExerciseRelation),
+                key: ValueKey(plannedExercise.relationId),
                 direction: DismissDirection.endToStart,
                 onDismissed: (_) async {
                   await ref
-                      .read(exercisesInADayProvider(dayId).notifier)
-                      .deleteExerciseFromDay(exercise.idInDayExerciseRelation!);
-
-                  await ref
-                      .read(splitDaySummaryProvider(dayId).notifier)
-                      .refresh();
-
-                  await ref.read(canUserFinishSetupProvider.notifier).refresh();
+                      .read(plannedExercisesProvider(dayId).notifier)
+                      .deleteExerciseFromDay(plannedExercise.relationId);
                 },
                 background: Container(
                   alignment: const Alignment(0.95, 0),

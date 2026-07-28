@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:lifting_tracker_app/app/start_up/did_user_finish_setup.dart';
 import 'package:lifting_tracker_app/app/shell/main_shell.dart';
-import 'package:lifting_tracker_app/app/shell/onboarding_shell.dart';
+import 'package:lifting_tracker_app/flows/onboarding/presentation/pages/onboarding_shell.dart';
 import 'package:lifting_tracker_app/core/theme/app_theme.dart';
+import 'package:lifting_tracker_app/flows/onboarding/application/setup_completion_controller.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -16,7 +16,7 @@ class MainApp extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final goToMenuAsync = ref.watch(didUserFinishSetupProvider);
+    final goToMenuAsync = ref.watch(setupCompletionProvider);
 
     return MaterialApp(
       theme: AppTheme.dark,

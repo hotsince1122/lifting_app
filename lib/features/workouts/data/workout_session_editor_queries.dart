@@ -2,7 +2,7 @@ import 'package:lifting_tracker_app/core/utils/read_write_sql_bool.dart';
 import 'package:lifting_tracker_app/features/workouts/domain/training_set.dart';
 import 'package:sqflite/sqflite.dart';
 
-Future<String> loadSpliDayName(Database db, String dayId) async {
+Future<String> loadSplitDayName(Database db, String dayId) async {
   final data = await db.rawQuery(
     '''
     SELECT name

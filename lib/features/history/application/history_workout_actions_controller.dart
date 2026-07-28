@@ -2,12 +2,11 @@ import 'dart:async';
 
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:lifting_tracker_app/core/database/app_database.dart';
-import 'package:lifting_tracker_app/features/workouts/application/exercise_and_sets/workout_session_exercises_controller.dart';
-import 'package:lifting_tracker_app/features/progress/application/workouts_per_week_controller.dart';
+import 'package:lifting_tracker_app/features/workouts/application/session_editor/workout_session_exercises_controller.dart';
+import 'package:lifting_tracker_app/features/progress/application/weekly_workout_progress_controller.dart';
+import 'package:lifting_tracker_app/features/workouts/application/next_session_preview_provider.dart';
 import 'package:lifting_tracker_app/features/workouts/application/workout_name_controller.dart';
 import 'package:lifting_tracker_app/features/history/application/history_months_provider.dart';
-import 'package:lifting_tracker_app/flows/home_dashboard/application/last_workout_completed.dart';
-import 'package:lifting_tracker_app/flows/home_dashboard/application/workout_focus_provider.dart';
 import 'package:lifting_tracker_app/features/workouts/presentation/state/workout_header_summary_provider.dart';
 
 final historyWorkoutActionsProvider =
@@ -107,7 +106,6 @@ class HistoryWorkoutActionsController extends AsyncNotifier<void> {
     }
 
     ref.invalidate(historyMonthsProvider);
-    ref.invalidate(lastWorkoutCompletedProvider);
     ref.invalidate(workoutHeaderSummaryProvider);
     ref.invalidate(workoutNameProvider(workoutSessionId));
     ref.invalidate(workoutSessionExercisesProvider(workoutSessionId));
@@ -119,7 +117,7 @@ class HistoryWorkoutActionsController extends AsyncNotifier<void> {
 
     try {
       final didSucceed = await db.transaction((txn) async {
-        final finishedMilisecondsSinceEpoch = await txn.rawQuery(
+        final finishedMillisecondsSinceEpoch = await txn.rawQuery(
           '''
           SELECT finished_at
           FROM workout_sessions
@@ -128,10 +126,10 @@ class HistoryWorkoutActionsController extends AsyncNotifier<void> {
           [workoutId],
         );
 
-        if (finishedMilisecondsSinceEpoch.isEmpty) {
+        if (finishedMillisecondsSinceEpoch.isEmpty) {
           return false;
         }
-        if (finishedMilisecondsSinceEpoch.first['finished_at'] == null) {
+        if (finishedMillisecondsSinceEpoch.first['finished_at'] == null) {
           return false;
         }
 
@@ -144,7 +142,7 @@ class HistoryWorkoutActionsController extends AsyncNotifier<void> {
         );
 
         final finishedDateTime = DateTime.fromMillisecondsSinceEpoch(
-          (finishedMilisecondsSinceEpoch.first['finished_at'] as int) * 1000,
+          (finishedMillisecondsSinceEpoch.first['finished_at'] as int) * 1000,
         );
 
         final didSucceed = await ref
@@ -160,10 +158,8 @@ class HistoryWorkoutActionsController extends AsyncNotifier<void> {
       return false;
     }
 
-    ref.invalidate(lastWorkoutCompletedProvider);
-    ref.invalidate(workoutFocusProvider);
-
     ref.invalidate(historyMonthsProvider);
+    ref.invalidate(nextSessionPreviewProvider);
     ref.invalidate(workoutHeaderSummaryProvider);
 
     return true;

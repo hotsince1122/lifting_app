@@ -1,36 +1,8 @@
 import 'dart:async';
 
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:lifting_tracker_app/core/database/app_database.dart';
+import 'package:lifting_tracker_app/features/plans/application/planned_exercises_controller.dart';
 import 'package:lifting_tracker_app/features/plans/domain/split_day_summary.dart';
-
-Future<SplitDaySummary> _loadSummary(String dayId) async {
-  final db = await AppDatabase.getDatabase();
-
-  final rows = await db.rawQuery(
-    '''
-    SELECT e.muscle_group
-    FROM day_exercises de
-    JOIN exercises e ON e.id = de.exercise_id
-    WHERE de.day_id = ?
-    ORDER BY de.order_idx ASC
-    ''',
-    [dayId],
-  );
-
-  Set<String> muscleGroups = {};
-
-  for (var row in rows) {
-    String label = row['muscle_group'] as String;
-    label = label[0].toUpperCase() + label.substring(1);
-    muscleGroups.add(label);
-  }
-
-  return SplitDaySummary(
-    exerciseCount: rows.length,
-    muscleGroups: muscleGroups,
-  );
-}
 
 final splitDaySummaryProvider =
     AsyncNotifierProvider.family<
@@ -45,11 +17,18 @@ class SplitDaySummaryController extends AsyncNotifier<SplitDaySummary> {
   final String dayId;
 
   @override
-  FutureOr<SplitDaySummary> build() {
-    return _loadSummary(dayId);
-  }
+  FutureOr<SplitDaySummary> build() async {
+    final exercises = await ref.watch(plannedExercisesProvider(dayId).future);
+    final muscleGroups = <String>{};
 
-  Future<void> refresh() async {
-    state = AsyncData(await _loadSummary(dayId));
+    for (final exercise in exercises) {
+      final label = exercise.catalogExercise.muscleGroup;
+      muscleGroups.add(label[0].toUpperCase() + label.substring(1));
+    }
+
+    return SplitDaySummary(
+      exerciseCount: exercises.length,
+      muscleGroups: muscleGroups,
+    );
   }
 }

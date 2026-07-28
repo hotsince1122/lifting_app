@@ -2,13 +2,12 @@ import 'dart:async';
 
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:lifting_tracker_app/core/database/app_database.dart';
-import 'package:lifting_tracker_app/features/workouts/domain/workout_session_statuses.dart';
-import 'package:lifting_tracker_app/flows/onboarding/application/exercises_in_a_day_controller.dart';
 import 'package:lifting_tracker_app/features/plans/application/split_days_controller.dart';
 import 'package:lifting_tracker_app/features/plans/application/split_name_controller.dart';
 import 'package:lifting_tracker_app/features/plans/application/split_plan_provider.dart';
-import 'package:lifting_tracker_app/flows/onboarding/application/preset_split_view_data_controller.dart';
 import 'package:lifting_tracker_app/features/plans/application/split_day_summary_controller.dart';
+
+const _activeWorkoutSessionStatus = 'active';
 
 Future<List<int>> _loadSplitPlanIds() async {
   final db = await AppDatabase.getDatabase();
@@ -36,7 +35,7 @@ Future<DeleteSplitPlanResult> _deleteSplitPlanFromDb(int splitId) async {
         AND ws.status = ?
       LIMIT 1
       ''',
-      [splitId, WorkoutSessionStatuses.activeStatus],
+      [splitId, _activeWorkoutSessionStatus],
     );
 
     if (activeSessions.isNotEmpty) {
@@ -119,10 +118,8 @@ class SplitPlansIdsController extends AsyncNotifier<List<int>> {
 
     ref.invalidate(splitPlanProvider(splitId));
     ref.invalidate(splitNameProvider(splitId));
-    ref.invalidate(splitDaysController(splitId));
-    ref.invalidate(exercisesInADayProvider);
+    ref.invalidate(splitDaysProvider(splitId));
     ref.invalidate(splitDaySummaryProvider);
-    ref.invalidate(presetSplitVmProvider);
 
     return DeleteSplitPlanResult.success;
   }
@@ -139,7 +136,7 @@ class SplitPlansIdsController extends AsyncNotifier<List<int>> {
       AND ws.status = ?
     LIMIT 1
     ''',
-      [splitId, WorkoutSessionStatuses.activeStatus],
+      [splitId, _activeWorkoutSessionStatus],
     );
 
     return activeSessions.isNotEmpty;

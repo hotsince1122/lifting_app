@@ -1,20 +1,22 @@
 import 'package:flutter/material.dart';
 import 'package:lifting_tracker_app/core/database/app_database.dart';
 import 'package:lifting_tracker_app/core/utils/read_write_sql_bool.dart';
+import 'package:lifting_tracker_app/features/exercises/domain/catalog_exercise.dart';
 import 'package:lifting_tracker_app/features/workouts/data/populate_workout_session_sets.dart';
-import 'package:lifting_tracker_app/features/exercises/domain/exercise.dart';
 import 'package:lifting_tracker_app/features/workouts/data/workout_session_editor_queries.dart';
 import 'package:lifting_tracker_app/features/workouts/data/workout_session_queries.dart';
 import 'package:lifting_tracker_app/features/workouts/domain/training_set.dart';
+import 'package:lifting_tracker_app/features/workouts/domain/workout_exercise.dart';
 import 'package:sqflite/sqflite.dart';
 
-Future<Exercise?> replaceExerciseInDb(
+Future<WorkoutExercise?> replaceExerciseInDb(
   int workoutSessionId,
-  Exercise oldExercise,
-  Exercise newExercise,
+  WorkoutExercise oldExercise,
+  CatalogExercise newExercise,
 ) async {
   final exerciseOrderIndex = oldExercise.orderIndex;
-  if (exerciseOrderIndex == null || oldExercise.sets.isEmpty) return null;
+  if (oldExercise.sets.isEmpty) return null;
+  final oldExerciseId = oldExercise.catalogExercise.id;
 
   final workoutSessionSetIds = <int>[];
   for (final set in oldExercise.sets) {
@@ -31,7 +33,7 @@ Future<Exercise?> replaceExerciseInDb(
       final oldOccurrenceIndex = await loadExerciseOccurrenceIndex(
         txn,
         workoutSessionId,
-        oldExercise.id,
+        oldExerciseId,
         exerciseOrderIndex,
       );
 
@@ -82,7 +84,7 @@ Future<Exercise?> replaceExerciseInDb(
       await _compactExerciseOccurrenceIndexes(
         txn,
         workoutSessionId,
-        oldExercise.id,
+        oldExerciseId,
         oldOccurrenceIndex,
       );
 
@@ -93,8 +95,8 @@ Future<Exercise?> replaceExerciseInDb(
         exerciseOrderIndex,
       );
 
-      return newExercise.copyWith(
-        orderIndex: exerciseOrderIndex,
+      return oldExercise.copyWith(
+        catalogExercise: newExercise,
         sets: workoutSets,
       );
     });
@@ -114,7 +116,7 @@ Future<List<TrainingSet>> _loadReplacementSets(
 ) async {
   final replacementSets = List.generate(
     setCount,
-    (i) => emptySet(setIndex: i + 1),
+    (i) => TrainingSet.empty(setIndex: i + 1),
   );
 
   if (lastCompletedWorkoutId == null) return replacementSets;

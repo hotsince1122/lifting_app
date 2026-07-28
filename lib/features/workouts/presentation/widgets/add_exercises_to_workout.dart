@@ -3,7 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:lifting_tracker_app/core/theme/app_colors.dart';
 import 'package:lifting_tracker_app/core/theme/app_gradients.dart';
 import 'package:lifting_tracker_app/core/ui/cards/gradient_card.dart';
-import 'package:lifting_tracker_app/features/workouts/application/exercise_and_sets/workout_session_exercises_controller.dart';
+import 'package:lifting_tracker_app/features/workouts/application/session_editor/workout_session_exercises_controller.dart';
 import 'package:lifting_tracker_app/features/exercises/presentation/widgets/add_exercise_selector/add_exercise_selector.dart';
 
 class AddExercisesToWorkout extends ConsumerWidget {
@@ -31,7 +31,11 @@ class AddExercisesToWorkout extends ConsumerWidget {
                   );
               if (addedExercise != null) {
                 await ref
-                    .read(workoutSessionExercisesProvider(workoutSessionId).notifier)
+                    .read(
+                      workoutSessionExercisesProvider(
+                        workoutSessionId,
+                      ).notifier,
+                    )
                     .addExercise(addedExercise);
               }
             },

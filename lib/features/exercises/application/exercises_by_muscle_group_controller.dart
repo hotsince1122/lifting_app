@@ -2,27 +2,31 @@ import 'dart:async';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:lifting_tracker_app/features/exercises/data/actions_on_exercise_catalog.dart'
     as db_actions;
-import 'package:lifting_tracker_app/features/exercises/domain/exercise.dart';
+import 'package:lifting_tracker_app/features/exercises/domain/catalog_exercise.dart';
 
 final exerciseByMuscleGroupProvider =
     AsyncNotifierProvider.family<
       ExerciseByMuscleGroupController,
-      List<Exercise>,
+      List<CatalogExercise>,
       String
     >(ExerciseByMuscleGroupController.new);
 
-class ExerciseByMuscleGroupController extends AsyncNotifier<List<Exercise>> {
+class ExerciseByMuscleGroupController
+    extends AsyncNotifier<List<CatalogExercise>> {
   ExerciseByMuscleGroupController(this.muscleGroup);
 
   final String muscleGroup;
 
   @override
-  FutureOr<List<Exercise>> build() {
+  FutureOr<List<CatalogExercise>> build() {
     return db_actions.loadExercisesByMuscleGroup(muscleGroup);
   }
 
-  Future<Exercise> addCustomExercise(String name, String muscleGroup) async {
-    final newExercise = Exercise(name: name, muscleGroup: muscleGroup);
+  Future<CatalogExercise> addCustomExercise(
+    String name,
+    String muscleGroup,
+  ) async {
+    final newExercise = CatalogExercise(name: name, muscleGroup: muscleGroup);
 
     await db_actions.insertExercise(newExercise);
 
@@ -33,7 +37,7 @@ class ExerciseByMuscleGroupController extends AsyncNotifier<List<Exercise>> {
   }
 
   Future<void> updateExercise(
-    Exercise exercise,
+    CatalogExercise exercise,
     String name,
     String muscleGroup,
   ) async {
@@ -52,8 +56,6 @@ class ExerciseByMuscleGroupController extends AsyncNotifier<List<Exercise>> {
   Future<void> deleteExercise(String exerciseId) async {
     await db_actions.deleteExercise(exerciseId);
 
-    state = AsyncData(
-      await db_actions.loadExercisesByMuscleGroup(muscleGroup),
-    );
+    state = AsyncData(await db_actions.loadExercisesByMuscleGroup(muscleGroup));
   }
 }

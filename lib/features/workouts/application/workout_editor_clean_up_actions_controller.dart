@@ -1,7 +1,7 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:lifting_tracker_app/core/database/app_database.dart';
+import 'package:lifting_tracker_app/features/plans/domain/planned_exercise.dart';
 import 'package:lifting_tracker_app/features/workouts/data/populate_workout_session_sets.dart';
-import 'package:lifting_tracker_app/features/exercises/domain/exercise.dart';
 
 final workoutEditorCleanUpActionsProvider =
     AsyncNotifierProvider<WorkoutEditorCleanUpActionsController, void>(
@@ -59,7 +59,7 @@ class WorkoutEditorCleanUpActionsController extends AsyncNotifier<void> {
 
     final db = await AppDatabase.getDatabase();
 
-    final List<Exercise> exercisesPlanned = await loadPlannedExercises(
+    final List<PlannedExercise> exercisesPlanned = await loadPlannedExercises(
       db,
       workoutSessionId,
     );
@@ -72,7 +72,9 @@ class WorkoutEditorCleanUpActionsController extends AsyncNotifier<void> {
     if (exercisesPlanned.length != exercisesExecutedIds.length) return true;
 
     for (int i = 0; i < exercisesExecutedIds.length; i++) {
-      if (exercisesExecutedIds[i] != exercisesPlanned[i].id) return true;
+      if (exercisesExecutedIds[i] != exercisesPlanned[i].catalogExercise.id) {
+        return true;
+      }
     }
 
     return false;

@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:lifting_tracker_app/features/exercises/domain/exercise.dart';
+import 'package:lifting_tracker_app/features/exercises/domain/catalog_exercise.dart';
 import 'package:lifting_tracker_app/features/exercises/application/exercises_by_muscle_group_controller.dart';
 import 'package:lifting_tracker_app/core/theme/app_colors.dart';
 
@@ -12,11 +12,13 @@ class ExercisesForGroupPage extends ConsumerWidget {
   });
 
   final String muscleGroup;
-  final void Function(Exercise exercise) onEditExercise;
+  final void Function(CatalogExercise exercise) onEditExercise;
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final exercisesAsync = ref.watch(exerciseByMuscleGroupProvider(muscleGroup));
+    final exercisesAsync = ref.watch(
+      exerciseByMuscleGroupProvider(muscleGroup),
+    );
 
     return exercisesAsync.when(
       loading: () => const Center(child: CircularProgressIndicator()),

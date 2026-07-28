@@ -1,7 +1,7 @@
 import 'package:lifting_tracker_app/core/database/app_database.dart';
-import 'package:lifting_tracker_app/features/exercises/domain/exercise.dart';
+import 'package:lifting_tracker_app/features/exercises/domain/catalog_exercise.dart';
 
-Future<List<Exercise>> loadExercisesByMuscleGroup(
+Future<List<CatalogExercise>> loadExercisesByMuscleGroup(
   String muscleGroup,
 ) async {
   final db = await AppDatabase.getDatabase();
@@ -13,7 +13,7 @@ Future<List<Exercise>> loadExercisesByMuscleGroup(
 
   return data
       .map(
-        (row) => Exercise(
+        (row) => CatalogExercise(
           name: row['name'] as String,
           muscleGroup: row['muscle_group'] as String,
           id: row['id'] as String,
@@ -22,28 +22,25 @@ Future<List<Exercise>> loadExercisesByMuscleGroup(
       .toList();
 }
 
-Future<void> insertExercise(Exercise exercise) async {
+Future<void> insertExercise(CatalogExercise exercise) async {
   final db = await AppDatabase.getDatabase();
 
   await db.transaction((txn) async {
-      await txn.insert('exercises', {
-        'id': exercise.id,
-        'name': exercise.name,
-        'muscle_group': exercise.muscleGroup,
-      });
+    await txn.insert('exercises', {
+      'id': exercise.id,
+      'name': exercise.name,
+      'muscle_group': exercise.muscleGroup,
     });
+  });
 }
 
-Future<void> updateExercise(Exercise exercise) async {
+Future<void> updateExercise(CatalogExercise exercise) async {
   final db = await AppDatabase.getDatabase();
 
   await db.transaction((txn) async {
     await txn.update(
       'exercises',
-      {
-        'name': exercise.name,
-        'muscle_group': exercise.muscleGroup,
-      },
+      {'name': exercise.name, 'muscle_group': exercise.muscleGroup},
       where: 'id = ?',
       whereArgs: [exercise.id],
     );

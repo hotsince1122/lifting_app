@@ -1,8 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:lifting_tracker_app/features/plans/application/planned_exercises_controller.dart';
 import 'package:lifting_tracker_app/features/plans/domain/split_day.dart';
-import 'package:lifting_tracker_app/flows/onboarding/presentation/state/can_user_finish_setup.dart';
-import 'package:lifting_tracker_app/flows/onboarding/application/exercises_in_a_day_controller.dart';
 import 'package:lifting_tracker_app/features/plans/application/split_day_summary_controller.dart';
 import 'package:lifting_tracker_app/core/theme/app_colors.dart';
 import 'package:lifting_tracker_app/features/exercises/presentation/widgets/add_exercise_selector/add_exercise_selector.dart';
@@ -97,14 +96,10 @@ class WorkoutDayExpansionTile extends ConsumerWidget {
 
                     if (addedExercise != null) {
                       await ref
-                          .read(exercisesInADayProvider(workoutDay.id).notifier)
-                          .addExerciseToDay(workoutDay.id, addedExercise.id);
-                      await ref
-                          .read(splitDaySummaryProvider(workoutDay.id).notifier)
-                          .refresh();
-                      await ref
-                          .read(canUserFinishSetupProvider.notifier)
-                          .refresh();
+                          .read(
+                            plannedExercisesProvider(workoutDay.id).notifier,
+                          )
+                          .addExerciseToDay(addedExercise.id);
                     }
                   },
                   label: Text('Add exercise'),

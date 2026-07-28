@@ -3,10 +3,8 @@ import 'dart:async';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:lifting_tracker_app/core/database/app_database.dart';
 import 'package:lifting_tracker_app/features/plans/domain/custom_split.dart';
-import 'package:lifting_tracker_app/features/workouts/application/picked_next_session_controller.dart';
 import 'package:lifting_tracker_app/features/plans/application/split_plan_provider.dart';
 import 'package:lifting_tracker_app/features/plans/application/split_plans_ids_controller.dart';
-import 'package:lifting_tracker_app/flows/home_dashboard/application/workout_focus_provider.dart';
 
 Future<int?> _loadActiveSplitId() async {
   final db = await AppDatabase.getDatabase();
@@ -61,10 +59,7 @@ class ActiveSplitIdController extends AsyncNotifier<int?> {
       ref.invalidate(splitPlanProvider(previousSplitId));
     }
     ref.invalidate(splitPlanProvider(newSplitPlanId));
-    ref.invalidate(workoutFocusProvider);
     ref.invalidate(splitPlansIdsProvider);
-
-    await ref.read(pickedNextSessionProvider.notifier).consumeId();
 
     state = AsyncData(newSplitPlanId);
   }
@@ -90,10 +85,7 @@ class ActiveSplitIdController extends AsyncNotifier<int?> {
       ref.invalidate(splitPlanProvider(previousSplitId));
     }
     ref.invalidate(splitPlanProvider(splitId));
-    ref.invalidate(workoutFocusProvider);
     ref.invalidate(splitPlansIdsProvider);
-
-    await ref.read(pickedNextSessionProvider.notifier).consumeId();
 
     state = AsyncData(splitId);
   }

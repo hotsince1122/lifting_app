@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:lifting_tracker_app/features/workouts/application/exercise_and_sets/workout_session_exercises_controller.dart';
-import 'package:lifting_tracker_app/features/exercises/domain/exercise.dart';
+import 'package:lifting_tracker_app/features/workouts/application/session_editor/workout_session_exercises_controller.dart';
 import 'package:lifting_tracker_app/core/theme/app_colors.dart';
+import 'package:lifting_tracker_app/features/workouts/domain/workout_exercise.dart';
 import 'package:lifting_tracker_app/features/workouts/presentation/widgets/exercise_card_components/exercise_set_tile.dart';
 import 'package:lifting_tracker_app/features/workouts/presentation/widgets/exercise_card_components/exercise_tile_footer.dart';
 import 'package:lifting_tracker_app/features/workouts/presentation/widgets/exercise_card_components/exercise_tile_header.dart';
@@ -18,7 +18,7 @@ class WorkoutExerciseCard extends ConsumerStatefulWidget {
     super.key,
   });
 
-  final Exercise exerciseAndItsSets;
+  final WorkoutExercise exerciseAndItsSets;
   final int workoutSessionId;
   final double horizontalPaddingForCard;
 
@@ -47,7 +47,8 @@ class _WorkoutExerciseCardState extends ConsumerState<WorkoutExerciseCard> {
     super.didUpdateWidget(oldWidget);
 
     final isSameExercise =
-        oldWidget.exerciseAndItsSets.id == widget.exerciseAndItsSets.id &&
+        oldWidget.exerciseAndItsSets.catalogExercise.id ==
+            widget.exerciseAndItsSets.catalogExercise.id &&
         oldWidget.exerciseAndItsSets.orderIndex ==
             widget.exerciseAndItsSets.orderIndex;
 
@@ -114,14 +115,21 @@ class _WorkoutExerciseCardState extends ConsumerState<WorkoutExerciseCard> {
         if (isLastSetRemaining) return;
 
         await ref
-            .read(workoutSessionExercisesProvider(widget.workoutSessionId).notifier)
+            .read(
+              workoutSessionExercisesProvider(widget.workoutSessionId).notifier,
+            )
             .removeSetFromExercise(workoutSessionSetId);
       },
       child: child,
     );
   }
 
-  Widget _buildSet(Exercise exercise, int exerciseOrderIndex, int setIndexUI) {
+  Widget _buildSet(
+    WorkoutExercise exercise,
+    int exerciseOrderIndex,
+    int setIndexUI,
+  ) {
+    final exerciseId = exercise.catalogExercise.id;
     final set = exercise.sets[setIndexUI];
     final isLastSetRemaining = exercise.sets.length == 1;
     final displaySetIndex = set.isWarmup == true
@@ -132,17 +140,19 @@ class _WorkoutExerciseCardState extends ConsumerState<WorkoutExerciseCard> {
               .length;
     final setIdentity =
         set.workoutSessionSetId ??
-        (exercise.id, exercise.orderIndex, set.setIndex, setIndexUI);
+        (exerciseId, exercise.orderIndex, set.setIndex, setIndexUI);
     final workoutSessionSetId = set.workoutSessionSetId!;
 
     Future<void> deleteSetFromSettings() async {
       if (isLastSetRemaining) {
-        await _animateAndDeleteExercise(exercise.id, exerciseOrderIndex);
+        await _animateAndDeleteExercise(exerciseId, exerciseOrderIndex);
         return;
       }
 
       await ref
-          .read(workoutSessionExercisesProvider(widget.workoutSessionId).notifier)
+          .read(
+            workoutSessionExercisesProvider(widget.workoutSessionId).notifier,
+          )
           .removeSetFromExercise(workoutSessionSetId);
     }
 
@@ -150,7 +160,7 @@ class _WorkoutExerciseCardState extends ConsumerState<WorkoutExerciseCard> {
       children: [
         if (setIndexUI > 0) _separator(),
         _dismissibleSet(
-          exercise.id,
+          exerciseId,
           exerciseOrderIndex,
           setIdentity,
           workoutSessionSetId,
@@ -164,8 +174,8 @@ class _WorkoutExerciseCardState extends ConsumerState<WorkoutExerciseCard> {
                   displaySetIndex,
                   _iconSize,
                   widget.workoutSessionId,
-                  exercise.id,
-                  exercise.orderIndex!,
+                  exerciseId,
+                  exercise.orderIndex,
                   onDeleteSet: deleteSetFromSettings,
                   key: ValueKey(setIdentity),
                 ),
@@ -180,7 +190,7 @@ class _WorkoutExerciseCardState extends ConsumerState<WorkoutExerciseCard> {
     if (setIndexUI == _newAddedSetIndex) {
       return InsertedSetAnimation(
         key: ValueKey((
-          exercise.id,
+          exerciseId,
           exercise.orderIndex,
           setIndexUI,
           exercise.sets.length,
@@ -216,10 +226,10 @@ class _WorkoutExerciseCardState extends ConsumerState<WorkoutExerciseCard> {
     );
   }
 
-  Widget _buildHeader(Exercise exercise, double iconSize) {
+  Widget _buildHeader(WorkoutExercise exercise, double iconSize) {
     return _dismissibleExercise(
-      exercise.id,
-      exercise.orderIndex!,
+      exercise.catalogExercise.id,
+      exercise.orderIndex,
       Padding(
         padding: EdgeInsets.only(
           top: _verticalPaddig,
@@ -261,12 +271,8 @@ class _WorkoutExerciseCardState extends ConsumerState<WorkoutExerciseCard> {
     return false;
   }
 
-  Widget _visualLayer(Exercise exercise) {
-    assert(
-      exercise.orderIndex != null,
-      'Active session exercises must have a non-null orderIndex.',
-    );
-    final exerciseOrderIndex = exercise.orderIndex!;
+  Widget _visualLayer(WorkoutExercise exercise) {
+    final exerciseOrderIndex = exercise.orderIndex;
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -285,9 +291,12 @@ class _WorkoutExerciseCardState extends ConsumerState<WorkoutExerciseCard> {
     );
   }
 
-  List<Widget> _interactivLayer(Exercise exercise, double screenWidth) {
+  List<Widget> _interactivLayer(WorkoutExercise exercise, double screenWidth) {
     Future<void> deleteExerciseFromSettings() async {
-      await _animateAndDeleteExercise(exercise.id, exercise.orderIndex!);
+      await _animateAndDeleteExercise(
+        exercise.catalogExercise.id,
+        exercise.orderIndex,
+      );
       return;
     }
 

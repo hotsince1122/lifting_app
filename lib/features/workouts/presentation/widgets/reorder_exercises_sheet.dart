@@ -1,9 +1,9 @@
 import 'dart:ui';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:lifting_tracker_app/features/workouts/application/exercise_and_sets/workout_session_exercises_controller.dart';
-import 'package:lifting_tracker_app/features/exercises/domain/exercise.dart';
+import 'package:lifting_tracker_app/features/workouts/application/session_editor/workout_session_exercises_controller.dart';
 import 'package:lifting_tracker_app/core/theme/app_colors.dart';
+import 'package:lifting_tracker_app/features/workouts/domain/workout_exercise.dart';
 
 class ReorderExercisesSheet extends ConsumerStatefulWidget {
   const ReorderExercisesSheet(this.screenWidth, this.sessionId, {super.key});
@@ -29,16 +29,17 @@ class ReorderExercisesSheet extends ConsumerStatefulWidget {
 
   @override
   ConsumerState<ConsumerStatefulWidget> createState() =>
-      ReorderExercisesSheetState();
+      _ReorderExercisesSheetState();
 }
 
-class ReorderExercisesSheetState extends ConsumerState<ReorderExercisesSheet> {
-  Object _exerciseKey(Exercise exercise) {
+class _ReorderExercisesSheetState extends ConsumerState<ReorderExercisesSheet> {
+  Object _exerciseKey(WorkoutExercise exercise) {
     final firstSetId = exercise.sets.isEmpty
         ? null
         : exercise.sets.first.workoutSessionSetId;
 
-    return firstSetId ?? '${exercise.id}-${exercise.orderIndex}';
+    return firstSetId ??
+        '${exercise.catalogExercise.id}-${exercise.orderIndex}';
   }
 
   @override
@@ -111,8 +112,10 @@ class ReorderExercisesSheetState extends ConsumerState<ReorderExercisesSheet> {
                             itemBuilder: (context, i) {
                               final exercise = exercises[i];
 
+                              final exerciseName =
+                                  exercise.catalogExercise.name;
                               final label =
-                                  exercise.name[0] + exercise.name.substring(1);
+                                  exerciseName[0] + exerciseName.substring(1);
 
                               return Dismissible(
                                 key: ValueKey(_exerciseKey(exercise)),
@@ -125,8 +128,8 @@ class ReorderExercisesSheetState extends ConsumerState<ReorderExercisesSheet> {
                                         ).notifier,
                                       )
                                       .deleteExercise(
-                                        exercise.id,
-                                        exercise.orderIndex!,
+                                        exercise.catalogExercise.id,
+                                        exercise.orderIndex,
                                       );
                                 },
                                 background: Container(

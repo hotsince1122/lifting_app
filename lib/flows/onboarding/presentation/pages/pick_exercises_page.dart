@@ -1,9 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:lifting_tracker_app/features/plans/application/active_split_days_provider.dart';
-import 'package:lifting_tracker_app/app/start_up/did_user_finish_setup.dart';
-import 'package:lifting_tracker_app/flows/onboarding/presentation/state/can_user_finish_setup.dart';
-import 'package:lifting_tracker_app/app/shell/main_shell.dart';
+import 'package:lifting_tracker_app/flows/onboarding/application/setup_completion_controller.dart';
+import 'package:lifting_tracker_app/flows/onboarding/application/can_finish_onboarding_controller.dart';
 import 'package:lifting_tracker_app/core/theme/app_gradients.dart';
 import 'package:lifting_tracker_app/core/theme/app_colors.dart';
 import 'package:lifting_tracker_app/core/ui/cards/gradient_card.dart';
@@ -105,24 +104,18 @@ class _FinishOnboardingButton extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final canUserFinishSetupAsync = ref.watch(canUserFinishSetupProvider);
+    final canFinishOnboardingAsync = ref.watch(canFinishOnboardingProvider);
 
-    return canUserFinishSetupAsync.when(
+    return canFinishOnboardingAsync.when(
       loading: () => const Center(child: CircularProgressIndicator()),
       error: (_, _) =>
           const Center(child: Text('An error has occured! Try again.')),
-      data: (canUserFinishSetup) {
+      data: (canFinishOnboarding) {
         Widget skipButton = SizedBox(
           height: 20,
           child: TextButton(
             onPressed: () async {
-              await ref
-                  .watch(didUserFinishSetupProvider.notifier)
-                  .userFinishedSetup();
-              if (!context.mounted) return;
-              Navigator.of(context).pushReplacement(
-                MaterialPageRoute(builder: (context) => MainShell()),
-              );
+              await ref.read(setupCompletionProvider.notifier).complete();
             },
             style: TextButton.styleFrom(padding: EdgeInsets.zero),
             child: Text(
@@ -140,18 +133,14 @@ class _FinishOnboardingButton extends ConsumerWidget {
         return Column(
           children: [
             SolidButton(
-              isActive: !canUserFinishSetup,
+              isActive: !canFinishOnboarding,
               buttonHeight: 54,
-              onPressed: !canUserFinishSetup
+              onPressed: !canFinishOnboarding
                   ? () {}
                   : () async {
                       await ref
-                          .watch(didUserFinishSetupProvider.notifier)
-                          .userFinishedSetup();
-                      if (!context.mounted) return;
-                      Navigator.of(context).pushReplacement(
-                        MaterialPageRoute(builder: (context) => MainShell()),
-                      );
+                          .read(setupCompletionProvider.notifier)
+                          .complete();
                     },
               child: Row(
                 mainAxisSize: MainAxisSize.min,
@@ -172,7 +161,7 @@ class _FinishOnboardingButton extends ConsumerWidget {
               ),
             ),
             const SizedBox(height: 6),
-            canUserFinishSetup ? const SizedBox() : skipButton,
+            canFinishOnboarding ? const SizedBox() : skipButton,
           ],
         );
       },
