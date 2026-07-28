@@ -3,13 +3,13 @@ import 'dart:async';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:lifting_tracker_app/core/database/app_database.dart';
 import 'package:lifting_tracker_app/core/utils/build_placeholder_for_sqlite.dart';
-import 'package:lifting_tracker_app/wrong_folder/for%20plans/aux_functions_for_pop.dart';
+import 'package:lifting_tracker_app/features/plans/data/split_plan_queries.dart';
 import 'package:lifting_tracker_app/features/workouts/data/repeat_workout.dart';
 import 'package:lifting_tracker_app/features/workouts/data/workout_cycle_queries.dart';
 import 'package:lifting_tracker_app/features/workouts/data/workout_session_queries.dart';
 import 'package:lifting_tracker_app/features/workouts/domain/workout_session_statuses.dart';
 import 'package:lifting_tracker_app/features/workouts/application/picked_next_session_controller.dart';
-import 'package:lifting_tracker_app/providers/persisted/week_progress.dart';
+import 'package:lifting_tracker_app/features/progress/application/workouts_per_week_controller.dart';
 import 'package:lifting_tracker_app/features/workouts/presentation/state/workout_header_summary_provider.dart';
 import 'package:sqflite/sqflite.dart';
 

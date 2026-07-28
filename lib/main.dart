@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:lifting_tracker_app/providers/persisted/did_user_finish_setup.dart';
-import 'package:lifting_tracker_app/screens/main_shell.dart';
-import 'package:lifting_tracker_app/screens/onboarding.dart';
+import 'package:lifting_tracker_app/app/start_up/did_user_finish_setup.dart';
+import 'package:lifting_tracker_app/app/shell/main_shell.dart';
+import 'package:lifting_tracker_app/app/shell/onboarding_shell.dart';
 import 'package:lifting_tracker_app/core/theme/app_theme.dart';
 
 void main() async {
@@ -30,7 +30,7 @@ class MainApp extends ConsumerWidget {
           if (goToMenu) {
             return const MainShell();
           } else {
-            return const OnboardingScreen();
+            return const OnboardingShell();
           }
         },
       ),
