@@ -14,7 +14,6 @@ class AddExercisesToWorkout extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final screenWidth = MediaQuery.of(context).size.width;
 
     return SizedBox(
       width: double.infinity,
@@ -28,7 +27,6 @@ class AddExercisesToWorkout extends ConsumerWidget {
               final addedExercise =
                   await AddExerciseSelector.openExercisePickerSheet(
                     context,
-                    screenWidth,
                   );
               if (addedExercise != null) {
                 try {

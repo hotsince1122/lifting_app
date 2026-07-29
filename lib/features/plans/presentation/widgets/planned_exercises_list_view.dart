@@ -4,10 +4,17 @@ import 'package:lifting_tracker_app/core/errors/snack_bar_error.dart';
 import 'package:lifting_tracker_app/core/theme/app_colors.dart';
 import 'package:lifting_tracker_app/features/plans/application/planned_exercises_controller.dart';
 
-class AddedExercisesListView extends ConsumerWidget {
-  const AddedExercisesListView(this.dayId, {super.key});
+class PlannedExercisesListView extends ConsumerWidget {
+  const PlannedExercisesListView(
+    this.dayId, {
+    required this.includeTopAndBottomDivider,
+    required this.isTileDense,
+    super.key,
+  });
 
   final String dayId;
+  final bool includeTopAndBottomDivider;
+  final bool isTileDense;
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -75,14 +82,15 @@ class AddedExercisesListView extends ConsumerWidget {
                 ),
                 child: Column(
                   children: [
-                    Divider(
-                      height: 0.5,
-                      color: AppColors.cardBorder,
-                      indent: 16,
-                      endIndent: 16,
-                    ),
+                    if (i == 0 && includeTopAndBottomDivider)
+                      Divider(
+                        height: 0.5,
+                        color: AppColors.cardBorder,
+                        indent: 16,
+                        endIndent: 16,
+                      ),
                     ListTile(
-                      dense: true,
+                      dense: isTileDense,
                       visualDensity: const VisualDensity(
                         horizontal: 0,
                         vertical: 0,
@@ -100,12 +108,14 @@ class AddedExercisesListView extends ConsumerWidget {
                         child: const Icon(Icons.drag_handle),
                       ),
                     ),
-                    Divider(
-                      height: 0.5,
-                      color: AppColors.cardBorder,
-                      indent: 16,
-                      endIndent: 16,
-                    ),
+                    if (i != plannedExercises.length - 1 ||
+                        includeTopAndBottomDivider)
+                      Divider(
+                        height: 0.5,
+                        color: AppColors.cardBorder,
+                        indent: 16,
+                        endIndent: 16,
+                      ),
                   ],
                 ),
               );

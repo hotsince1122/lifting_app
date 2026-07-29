@@ -1,17 +1,19 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:lifting_tracker_app/features/plans/application/split_days_controller.dart';
 import 'package:lifting_tracker_app/features/plans/presentation/widgets/edit_app_bar.dart';
-import 'package:lifting_tracker_app/features/plans/presentation/widgets/add_day_to_split.dart';
+import 'package:lifting_tracker_app/features/plans/presentation/widgets/add_to_split.dart';
 import 'package:lifting_tracker_app/features/plans/presentation/widgets/change_name.dart';
 import 'package:lifting_tracker_app/features/plans/presentation/editor/change_name_flow/change_split_name_flow.dart';
 import 'package:lifting_tracker_app/features/plans/presentation/widgets/training_days.dart';
 
-class EditSplitPage extends StatelessWidget {
+class EditSplitPage extends ConsumerWidget {
   const EditSplitPage(this.splitId, {super.key});
 
   final int splitId;
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
     return Scaffold(
       appBar: EditAppBar('Edit split'),
       body: SafeArea(
@@ -31,7 +33,12 @@ class EditSplitPage extends StatelessWidget {
                   const SizedBox(height: 24),
                   TrainingDays(splitId),
                   const SizedBox(height: 18),
-                  AddDayToSplit(splitId),
+                  AddToSplit(
+                    buttonLabel: 'Add day',
+                    addFunction: () => ref
+                        .read(splitDaysProvider(splitId).notifier)
+                        .createNewDay(),
+                  ),
                   const SizedBox(height: 48),
                   Center(
                     child: Text(

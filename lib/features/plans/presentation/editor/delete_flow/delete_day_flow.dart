@@ -2,7 +2,7 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:lifting_tracker_app/features/plans/application/split_days_controller.dart';
-import 'package:lifting_tracker_app/features/plans/presentation/editor/delete/delete_flow/delete_flow_contract.dart';
+import 'package:lifting_tracker_app/features/plans/presentation/editor/delete_flow/delete_flow_contract.dart';
 
 class DeleteDayFlow extends DeleteFlow {
   const DeleteDayFlow({

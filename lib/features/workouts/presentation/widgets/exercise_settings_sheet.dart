@@ -173,7 +173,6 @@ class _ExerciseSettingsState extends ConsumerState<ExerciseSettingsSheet> {
                               final selectedExercise =
                                   await AddExerciseSelector.openExercisePickerSheet(
                                     context,
-                                    widget.screenWidth,
                                   );
 
                               if (selectedExercise == null) return;

@@ -8,7 +8,7 @@ import 'package:lifting_tracker_app/features/plans/presentation/pages/edit_day_p
 import 'package:lifting_tracker_app/core/theme/app_colors.dart';
 import 'package:lifting_tracker_app/core/theme/app_gradients.dart';
 import 'package:lifting_tracker_app/core/ui/cards/gradient_card.dart';
-import 'package:lifting_tracker_app/features/plans/presentation/editor/delete/delete_flow/delete_day_flow.dart';
+import 'package:lifting_tracker_app/features/plans/presentation/editor/delete_flow/delete_day_flow.dart';
 import 'package:lifting_tracker_app/features/plans/presentation/widgets/delete_validation.dart';
 import 'package:phosphor_flutter/phosphor_flutter.dart';
 
@@ -55,7 +55,13 @@ class _Header extends ConsumerWidget {
         ),
 
         splitPlanAsync.when(
-          loading: () => const Center(child: CircularProgressIndicator()),
+          loading: () => Text(
+            ' -day cycle',
+            style: Theme.of(context).textTheme.bodyMedium!.copyWith(
+              color: AppColors.onSurfaceMuted,
+              letterSpacing: 0,
+            ),
+          ),
           error: (error, stackTrace) => const Center(
             child: Text('Could not load the split cycle length.'),
           ),
@@ -145,7 +151,7 @@ class _Body extends ConsumerWidget {
                               onTap: () {
                                 Navigator.of(context).push(
                                   MaterialPageRoute(
-                                    builder: (context) => EditDayPage(dayId),
+                                    builder: (context) => EditDayPage(dayId, splitId),
                                   ),
                                 );
                               },

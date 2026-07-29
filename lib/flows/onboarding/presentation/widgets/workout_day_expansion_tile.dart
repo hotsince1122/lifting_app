@@ -6,12 +6,11 @@ import 'package:lifting_tracker_app/features/plans/domain/split_day.dart';
 import 'package:lifting_tracker_app/features/plans/application/split_day_summary_controller.dart';
 import 'package:lifting_tracker_app/core/theme/app_colors.dart';
 import 'package:lifting_tracker_app/features/exercises/presentation/widgets/add_exercise_selector/add_exercise_selector.dart';
-import 'package:lifting_tracker_app/flows/onboarding/presentation/widgets/added_exercises_list_view.dart';
+import 'package:lifting_tracker_app/features/plans/presentation/widgets/planned_exercises_list_view.dart';
 
 class WorkoutDayExpansionTile extends ConsumerWidget {
-  const WorkoutDayExpansionTile(this.screenWidth, this.workoutDay, {super.key});
+  const WorkoutDayExpansionTile(this.workoutDay, {super.key});
 
-  final double screenWidth;
   final SplitDay workoutDay;
 
   @override
@@ -75,7 +74,11 @@ class WorkoutDayExpansionTile extends ConsumerWidget {
               indent: 16,
               endIndent: 16,
             ),
-            AddedExercisesListView(workoutDay.id),
+            PlannedExercisesListView(
+              workoutDay.id,
+              includeTopAndBottomDivider: true,
+              isTileDense: true,
+            ),
             Divider(
               height: 0.5,
               color: AppColors.cardBorder,
@@ -92,7 +95,6 @@ class WorkoutDayExpansionTile extends ConsumerWidget {
                     final addedExercise =
                         await AddExerciseSelector.openExercisePickerSheet(
                           context,
-                          screenWidth,
                         );
 
                     if (!context.mounted || addedExercise == null) return;

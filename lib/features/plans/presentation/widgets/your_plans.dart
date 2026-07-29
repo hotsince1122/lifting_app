@@ -4,11 +4,11 @@ import 'package:lifting_tracker_app/core/errors/snack_bar_error.dart';
 import 'package:lifting_tracker_app/features/plans/application/active_split_id_controller.dart';
 import 'package:lifting_tracker_app/features/plans/application/split_plan_provider.dart';
 import 'package:lifting_tracker_app/features/plans/application/split_plans_ids_controller.dart';
+import 'package:lifting_tracker_app/features/plans/presentation/editor/delete_flow/delete_split_flow.dart';
 import 'package:lifting_tracker_app/features/plans/presentation/pages/edit_split_page.dart';
 import 'package:lifting_tracker_app/core/theme/app_colors.dart';
 import 'package:lifting_tracker_app/core/theme/app_gradients.dart';
 import 'package:lifting_tracker_app/core/ui/cards/gradient_card.dart';
-import 'package:lifting_tracker_app/features/plans/presentation/editor/delete/delete_flow/delete_split_flow.dart';
 import 'package:lifting_tracker_app/features/plans/presentation/widgets/delete_validation.dart';
 import 'package:phosphor_flutter/phosphor_flutter.dart';
 

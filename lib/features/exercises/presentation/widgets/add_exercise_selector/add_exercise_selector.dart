@@ -14,13 +14,10 @@ import 'package:lifting_tracker_app/features/exercises/presentation/widgets/add_
 import 'package:lifting_tracker_app/core/ui/modal/modal_scaffold.dart';
 
 class AddExerciseSelector extends ConsumerStatefulWidget {
-  const AddExerciseSelector(this.screenWidth, {super.key});
-
-  final double screenWidth;
+  const AddExerciseSelector({super.key});
 
   static Future<CatalogExercise?> openExercisePickerSheet(
     BuildContext context,
-    double screenWidth,
   ) {
     return showModalBottomSheet<CatalogExercise>(
       context: context,
@@ -29,7 +26,7 @@ class AddExerciseSelector extends ConsumerStatefulWidget {
       backgroundColor: Colors.transparent,
       barrierColor: Colors.black12,
       isScrollControlled: true,
-      builder: (context) => AddExerciseSelector(screenWidth),
+      builder: (context) => AddExerciseSelector(),
     );
   }
 
@@ -352,7 +349,7 @@ class _AddExerciseSelectorState extends ConsumerState<AddExerciseSelector> {
   Widget build(BuildContext context) {
     return ModalScaffold(
       height: 0.75,
-      width: widget.screenWidth,
+      width: MediaQuery.of(context).size.width,
       Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [

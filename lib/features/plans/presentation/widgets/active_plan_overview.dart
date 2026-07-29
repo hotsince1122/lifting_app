@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:lifting_tracker_app/features/plans/application/active_split_days_provider.dart';
+import 'package:lifting_tracker_app/features/plans/application/active_split_id_controller.dart';
 import 'package:lifting_tracker_app/features/plans/application/active_split_plan_controller.dart';
 import 'package:lifting_tracker_app/features/plans/application/split_day_summary_controller.dart';
 import 'package:lifting_tracker_app/features/plans/domain/split_day.dart';
@@ -113,6 +114,7 @@ class _SplitDays extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final activeSplitDaysAsync = ref.watch(activeSplitDaysProvider);
+    final activeSplitIdAsync = ref.watch(activeSplitIdProvider);
 
     return activeSplitDaysAsync.when(
       loading: () => const Center(child: CircularProgressIndicator()),
@@ -122,30 +124,41 @@ class _SplitDays extends ConsumerWidget {
         if (activeSplitDaysData.isEmpty) {
           return const Center(child: Text('No split days found.'));
         }
+        return activeSplitIdAsync.when(
+          loading: () => const Center(child: CircularProgressIndicator()),
+          error: (_, _) => const Center(child: Text('An error has occurred!')),
+          data: (activeSplitIdData) {
+            if (activeSplitIdData == null) {
+              return const Center(child: Text('An error has occurred!'));
+            }
 
-        return Column(
-          crossAxisAlignment: CrossAxisAlignment.stretch,
-          children: [
-            for (int i = 0; i < activeSplitDaysData.length; i++) ...[
-              InkWell(
-                onTap: () => Navigator.of(context).push(
-                  MaterialPageRoute(
-                    builder: (context) =>
-                        EditDayPage(activeSplitDaysData[i].id),
+            return Column(
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              children: [
+                for (int i = 0; i < activeSplitDaysData.length; i++) ...[
+                  InkWell(
+                    onTap: () => Navigator.of(context).push(
+                      MaterialPageRoute(
+                        builder: (context) => EditDayPage(
+                          activeSplitDaysData[i].id,
+                          activeSplitIdData,
+                        ),
+                      ),
+                    ),
+                    borderRadius: BorderRadius.circular(12),
+                    child: _SplitDayOverview(activeSplitDaysData[i]),
                   ),
-                ),
-                borderRadius: BorderRadius.circular(12),
-                child: _SplitDayOverview(activeSplitDaysData[i]),
-              ),
-              if (i != activeSplitDaysData.length - 1)
-                Divider(
-                  color: AppColors.cardBorder,
-                  endIndent: 4,
-                  indent: 4,
-                  height: 1,
-                ),
-            ],
-          ],
+                  if (i != activeSplitDaysData.length - 1)
+                    Divider(
+                      color: AppColors.cardBorder,
+                      endIndent: 4,
+                      indent: 4,
+                      height: 1,
+                    ),
+                ],
+              ],
+            );
+          },
         );
       },
     );

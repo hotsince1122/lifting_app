@@ -3,7 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:lifting_tracker_app/core/errors/snack_bar_error.dart';
 import 'package:lifting_tracker_app/features/plans/application/split_plans_ids_controller.dart';
-import 'package:lifting_tracker_app/features/plans/presentation/editor/delete/delete_flow/delete_flow_contract.dart';
+import 'package:lifting_tracker_app/features/plans/presentation/editor/delete_flow/delete_flow_contract.dart';
 
 Future<void> _showSplitInUseDialog(BuildContext context) {
   return showDialog<void>(

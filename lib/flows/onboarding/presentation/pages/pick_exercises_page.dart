@@ -17,7 +17,6 @@ class PickExercisesPage extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final screenWidth = MediaQuery.of(context).size.width;
 
     final activeSplitDaysAsync = ref.watch(activeSplitDaysProvider);
 
@@ -78,10 +77,7 @@ class PickExercisesPage extends ConsumerWidget {
                         GradientCard(
                           padding: EdgeInsets.all(0),
                           gradientVariant: AppGradients.card,
-                          child: WorkoutDayExpansionTile(
-                            screenWidth,
-                            workoutDay,
-                          ),
+                          child: WorkoutDayExpansionTile(workoutDay),
                         ),
                         const SizedBox(height: 16),
                       ],
