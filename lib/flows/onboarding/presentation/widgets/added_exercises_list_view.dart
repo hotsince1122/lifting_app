@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:lifting_tracker_app/core/errors/snack_bar_error.dart';
 import 'package:lifting_tracker_app/core/theme/app_colors.dart';
 import 'package:lifting_tracker_app/features/plans/application/planned_exercises_controller.dart';
 
@@ -25,9 +26,17 @@ class AddedExercisesListView extends ConsumerWidget {
             padding: EdgeInsets.zero,
             itemCount: plannedExercises.length,
             onReorder: (oldIndex, newIndex) async {
-              await ref
-                  .read(plannedExercisesProvider(dayId).notifier)
-                  .reorderExercises(oldIndex, newIndex);
+              try {
+                await ref
+                    .read(plannedExercisesProvider(dayId).notifier)
+                    .reorderExercises(oldIndex, newIndex);
+              } catch (_) {
+                if (!context.mounted) return;
+                SnackBarError.show(
+                  context,
+                  'Could not reorder exercises. Try again!',
+                );
+              }
             },
             dragBoundaryProvider: (context) => DragBoundary.forRectOf(context),
             buildDefaultDragHandles: false,
@@ -41,10 +50,20 @@ class AddedExercisesListView extends ConsumerWidget {
               return Dismissible(
                 key: ValueKey(plannedExercise.relationId),
                 direction: DismissDirection.endToStart,
-                onDismissed: (_) async {
-                  await ref
-                      .read(plannedExercisesProvider(dayId).notifier)
-                      .deleteExerciseFromDay(plannedExercise.relationId);
+                confirmDismiss: (_) async {
+                  try {
+                    await ref
+                        .read(plannedExercisesProvider(dayId).notifier)
+                        .deleteExerciseFromDay(plannedExercise.relationId);
+                    return true;
+                  } catch (_) {
+                    if (!context.mounted) return false;
+                    SnackBarError.show(
+                      context,
+                      'Could not delete exercise. Try again!',
+                    );
+                    return false;
+                  }
                 },
                 background: Container(
                   alignment: const Alignment(0.95, 0),

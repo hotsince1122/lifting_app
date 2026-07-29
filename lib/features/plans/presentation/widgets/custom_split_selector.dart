@@ -1,14 +1,17 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:lifting_tracker_app/core/errors/snack_bar_error.dart';
+import 'package:lifting_tracker_app/features/plans/application/active_split_plan_controller.dart';
 import 'package:lifting_tracker_app/features/plans/domain/custom_split.dart';
 import 'package:lifting_tracker_app/features/plans/domain/split_day.dart';
 import 'package:lifting_tracker_app/core/theme/app_colors.dart';
 import 'package:lifting_tracker_app/core/ui/modal/modal_scaffold.dart';
 
-class CustomSplitSelector extends StatefulWidget {
+class CustomSplitSelector extends ConsumerStatefulWidget {
   const CustomSplitSelector({super.key});
 
-  static Future<CustomSplit?> show(BuildContext context) {
-    return showModalBottomSheet<CustomSplit>(
+  static Future<void> show(BuildContext context) {
+    return showModalBottomSheet<void>(
       context: context,
       isDismissible: false,
       enableDrag: false,
@@ -20,10 +23,11 @@ class CustomSplitSelector extends StatefulWidget {
   }
 
   @override
-  State<CustomSplitSelector> createState() => _CustomSplitSelectorState();
+  ConsumerState<CustomSplitSelector> createState() =>
+      _CustomSplitSelectorState();
 }
 
-class _CustomSplitSelectorState extends State<CustomSplitSelector> {
+class _CustomSplitSelectorState extends ConsumerState<CustomSplitSelector> {
   double _daysSplitSliderValue = 3;
 
   final List<TextEditingController> _dayNames = [];
@@ -80,7 +84,7 @@ class _CustomSplitSelectorState extends State<CustomSplitSelector> {
                   style: Theme.of(context).textTheme.titleLarge,
                 ),
                 TextButton(
-                  onPressed: () {
+                  onPressed: () async {
                     if (_splitName.text.trim().isEmpty) {
                       setState(() {
                         _userTriedToSave = true;
@@ -100,9 +104,24 @@ class _CustomSplitSelectorState extends State<CustomSplitSelector> {
                         SplitDay(name: _dayNames[i].text.trim(), orderIndex: i),
                       );
                     }
-                    Navigator.of(
-                      context,
-                    ).pop((CustomSplit(_splitName.text.trim(), customSplit)));
+
+                    try {
+                      await ref
+                          .read(activeSplitPlanProvider.notifier)
+                          .addAndChangeToCustom(
+                            (CustomSplit(_splitName.text.trim(), customSplit)),
+                          );
+                    } catch (_) {
+                      if (!context.mounted) return;
+                      SnackBarError.show(
+                        context,
+                        'Custom split could not be created. Try again.',
+                      );
+                      return;
+                    }
+
+                    if (!context.mounted) return;
+                    Navigator.of(context).pop();
                   },
                   child: Text(
                     'Save',

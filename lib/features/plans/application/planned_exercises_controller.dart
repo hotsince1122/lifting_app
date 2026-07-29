@@ -1,41 +1,13 @@
 import 'dart:async';
 
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:lifting_tracker_app/core/database/app_database.dart';
-import 'package:lifting_tracker_app/features/exercises/domain/catalog_exercise.dart';
 import 'package:lifting_tracker_app/features/plans/domain/planned_exercise.dart';
 
-Future<List<PlannedExercise>> _loadPlannedExercises(String dayId) async {
-  final db = await AppDatabase.getDatabase();
+import 'package:lifting_tracker_app/features/plans/data/planned_exercises_queries.dart'
+    as queries;
 
-  final rows = await db.rawQuery(
-    '''
-    SELECT
-      e.id AS exercise_id,
-      e.name AS name,
-      e.muscle_group AS muscle_group,
-      de.id AS relation_id,
-      de.order_idx AS order_index
-    FROM day_exercises de
-    JOIN exercises e ON e.id = de.exercise_id
-    WHERE de.day_id = ?
-    ORDER BY de.order_idx ASC
-    ''',
-    [dayId],
-  );
-
-  return rows.map((row) {
-    return PlannedExercise(
-      catalogExercise: CatalogExercise(
-        id: row['exercise_id'] as String,
-        name: row['name'] as String,
-        muscleGroup: row['muscle_group'] as String,
-      ),
-      relationId: row['relation_id'] as int,
-      orderIndex: row['order_index'] as int,
-    );
-  }).toList();
-}
+import 'package:lifting_tracker_app/features/plans/data/planned_exercises_commands.dart'
+    as commands;
 
 final plannedExercisesProvider =
     AsyncNotifierProvider.family<
@@ -51,45 +23,19 @@ class PlannedExercisesController extends AsyncNotifier<List<PlannedExercise>> {
 
   @override
   FutureOr<List<PlannedExercise>> build() {
-    return _loadPlannedExercises(dayId);
+    return queries.loadPlannedExercises(dayId);
   }
 
   Future<void> addExerciseToDay(String exerciseId) async {
-    final db = await AppDatabase.getDatabase();
+    await commands.addExerciseToDay(dayId: dayId, exerciseId: exerciseId);
 
-    await db.transaction((txn) async {
-      await txn.rawInsert(
-        '''
-        INSERT INTO day_exercises(day_id, exercise_id, order_idx)
-        VALUES (
-          ?,
-          ?,
-          COALESCE((
-            SELECT MAX(order_idx) + 1
-            FROM day_exercises
-            WHERE day_id = ?
-          ), 0)
-        )
-        ''',
-        [dayId, exerciseId, dayId],
-      );
-    });
-
-    state = AsyncData(await _loadPlannedExercises(dayId));
+    state = AsyncData(await queries.loadPlannedExercises(dayId));
   }
 
   Future<void> deleteExerciseFromDay(int relationId) async {
-    final db = await AppDatabase.getDatabase();
+    await commands.deleteExerciseFromDay(relationId);
 
-    await db.transaction((txn) async {
-      await txn.delete(
-        'day_exercises',
-        where: 'id = ?',
-        whereArgs: [relationId],
-      );
-    });
-
-    state = AsyncData(await _loadPlannedExercises(dayId));
+    state = AsyncData(await queries.loadPlannedExercises(dayId));
   }
 
   Future<void> reorderExercises(int oldIndex, int newIndex) async {
@@ -109,24 +55,12 @@ class PlannedExercisesController extends AsyncNotifier<List<PlannedExercise>> {
 
     state = AsyncData(normalized);
 
-    final ids = normalized.map((exercise) => exercise.relationId).toList();
-    final caseParts = <String>[
-      for (int i = 0; i < normalized.length; i++)
-        'WHEN ${normalized[i].relationId} THEN $i',
-    ];
-    final placeholders = List.filled(ids.length, '?').join(', ');
-    final db = await AppDatabase.getDatabase();
+    final orderedRelationIds = normalized
+        .map((exercise) => exercise.relationId)
+        .toList();
 
     try {
-      await db.transaction((txn) async {
-        await txn.rawUpdate('''
-        UPDATE day_exercises
-        SET order_idx = CASE id
-          ${caseParts.join('\n          ')}
-        END
-        WHERE id IN ($placeholders)
-        ''', ids);
-      });
+      await commands.reorderExercises(orderedRelationIds);
     } catch (_) {
       state = AsyncData(currentState);
       rethrow;

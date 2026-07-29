@@ -1,0 +1,1 @@
+enum DeleteSplitPlanResult { success, sessionInSplitActive }

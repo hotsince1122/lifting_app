@@ -1,6 +1,7 @@
 import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:lifting_tracker_app/core/errors/snack_bar_error.dart';
 import 'package:lifting_tracker_app/features/workouts/data/workout_set_commands.dart';
 import 'package:lifting_tracker_app/features/workouts/application/session_editor/workout_session_exercises_controller.dart';
 import 'package:lifting_tracker_app/features/workouts/domain/training_set.dart';
@@ -103,14 +104,14 @@ class _ExerciseSetTileState extends ConsumerState<ExerciseSetTile> {
 
     _debounceTimer = Timer(const Duration(milliseconds: 700), () {
       if (!mounted) return;
-      _saveNow();
+      unawaited(_saveNow());
     });
   }
 
   @override
   void dispose() {
     _debounceTimer?.cancel();
-    _saveToDbOnly();
+    unawaited(_saveToDbOnly().catchError((_) {}));
 
     _weightController.dispose();
     _repsController.dispose();
@@ -123,14 +124,22 @@ class _ExerciseSetTileState extends ConsumerState<ExerciseSetTile> {
     final setId = widget.set.workoutSessionSetId;
     if (setId == null) return;
 
-    _exercisesAndSetsNotifier.saveSetCell(
-      setId,
-      double.tryParse(_weightController.text),
-      int.tryParse(_repsController.text),
-      _notesController.text.trim().isEmpty ? null : _notesController.text,
-      widget.exerciseId,
-      widget.exerciseOrderIndex,
-    );
+    try {
+      await _exercisesAndSetsNotifier.saveSetCell(
+        setId,
+        double.tryParse(_weightController.text),
+        int.tryParse(_repsController.text),
+        _notesController.text.trim().isEmpty ? null : _notesController.text,
+        widget.exerciseId,
+        widget.exerciseOrderIndex,
+      );
+    } catch (_) {
+      if (!mounted) return;
+      SnackBarError.show(
+        context,
+        'Could not save set changes. Please try again.',
+      );
+    }
   }
 
   Future<void> _saveToDbOnly() async {

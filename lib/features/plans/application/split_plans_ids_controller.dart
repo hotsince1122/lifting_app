@@ -1,95 +1,16 @@
 import 'dart:async';
 
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:lifting_tracker_app/core/database/app_database.dart';
 import 'package:lifting_tracker_app/features/plans/application/split_days_controller.dart';
 import 'package:lifting_tracker_app/features/plans/application/split_name_controller.dart';
 import 'package:lifting_tracker_app/features/plans/application/split_plan_provider.dart';
 import 'package:lifting_tracker_app/features/plans/application/split_day_summary_controller.dart';
 
-const _activeWorkoutSessionStatus = 'active';
-
-Future<List<int>> _loadSplitPlanIds() async {
-  final db = await AppDatabase.getDatabase();
-
-  final data = await db.rawQuery('''
-    SELECT id
-    FROM split_plans
-    ''');
-
-  return data.map((row) => row['id'] as int).toList();
-}
-
-enum DeleteSplitPlanResult { success, sessionInSplitActive }
-
-Future<DeleteSplitPlanResult> _deleteSplitPlanFromDb(int splitId) async {
-  final db = await AppDatabase.getDatabase();
-
-  return db.transaction<DeleteSplitPlanResult>((txn) async {
-    final activeSessions = await txn.rawQuery(
-      '''
-      SELECT 1
-      FROM workout_sessions ws
-      JOIN split_days sd ON sd.id = ws.day_id
-      WHERE sd.split_id = ?
-        AND ws.status = ?
-      LIMIT 1
-      ''',
-      [splitId, _activeWorkoutSessionStatus],
-    );
-
-    if (activeSessions.isNotEmpty) {
-      return DeleteSplitPlanResult.sessionInSplitActive;
-    }
-
-    await txn.rawUpdate(
-      '''
-      UPDATE workout_sessions
-      SET day_id = NULL
-      WHERE day_id IN (
-        SELECT id
-        FROM split_days
-        WHERE split_id = ?
-      )
-      ''',
-      [splitId],
-    );
-
-    await txn.rawDelete(
-      '''
-      DELETE FROM day_exercises
-      WHERE day_id IN (
-        SELECT id
-        FROM split_days
-        WHERE split_id = ?
-      )
-      ''',
-      [splitId],
-    );
-
-    await txn.rawDelete(
-      '''
-      DELETE FROM split_days
-      WHERE split_id = ?
-      ''',
-      [splitId],
-    );
-
-    final deletedPlans = await txn.rawDelete(
-      '''
-      DELETE FROM split_plans
-      WHERE id = ?
-      ''',
-      [splitId],
-    );
-
-    if (deletedPlans != 1) {
-      throw Exception('Could not delete split plan $splitId.');
-    }
-
-    return DeleteSplitPlanResult.success;
-  });
-}
+import 'package:lifting_tracker_app/features/plans/data/split_plan_queries.dart'
+    as queries;
+import 'package:lifting_tracker_app/features/plans/data/split_plan_commands.dart'
+    as commands;
+import 'package:lifting_tracker_app/features/plans/domain/delete_split_plan_result.dart';
 
 final splitPlansIdsProvider =
     AsyncNotifierProvider<SplitPlansIdsController, List<int>>(
@@ -99,11 +20,11 @@ final splitPlansIdsProvider =
 class SplitPlansIdsController extends AsyncNotifier<List<int>> {
   @override
   FutureOr<List<int>> build() {
-    return _loadSplitPlanIds();
+    return queries.loadSplitPlanIds();
   }
 
   Future<DeleteSplitPlanResult> deletePlan(int splitId) async {
-    final result = await _deleteSplitPlanFromDb(splitId);
+    final result = await commands.deletePlan(splitId);
 
     if (result == DeleteSplitPlanResult.sessionInSplitActive) {
       return DeleteSplitPlanResult.sessionInSplitActive;
@@ -112,7 +33,7 @@ class SplitPlansIdsController extends AsyncNotifier<List<int>> {
     final currentIds = state.value;
     state = AsyncData(
       currentIds == null
-          ? await _loadSplitPlanIds()
+          ? await queries.loadSplitPlanIds()
           : currentIds.where((id) => id != splitId).toList(),
     );
 
@@ -125,20 +46,6 @@ class SplitPlansIdsController extends AsyncNotifier<List<int>> {
   }
 
   Future<bool> hasActiveSessionInSplit(int splitId) async {
-    final db = await AppDatabase.getDatabase();
-
-    final activeSessions = await db.rawQuery(
-      '''
-    SELECT 1
-    FROM workout_sessions ws
-    JOIN split_days sd ON sd.id = ws.day_id
-    WHERE sd.split_id = ?
-      AND ws.status = ?
-    LIMIT 1
-    ''',
-      [splitId, _activeWorkoutSessionStatus],
-    );
-
-    return activeSessions.isNotEmpty;
+    return await queries.hasActiveSessionInSplit(splitId);
   }
 }

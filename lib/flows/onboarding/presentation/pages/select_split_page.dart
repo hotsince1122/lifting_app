@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:lifting_tracker_app/features/plans/domain/custom_split.dart';
 import 'package:lifting_tracker_app/core/ui/buttons/gradient_button.dart';
 import 'package:lifting_tracker_app/features/plans/presentation/widgets/custom_split_selector.dart';
 import 'package:lifting_tracker_app/flows/onboarding/presentation/widgets/preset_splits.dart';
@@ -97,13 +96,7 @@ class SelectSplitPage extends ConsumerWidget {
                 isActive:
                     (activeSplitPlan != null && !activeSplitPlan.isPreset),
                 onPressed: () async {
-                  final CustomSplit? customSplit =
-                      await CustomSplitSelector.show(context);
-                  if (customSplit != null) {
-                    ref
-                        .read(activeSplitPlanProvider.notifier)
-                        .addAndChangeToCustom(customSplit);
-                  }
+                  await CustomSplitSelector.show(context);
                 },
                 buttonWidth: screenWidth - 172,
                 buttonHeight: 46,

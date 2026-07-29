@@ -1,16 +1,13 @@
 import 'package:dotted_border/dotted_border.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:lifting_tracker_app/features/plans/domain/custom_split.dart';
-import 'package:lifting_tracker_app/features/plans/application/active_split_plan_controller.dart';
 import 'package:lifting_tracker_app/core/theme/app_colors.dart';
 import 'package:lifting_tracker_app/features/plans/presentation/widgets/custom_split_selector.dart';
 
-class CustomSplitButton extends ConsumerWidget {
+class CustomSplitButton extends StatelessWidget {
   const CustomSplitButton({super.key});
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
+  Widget build(BuildContext context) {
     return SizedBox(
       width: double.infinity,
       child: DottedBorder(
@@ -22,14 +19,7 @@ class CustomSplitButton extends ConsumerWidget {
         ),
         child: InkWell(
           onTap: () async {
-            final CustomSplit? customSplit = await CustomSplitSelector.show(
-              context,
-            );
-            if (customSplit != null) {
-              ref
-                  .read(activeSplitPlanProvider.notifier)
-                  .addAndChangeToCustom(customSplit);
-            }
+            await CustomSplitSelector.show(context);
           },
           borderRadius: BorderRadius.circular(20),
           child: Padding(

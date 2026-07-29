@@ -1,6 +1,7 @@
 import 'dart:ui';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:lifting_tracker_app/core/errors/snack_bar_error.dart';
 import 'package:lifting_tracker_app/features/workouts/application/session_editor/workout_session_exercises_controller.dart';
 import 'package:lifting_tracker_app/core/theme/app_colors.dart';
 import 'package:lifting_tracker_app/features/workouts/domain/workout_exercise.dart';
@@ -98,13 +99,21 @@ class _ReorderExercisesSheetState extends ConsumerState<ReorderExercisesSheet> {
                             padding: EdgeInsets.zero,
                             itemCount: exercises.length,
                             onReorder: (oldIndex, newIndex) async {
-                              await ref
-                                  .read(
-                                    workoutSessionExercisesProvider(
-                                      widget.sessionId,
-                                    ).notifier,
-                                  )
-                                  .reorderExercises(oldIndex, newIndex);
+                              try {
+                                await ref
+                                    .read(
+                                      workoutSessionExercisesProvider(
+                                        widget.sessionId,
+                                      ).notifier,
+                                    )
+                                    .reorderExercises(oldIndex, newIndex);
+                              } catch (_) {
+                                if (!context.mounted) return;
+                                SnackBarError.show(
+                                  context,
+                                  'Could not reorder exercises. Please try again.',
+                                );
+                              }
                             },
                             dragBoundaryProvider: (context) =>
                                 DragBoundary.forRectOf(context),
@@ -120,17 +129,27 @@ class _ReorderExercisesSheetState extends ConsumerState<ReorderExercisesSheet> {
                               return Dismissible(
                                 key: ValueKey(_exerciseKey(exercise)),
                                 direction: DismissDirection.endToStart,
-                                onDismissed: (_) async {
-                                  await ref
-                                      .read(
-                                        workoutSessionExercisesProvider(
-                                          widget.sessionId,
-                                        ).notifier,
-                                      )
-                                      .deleteExercise(
-                                        exercise.catalogExercise.id,
-                                        exercise.orderIndex,
-                                      );
+                                confirmDismiss: (_) async {
+                                  try {
+                                    await ref
+                                        .read(
+                                          workoutSessionExercisesProvider(
+                                            widget.sessionId,
+                                          ).notifier,
+                                        )
+                                        .deleteExercise(
+                                          exercise.catalogExercise.id,
+                                          exercise.orderIndex,
+                                        );
+                                  } catch (_) {
+                                    if (!context.mounted) return false;
+                                    SnackBarError.show(
+                                      context,
+                                      'Could not delete exercise. Please try again.',
+                                    );
+                                  }
+
+                                  return false;
                                 },
                                 background: Container(
                                   alignment: const Alignment(0.95, 0),

@@ -2,6 +2,7 @@ import 'dart:ui';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:lifting_tracker_app/core/errors/snack_bar_error.dart';
 import 'package:lifting_tracker_app/core/theme/app_colors.dart';
 import 'package:lifting_tracker_app/features/workouts/application/session_editor/workout_session_exercises_controller.dart';
 import 'package:phosphor_flutter/phosphor_flutter.dart';
@@ -56,8 +57,12 @@ class _SetSettingsState extends ConsumerState<SetSettingsSheet> {
     return Expanded(
       child: GestureDetector(
         onTap: () async {
-          Navigator.of(context).maybePop();
-          if (!isSelected) {
+          if (isSelected) {
+            await Navigator.of(context).maybePop();
+            return;
+          }
+
+          try {
             await ref
                 .read(
                   workoutSessionExercisesProvider(
@@ -65,7 +70,17 @@ class _SetSettingsState extends ConsumerState<SetSettingsSheet> {
                   ).notifier,
                 )
                 .toggleSetWarmup(widget.workoutSessionSetId);
+          } catch (_) {
+            if (!mounted) return;
+            SnackBarError.show(
+              context,
+              'Could not change set type. Please try again.',
+            );
+            return;
           }
+
+          if (!mounted) return;
+          await Navigator.of(context).maybePop();
         },
         child: Container(
           padding: EdgeInsets.symmetric(vertical: 8),

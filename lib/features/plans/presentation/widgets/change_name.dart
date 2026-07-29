@@ -2,6 +2,7 @@ import 'dart:async';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:lifting_tracker_app/core/errors/snack_bar_error.dart';
 import 'package:lifting_tracker_app/core/theme/app_colors.dart';
 import 'package:lifting_tracker_app/features/plans/presentation/editor/change_name_flow/change_name_contract.dart';
 
@@ -26,7 +27,7 @@ class _ChangeNameState extends ConsumerState<ChangeName> {
     final pendingName = _pendingName;
 
     if (pendingName != null) {
-      unawaited(widget.flow.changeName(ref, pendingName));
+      unawaited(widget.flow.changeName(ref, pendingName).catchError((_) {}));
     }
 
     _nameController?.dispose();
@@ -67,7 +68,12 @@ class _ChangeNameState extends ConsumerState<ChangeName> {
     _renameDebounce = null;
     _pendingName = null;
 
-    await widget.flow.changeName(ref, name);
+    try {
+      await widget.flow.changeName(ref, name);
+    } catch (_) {
+      if (!mounted) return;
+      SnackBarError.show(context, 'Could not change name. Try again!');
+    }
   }
 
   @override

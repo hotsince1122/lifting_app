@@ -2,9 +2,12 @@ import 'package:lifting_tracker_app/core/database/app_database.dart';
 import 'package:lifting_tracker_app/core/utils/build_placeholder_for_sqlite.dart';
 import 'package:lifting_tracker_app/core/utils/read_write_sql_bool.dart';
 import 'package:lifting_tracker_app/features/exercises/domain/catalog_exercise.dart';
+import 'package:lifting_tracker_app/features/plans/data/planned_exercises_queries.dart'
+    as plan_queries;
 import 'package:lifting_tracker_app/features/plans/domain/planned_exercise.dart';
+import 'package:lifting_tracker_app/features/workouts/data/workout_session_editor_queries.dart'
+    as queries;
 import 'package:lifting_tracker_app/features/workouts/domain/workout_exercise.dart';
-import 'package:lifting_tracker_app/features/workouts/domain/workout_session_statuses.dart';
 import 'package:lifting_tracker_app/features/workouts/domain/training_set.dart';
 import 'package:sqflite/sqflite.dart';
 
@@ -128,40 +131,6 @@ Future<void> populateWorkoutSessionSets(
   await batch.commit(noResult: true);
 }
 
-Future<int?> loadLastCompletedWorkoutIdForSameDay(
-  DatabaseExecutor db,
-  int workoutSessionId,
-) async {
-  final dataLastWorkoutIdWithSameDayId = await db.rawQuery(
-    '''
-    SELECT id
-    FROM workout_sessions
-    WHERE day_id = (
-      SELECT day_id
-      FROM workout_sessions
-      WHERE id = ?
-      )
-      AND started_at < (
-      SELECT started_at
-      FROM workout_sessions
-      WHERE id = ?
-      )
-      AND status = ?
-    ORDER BY started_at DESC, id DESC
-    LIMIT 1
-    ''',
-    [
-      workoutSessionId,
-      workoutSessionId,
-      WorkoutSessionStatuses.completedStatus,
-    ],
-  );
-
-  if (dataLastWorkoutIdWithSameDayId.isEmpty) return null;
-
-  return dataLastWorkoutIdWithSameDayId.first['id'] as int;
-}
-
 Future<List<WorkoutExercise>> _loadExercisesFromWorkoutSession(
   int workoutSessionId,
 ) async {
@@ -202,7 +171,7 @@ Future<List<WorkoutExercise>> _loadExercisesFromWorkoutSession(
   return currentExercises;
 }
 
-Future<List<WorkoutExercise>> loadExistingWorkoutSessionSets(
+Future<List<WorkoutExercise>> _loadExistingWorkoutSessionSets(
   Database db,
   int workoutSessionId,
 ) async {
@@ -240,63 +209,25 @@ Future<List<WorkoutExercise>> loadExistingWorkoutSessionSets(
   return currentExercises;
 }
 
-Future<List<PlannedExercise>> loadPlannedExercises(
+Future<List<PlannedExercise>> _loadPlannedExercisesForWorkoutSession(
   Database db,
   int workoutSessionId,
 ) async {
-  final dataAllExercisesInCurrentDay = await db.rawQuery(
+  final workoutSessionData = await db.rawQuery(
     '''
-    SELECT e.id AS exerciseId,
-      e.name AS exerciseName,
-      e.muscle_group AS exerciseMuscleGroup,
-      de.id AS relationId,
-      de.order_idx AS exerciseOrderIndex
-    FROM workout_sessions ws
-    JOIN day_exercises de ON ws.day_id = de.day_id
-    JOIN exercises e ON de.exercise_id = e.id
-    WHERE ws.id = ?
-    ORDER BY de.order_idx
+      SELECT day_id
+      FROM workout_sessions
+      WHERE id = ?
     ''',
     [workoutSessionId],
   );
 
-  if (dataAllExercisesInCurrentDay.isEmpty) return [];
+  if (workoutSessionData.isEmpty) return [];
 
-  return dataAllExercisesInCurrentDay
-      .map(
-        (row) => PlannedExercise(
-          catalogExercise: CatalogExercise(
-            id: row['exerciseId'] as String,
-            name: row['exerciseName'] as String,
-            muscleGroup: row['exerciseMuscleGroup'] as String,
-          ),
-          relationId: row['relationId'] as int,
-          orderIndex: row['exerciseOrderIndex'] as int,
-        ),
-      )
-      .toList();
-}
+  final dayId = workoutSessionData.first['day_id'] as String?;
+  if (dayId == null) return [];
 
-Future<List<String>> loadExercisesExecutedIds(
-  Database db,
-  int workoutSessionId,
-) async {
-  final exercisesExecutedIdsData = await db.rawQuery(
-    '''
-    SELECT exercise_id
-    FROM active_session_sets
-    WHERE workout_session_id = ?
-    GROUP BY exercise_order_index
-    ORDER BY exercise_order_index
-    ''',
-    [workoutSessionId],
-  );
-
-  if (exercisesExecutedIdsData.isEmpty) return [];
-
-  return exercisesExecutedIdsData.map((exercise) {
-    return exercise['exercise_id'] as String;
-  }).toList();
+  return plan_queries.loadPlannedExercises(dayId);
 }
 
 Future<List<WorkoutExercise>> _loadRepeatedWorkoutHints(
@@ -304,10 +235,8 @@ Future<List<WorkoutExercise>> _loadRepeatedWorkoutHints(
   List<WorkoutExercise> exercisesPlanned,
   int workoutSessionId,
 ) async {
-  final lastWorkoutIdWithSameDayId = await loadLastCompletedWorkoutIdForSameDay(
-    db,
-    workoutSessionId,
-  );
+  final lastWorkoutIdWithSameDayId = await queries
+      .loadLastCompletedWorkoutIdForSameDay(db, workoutSessionId);
 
   if (lastWorkoutIdWithSameDayId == null) {
     exercisesPlanned = _addDefaultSetToExercisesIfEmpty(exercisesPlanned);
@@ -352,13 +281,16 @@ Future<List<WorkoutExercise>> loadOrCreateWorkoutSessionEditorSets(
 ) async {
   final db = await AppDatabase.getDatabase();
 
-  final currentExercises = await loadExistingWorkoutSessionSets(
+  final currentExercises = await _loadExistingWorkoutSessionSets(
     db,
     workoutSessionId,
   );
   if (currentExercises.isNotEmpty) return currentExercises;
 
-  final plannedExercises = await loadPlannedExercises(db, workoutSessionId);
+  final plannedExercises = await _loadPlannedExercisesForWorkoutSession(
+    db,
+    workoutSessionId,
+  );
 
   if (plannedExercises.isEmpty) {
     return [];
@@ -381,7 +313,7 @@ Future<List<WorkoutExercise>> loadOrCreateWorkoutSessionEditorSets(
 
   await populateWorkoutSessionSets(workoutExercises, db, workoutSessionId);
 
-  return loadExistingWorkoutSessionSets(db, workoutSessionId);
+  return _loadExistingWorkoutSessionSets(db, workoutSessionId);
 }
 
 Future<List<WorkoutExercise>> loadSetsForEdit(int workoutSessionId) async {
@@ -439,5 +371,5 @@ Future<List<WorkoutExercise>> loadSetsForEdit(int workoutSessionId) async {
 
   if (!didPopulateEditDraft) return [];
 
-  return loadExistingWorkoutSessionSets(db, workoutSessionId);
+  return _loadExistingWorkoutSessionSets(db, workoutSessionId);
 }

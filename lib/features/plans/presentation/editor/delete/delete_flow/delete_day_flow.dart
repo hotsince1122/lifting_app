@@ -24,26 +24,6 @@ class DeleteDayFlow extends DeleteFlow {
 
   @override
   Future<void> onDelete(BuildContext context) async {
-    try {
-      await ref.read(splitDaysProvider(splitId).notifier).deleteSplitDay(dayId);
-    } catch (error, _) {
-      if (context.mounted) {
-        await showDialog(
-          context: context,
-          builder: (context) {
-            return CupertinoAlertDialog(
-              title: const Text('An error has occurred.'),
-              content: const Text('Try again.'),
-              actions: [
-                CupertinoDialogAction(
-                  onPressed: () => Navigator.of(context).pop(),
-                  child: Text('Ok'),
-                ),
-              ],
-            );
-          },
-        );
-      }
-    }
+    await ref.read(splitDaysProvider(splitId).notifier).deleteSplitDay(dayId);
   }
 }

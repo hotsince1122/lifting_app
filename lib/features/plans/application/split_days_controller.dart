@@ -1,32 +1,13 @@
 import 'dart:async';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:lifting_tracker_app/core/database/app_database.dart';
 import 'package:lifting_tracker_app/features/plans/domain/split_day.dart';
 import 'package:lifting_tracker_app/features/plans/application/split_day_summary_controller.dart';
 
-Future<List<SplitDay>> _loadSplitDays(int splitId) async {
-  final db = await AppDatabase.getDatabase();
+import 'package:lifting_tracker_app/features/plans/data/split_day_queries.dart'
+    as queries;
 
-  final data = await db.rawQuery(
-    '''
-    SELECT name, order_idx AS orderIndex, id
-    FROM split_days
-    WHERE split_id = ?
-    ORDER BY order_idx
-    ''',
-    [splitId],
-  );
-
-  return data
-      .map(
-        (row) => SplitDay(
-          name: row['name'] as String,
-          orderIndex: row['orderIndex'] as int,
-          id: row['id'] as String,
-        ),
-      )
-      .toList();
-}
+import 'package:lifting_tracker_app/features/plans/data/split_day_commands.dart'
+    as commands;
 
 final splitDaysProvider = AsyncNotifierProvider.autoDispose
     .family<SplitDaysController, List<SplitDay>, int>(SplitDaysController.new);
@@ -38,85 +19,13 @@ class SplitDaysController extends AsyncNotifier<List<SplitDay>> {
 
   @override
   FutureOr<List<SplitDay>> build() {
-    return _loadSplitDays(splitId);
+    return queries.loadSplitDays(splitId);
   }
 
   Future<void> deleteSplitDay(String splitDayId) async {
-    final db = await AppDatabase.getDatabase();
+    await commands.deleteSplitDay(splitId, splitDayId);
 
-    await db.transaction<void>((txn) async {
-      final splitDays = await txn.rawQuery(
-        '''
-        SELECT *
-        FROM split_days
-        WHERE id = ? AND split_id = ?
-        LIMIT 1
-        ''',
-        [splitDayId, splitId],
-      );
-
-      if (splitDays.isEmpty) return;
-
-      await txn.rawDelete(
-        '''
-        DELETE FROM day_exercises
-        WHERE day_id = ?
-        ''',
-        [splitDayId],
-      );
-
-      await txn.rawUpdate(
-        '''
-        UPDATE workout_sessions
-        SET day_id = NULL
-        WHERE day_id = ?
-        ''',
-        [splitDayId],
-      );
-
-      final deletedDays = await txn.rawDelete(
-        '''
-        DELETE FROM split_days
-        WHERE id = ? AND split_id = ?
-        ''',
-        [splitDayId, splitId],
-      );
-
-      if (deletedDays != 1) {
-        throw Exception('Expected to delete exactly one split day.');
-      }
-
-      final remainingDays = await txn.rawQuery(
-        '''
-        SELECT id, order_idx
-        FROM split_days
-        WHERE split_id = ?
-        ORDER BY order_idx, id
-        ''',
-        [splitId],
-      );
-
-      for (int i = 0; i < remainingDays.length; i++) {
-        final currentOrderIndex = remainingDays[i]['order_idx'] as int;
-
-        if (currentOrderIndex == i) continue;
-
-        final updatedDays = await txn.rawUpdate(
-          '''
-          UPDATE split_days
-          SET order_idx = ?
-          WHERE id = ? AND split_id = ?
-          ''',
-          [i, remainingDays[i]['id'] as String, splitId],
-        );
-
-        if (updatedDays != 1) {
-          throw Exception('Could not compact split day indexes.');
-        }
-      }
-    });
-
-    state = AsyncData(await _loadSplitDays(splitId));
+    state = AsyncData(await queries.loadSplitDays(splitId));
 
     ref.invalidate(splitDaySummaryProvider(splitDayId));
   }
@@ -131,7 +40,7 @@ class SplitDaysController extends AsyncNotifier<List<SplitDay>> {
     if (currentDays == null || currentDays.isEmpty) return;
 
     if (oldIndex < 0 ||
-        oldIndex > currentDays.length ||
+        oldIndex >= currentDays.length ||
         newIndex < 0 ||
         newIndex > currentDays.length) {
       throw RangeError('Invalid split day reorder index.');
@@ -158,27 +67,8 @@ class SplitDaysController extends AsyncNotifier<List<SplitDay>> {
 
     state = AsyncData(normalizedDays);
 
-    final db = await AppDatabase.getDatabase();
-
     try {
-      await db.transaction((txn) async {
-        for (int i = 0; i < normalizedDays.length; i++) {
-          final updatedRows = await txn.rawUpdate(
-            '''
-              UPDATE split_days
-              SET order_idx = ?
-              WHERE id = ? AND split_id = ?
-              ''',
-            [i, normalizedDays[i].id, splitId],
-          );
-
-          if (updatedRows != 1) {
-            throw StateError(
-              'Could not reorder split day ${normalizedDays[i].id}',
-            );
-          }
-        }
-      });
+      await commands.reorderSplitDays(normalizedDays, splitId);
     } catch (_) {
       state = AsyncData(currentDays);
       rethrow;
@@ -199,17 +89,7 @@ class SplitDaysController extends AsyncNotifier<List<SplitDay>> {
       orderIndex: newDayIndex,
     );
 
-    final db = await AppDatabase.getDatabase();
-
-    await db.transaction((txn) async {
-      await txn.rawInsert(
-        '''
-            INSERT INTO split_days(id, split_id, name, order_idx)
-            VALUES (?, ?, ?, ?)
-            ''',
-        [newDay.id, splitId, newDay.name, newDay.orderIndex],
-      );
-    });
+    await commands.createNewDay(newDay, splitId);
 
     state = AsyncData([...currentDays, newDay]);
   }

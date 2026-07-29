@@ -1,35 +1,40 @@
 import 'package:lifting_tracker_app/core/utils/read_write_sql_bool.dart';
 import 'package:lifting_tracker_app/features/workouts/domain/training_set.dart';
+import 'package:lifting_tracker_app/features/workouts/domain/workout_session_statuses.dart';
 import 'package:sqflite/sqflite.dart';
 
-Future<String> loadSplitDayName(Database db, String dayId) async {
+Future<int?> loadLastCompletedWorkoutIdForSameDay(
+  DatabaseExecutor db,
+  int workoutSessionId,
+) async {
   final data = await db.rawQuery(
     '''
-    SELECT name
-    FROM split_days
-    WHERE id = ?
+    SELECT id
+    FROM workout_sessions
+    WHERE day_id = (
+      SELECT day_id
+      FROM workout_sessions
+      WHERE id = ?
+      )
+      AND started_at < (
+      SELECT started_at
+      FROM workout_sessions
+      WHERE id = ?
+      )
+      AND status = ?
+    ORDER BY started_at DESC, id DESC
+    LIMIT 1
     ''',
-    [dayId],
+    [
+      workoutSessionId,
+      workoutSessionId,
+      WorkoutSessionStatuses.completedStatus,
+    ],
   );
 
-  if (data.isEmpty) return '';
+  if (data.isEmpty) return null;
 
-  return data.first['name'] as String;
-}
-
-Future<int> loadSplitDayOrderIndex(Database db, String dayId) async {
-  final data = await db.rawQuery(
-    '''
-    SELECT order_idx
-    FROM split_days
-    WHERE id = ?
-    ''',
-    [dayId],
-  );
-
-  if (data.isEmpty) throw '???';
-
-  return data.first['order_idx'] as int;
+  return data.first['id'] as int;
 }
 
 Future<int> loadNextExerciseOrderIndex(

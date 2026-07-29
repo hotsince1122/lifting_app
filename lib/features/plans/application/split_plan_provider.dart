@@ -1,24 +1,19 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:lifting_tracker_app/core/database/app_database.dart';
 import 'package:lifting_tracker_app/features/plans/application/planned_exercises_controller.dart';
 import 'package:lifting_tracker_app/features/plans/application/split_days_controller.dart';
 import 'package:lifting_tracker_app/features/plans/domain/split_plan.dart';
+
+import 'package:lifting_tracker_app/features/plans/data/split_plan_queries.dart'
+    as queries;
 
 final splitPlanProvider = FutureProvider.autoDispose.family<SplitPlan?, int>((
   ref,
   splitId,
 ) async {
-  final db = await AppDatabase.getDatabase();
-  final data = await db.query(
-    'split_plans',
-    where: 'id = ?',
-    whereArgs: [splitId],
-    limit: 1,
-  );
+  final row = await queries.loadSplitPlanProviderData(splitId);
 
-  if (data.isEmpty) return null;
+  if (row == null) return null;
 
-  final row = data.first;
   final splitDays = await ref.watch(splitDaysProvider(splitId).future);
   var exerciseCount = 0;
 

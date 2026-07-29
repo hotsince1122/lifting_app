@@ -1,11 +1,9 @@
+import 'package:lifting_tracker_app/core/database/app_database.dart';
 import 'package:lifting_tracker_app/core/utils/build_placeholder_for_sqlite.dart';
 import 'package:lifting_tracker_app/features/workouts/domain/workout_session_statuses.dart';
-import 'package:sqflite/sqflite.dart';
 
-Future<int> loadNextCycleIndex(
-  Database db,
-  List<String> activeSplitDaysIds,
-) async {
+Future<int> loadNextCycleIndex(List<String> activeSplitDaysIds) async {
+  final db = await AppDatabase.getDatabase();
   final placeholder = buildPlaceholder(activeSplitDaysIds.length);
 
   final data = await db.rawQuery(

@@ -2,12 +2,14 @@ import 'dart:async';
 
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:lifting_tracker_app/core/database/app_database.dart';
-import 'package:lifting_tracker_app/features/workouts/application/session_editor/workout_session_exercises_controller.dart';
 import 'package:lifting_tracker_app/features/progress/application/weekly_workout_progress_controller.dart';
+import 'package:lifting_tracker_app/features/workouts/application/session_editor/workout_session_exercises_controller.dart';
 import 'package:lifting_tracker_app/features/workouts/application/next_session_preview_provider.dart';
 import 'package:lifting_tracker_app/features/workouts/application/workout_name_controller.dart';
 import 'package:lifting_tracker_app/features/history/application/history_months_provider.dart';
 import 'package:lifting_tracker_app/features/workouts/presentation/state/workout_header_summary_provider.dart';
+import 'package:lifting_tracker_app/features/history/data/workout_history_commands.dart'
+    as commands;
 
 final historyWorkoutActionsProvider =
     AsyncNotifierProvider<HistoryWorkoutActionsController, void>(
@@ -20,143 +22,44 @@ class HistoryWorkoutActionsController extends AsyncNotifier<void> {
     return null;
   }
 
-  Future<bool> clearActiveSessionSets(int workoutSessionId) async {
-    final db = await AppDatabase.getDatabase();
-
-    try {
-      await db.transaction((txn) async {
-        await txn.rawDelete(
-          '''
-          DELETE FROM active_session_sets
-          WHERE workout_session_id = ?
-          ''',
-          [workoutSessionId],
-        );
-      });
-    } catch (_) {
-      return false;
-    }
+  Future<void> clearActiveSessionSets(int workoutSessionId) async {
+    await commands.clearActiveSessionSets(workoutSessionId);
 
     ref.invalidate(workoutSessionExercisesProvider(workoutSessionId));
-    return true;
   }
 
-  Future<bool> saveEditedWorkout(
+  Future<void> saveEditedWorkout(
     int workoutSessionId, {
     required String workoutName,
   }) async {
-    final db = await AppDatabase.getDatabase();
     final normalizedWorkoutName = normalizeWorkoutName(workoutName);
 
-    try {
-      await db.transaction((txn) async {
-        await txn.rawUpdate(
-          '''
-          UPDATE workout_sessions
-          SET workout_name = ?
-          WHERE id = ?
-          ''',
-          [normalizedWorkoutName, workoutSessionId],
-        );
-
-        await txn.rawDelete(
-          '''
-          DELETE FROM logged_sets
-          WHERE session_id = ?
-          ''',
-          [workoutSessionId],
-        );
-
-        final setsData = await txn.rawQuery(
-          '''
-          SELECT exercise_id AS ex_id,
-            workout_session_id AS session_id,
-            actual_weight AS weight,
-            actual_repetitions AS repetitions,
-            actual_notes AS notes,
-            set_index,
-            exercise_order_index AS order_index,
-            exercise_occurrence_index,
-            is_warmup
-          FROM active_session_sets
-          WHERE workout_session_id = ?
-            AND actual_weight IS NOT NULL
-            AND actual_repetitions IS NOT NULL
-          ORDER BY exercise_order_index, set_index
-          ''',
-          [workoutSessionId],
-        );
-
-        final batch = txn.batch();
-        for (final setData in setsData) {
-          batch.insert('logged_sets', setData);
-        }
-        await batch.commit(noResult: true);
-
-        await txn.rawDelete(
-          '''
-          DELETE FROM active_session_sets
-          WHERE workout_session_id = ?
-          ''',
-          [workoutSessionId],
-        );
-      });
-    } catch (_) {
-      return false;
-    }
+    await commands.saveEditedWorkout(workoutSessionId, normalizedWorkoutName);
 
     ref.invalidate(historyMonthsProvider);
     ref.invalidate(workoutHeaderSummaryProvider);
     ref.invalidate(workoutNameProvider(workoutSessionId));
     ref.invalidate(workoutSessionExercisesProvider(workoutSessionId));
-    return true;
   }
 
   Future<bool> deleteWorkout(int workoutId) async {
     final db = await AppDatabase.getDatabase();
 
-    try {
-      final didSucceed = await db.transaction((txn) async {
-        final finishedMillisecondsSinceEpoch = await txn.rawQuery(
-          '''
-          SELECT finished_at
-          FROM workout_sessions
-          WHERE id = ?
-          ''',
-          [workoutId],
-        );
+    await db.transaction((txn) async {
+      final deletionResult = await commands.deleteWorkout(txn, workoutId);
 
-        if (finishedMillisecondsSinceEpoch.isEmpty) {
-          return false;
-        }
-        if (finishedMillisecondsSinceEpoch.first['finished_at'] == null) {
-          return false;
-        }
+      final didHandleProgressRollback = await ref
+          .read(weeklyWorkoutProgressProvider.notifier)
+          .rollbackProgressIfRequired(
+            deletionResult.finishedTime,
+            hasAnotherWorkoutOnSameDay:
+                deletionResult.hasAnotherWorkoutOnSameDay,
+          );
 
-        await txn.rawDelete(
-          '''
-          DELETE FROM workout_sessions
-          WHERE id = ?
-          ''',
-          [workoutId],
-        );
-
-        final finishedDateTime = DateTime.fromMillisecondsSinceEpoch(
-          (finishedMillisecondsSinceEpoch.first['finished_at'] as int) * 1000,
-        );
-
-        final didSucceed = await ref
-            .read(weeklyWorkoutProgressProvider.notifier)
-            .rollbackProgressIfRequired(finishedDateTime, txn);
-
-        if (!didSucceed) throw 'rollback transaction';
-
-        return true;
-      });
-      if (!didSucceed) return false;
-    } catch (error) {
-      return false;
-    }
+      if (!didHandleProgressRollback) {
+        throw Exception('Rollback is required.');
+      }
+    });
 
     ref.invalidate(historyMonthsProvider);
     ref.invalidate(nextSessionPreviewProvider);

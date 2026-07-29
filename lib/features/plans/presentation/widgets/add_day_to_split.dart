@@ -1,6 +1,7 @@
 import 'package:dotted_border/dotted_border.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:lifting_tracker_app/core/errors/snack_bar_error.dart';
 import 'package:lifting_tracker_app/features/plans/application/split_days_controller.dart';
 import 'package:lifting_tracker_app/core/theme/app_colors.dart';
 
@@ -22,7 +23,14 @@ class AddDayToSplit extends ConsumerWidget {
         ),
         child: InkWell(
           onTap: () async {
-            await ref.read(splitDaysProvider(splitId).notifier).createNewDay();
+            try {
+              await ref
+                  .read(splitDaysProvider(splitId).notifier)
+                  .createNewDay();
+            } catch (_) {
+              if (!context.mounted) return;
+              SnackBarError.show(context, 'Could not create day. Try again!');
+            }
           },
           borderRadius: BorderRadius.circular(20),
           child: Padding(

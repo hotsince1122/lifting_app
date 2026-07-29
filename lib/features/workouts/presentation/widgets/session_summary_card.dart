@@ -3,6 +3,7 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:intl/intl.dart';
+import 'package:lifting_tracker_app/core/errors/snack_bar_error.dart';
 import 'package:lifting_tracker_app/features/workouts/application/workout_name_controller.dart';
 import 'package:lifting_tracker_app/features/workouts/presentation/state/workout_header_summary_provider.dart';
 import 'package:lifting_tracker_app/core/theme/app_colors.dart';
@@ -33,7 +34,9 @@ class _SessionSummaryCardState extends ConsumerState<SessionSummaryCard> {
 
     if (pendingName != null) {
       unawaited(
-        widget.flow.onWorkoutNameChange(ref, widget.sessionId, pendingName),
+        widget.flow
+            .onWorkoutNameChange(ref, widget.sessionId, pendingName)
+            .catchError((_) {}),
       );
     }
 
@@ -75,7 +78,15 @@ class _SessionSummaryCardState extends ConsumerState<SessionSummaryCard> {
     _renameDebounce = null;
     _pendingName = null;
 
-    await widget.flow.onWorkoutNameChange(ref, widget.sessionId, name);
+    try {
+      await widget.flow.onWorkoutNameChange(ref, widget.sessionId, name);
+    } catch (_) {
+      if (!mounted) return;
+      SnackBarError.show(
+        context,
+        'Could not change workout name. Please try again.',
+      );
+    }
   }
 
   @override

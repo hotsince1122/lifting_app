@@ -1,34 +1,15 @@
 import 'dart:async';
+
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:lifting_tracker_app/core/database/app_database.dart';
 import 'package:lifting_tracker_app/features/exercises/domain/catalog_exercise.dart';
-import 'package:lifting_tracker_app/features/workouts/data/add_sets_or_exercises.dart';
-import 'package:lifting_tracker_app/features/workouts/data/replace_workout_exercise.dart';
+import 'package:lifting_tracker_app/features/workouts/data/workout_exercise_commands.dart';
 import 'package:lifting_tracker_app/features/workouts/data/workout_set_commands.dart';
 import 'package:lifting_tracker_app/features/workouts/domain/workout_session_statuses.dart';
 import 'package:lifting_tracker_app/features/workouts/application/session_editor/workout_exercise_state_updates.dart';
-import 'package:lifting_tracker_app/features/workouts/data/delete_sets_or_exercises.dart';
-import 'package:lifting_tracker_app/features/workouts/data/exercise_in_a_workout_actions.dart';
-import 'package:lifting_tracker_app/features/workouts/data/populate_workout_session_sets.dart';
+import 'package:lifting_tracker_app/features/workouts/data/workout_session_editor_commands.dart';
+import 'package:lifting_tracker_app/features/workouts/data/workout_session_queries.dart'
+    as queries;
 import 'package:lifting_tracker_app/features/workouts/domain/workout_exercise.dart';
-
-FutureOr<String?> _checkWorkoutStatus(int workoutSessionId) async {
-  final db = await AppDatabase.getDatabase();
-
-  final data = await db.rawQuery(
-    '''
-    SELECT status
-    FROM workout_sessions
-    WHERE id = ?
-    ''',
-    [workoutSessionId],
-  );
-
-  if (data.isEmpty) return null;
-
-  final row = data.first;
-  return row['status'] as String;
-}
 
 final workoutSessionExercisesProvider = AsyncNotifierProvider.autoDispose
     .family<WorkoutSessionExercisesController, List<WorkoutExercise>, int>(
@@ -43,7 +24,7 @@ class WorkoutSessionExercisesController
 
   @override
   FutureOr<List<WorkoutExercise>> build() async {
-    final status = await _checkWorkoutStatus(workoutSessionId);
+    final status = await queries.loadWorkoutSessionStatus(workoutSessionId);
 
     if (status == null || status == WorkoutSessionStatuses.abandonedStatus) {
       return [];
@@ -63,7 +44,7 @@ class WorkoutSessionExercisesController
     );
 
     final currentState = state.value;
-    if (exerciseToAddToState == null || currentState == null) return;
+    if (currentState == null) return;
 
     state = addExerciseToState(currentState, exerciseToAddToState);
   }
@@ -75,21 +56,21 @@ class WorkoutSessionExercisesController
     );
 
     final currentState = state.value;
-    if (setToAddToState == null || currentState == null) return;
+    if (currentState == null) return;
 
     state =
         addExerciseSetToState(currentState, exercise, setToAddToState) ?? state;
   }
 
   Future<void> deleteExercise(String exerciseId, int exerciseOrderIndex) async {
-    final didSucceed = await deleteExerciseFromDb(
+    await deleteExerciseFromDb(
       exerciseId,
       exerciseOrderIndex,
       workoutSessionId,
     );
 
     final currentState = state.value;
-    if (didSucceed && currentState != null) {
+    if (currentState != null) {
       state = deleteExerciseFromState(
         currentState,
         exerciseId,
@@ -115,8 +96,6 @@ class WorkoutSessionExercisesController
       oldExercise,
       newExercise,
     );
-
-    if (replacement == null) return;
 
     state = replaceExerciseInState(
       currentState,
@@ -148,31 +127,24 @@ class WorkoutSessionExercisesController
       final exerciseOrderIndex = exerciseToUpdate.orderIndex;
       final exerciseId = exerciseToUpdate.catalogExercise.id;
 
-      final didSucceed = await deleteExerciseFromDb(
+      await deleteExerciseFromDb(
         exerciseId,
         exerciseOrderIndex,
         workoutSessionId,
       );
 
-      if (didSucceed) {
-        state = deleteExerciseFromState(
-          currentState,
-          exerciseId,
-          exerciseOrderIndex,
-        );
-      }
+      state = deleteExerciseFromState(
+        currentState,
+        exerciseId,
+        exerciseOrderIndex,
+      );
 
       return;
     }
 
-    final didSucceed = await removeSetFromExerciseDb(
-      workoutSessionSetId,
-      workoutSessionId,
-    );
+    await removeSetFromExerciseDb(workoutSessionSetId, workoutSessionId);
 
-    if (didSucceed) {
-      state = deleteExerciseSetFromState(currentState, workoutSessionSetId);
-    }
+    state = deleteExerciseSetFromState(currentState, workoutSessionSetId);
   }
 
   Future<void> saveSetCell(
@@ -183,16 +155,11 @@ class WorkoutSessionExercisesController
     String exerciseId,
     int exerciseOrderIndex,
   ) async {
-    final didSucceed = await saveSetCellToDb(
-      workoutSessionSetId,
-      weight,
-      reps,
-      notes,
-    );
+    await saveSetCellToDb(workoutSessionSetId, weight, reps, notes);
 
     final currentState = state.value;
 
-    if (currentState != null && didSucceed) {
+    if (currentState != null) {
       state = saveSetCellToState(
         currentState,
         exerciseId,
@@ -206,14 +173,11 @@ class WorkoutSessionExercisesController
   }
 
   Future<void> toggleSetWarmup(int workoutSessionSetId) async {
-    final didSucceed = await toggleSetWarmupInDb(
-      workoutSessionSetId,
-      workoutSessionId,
-    );
+    await toggleSetWarmupInDb(workoutSessionSetId, workoutSessionId);
 
     final currentState = state.value;
 
-    if (currentState != null && didSucceed) {
+    if (currentState != null) {
       state = toggleSetWarmupInState(currentState, workoutSessionSetId);
     }
   }
@@ -226,8 +190,11 @@ class WorkoutSessionExercisesController
     final newState = reorderExercisesInState(currentState, oldIndex, newIndex);
     state = AsyncData(newState);
 
-    final didSucceed = await reorderExercisesInDb(newState, workoutSessionId);
-
-    if (!didSucceed) state = AsyncData(currentState);
+    try {
+      await reorderExercisesInDb(newState, workoutSessionId);
+    } catch (_) {
+      state = AsyncData(currentState);
+      rethrow;
+    }
   }
 }

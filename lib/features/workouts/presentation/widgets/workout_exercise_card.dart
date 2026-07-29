@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:lifting_tracker_app/core/errors/snack_bar_error.dart';
 import 'package:lifting_tracker_app/features/workouts/application/session_editor/workout_session_exercises_controller.dart';
 import 'package:lifting_tracker_app/core/theme/app_colors.dart';
 import 'package:lifting_tracker_app/features/workouts/domain/workout_exercise.dart';
@@ -107,18 +108,11 @@ class _WorkoutExerciseCardState extends ConsumerState<WorkoutExerciseCard> {
         child: Icon(Icons.delete_outline_outlined),
       ),
       confirmDismiss: (_) async {
-        if (!isLastSetRemaining) return true;
+        if (isLastSetRemaining) {
+          return _animateAndDeleteExercise(exerciseId, exerciseOrderIndex);
+        }
 
-        return _animateAndDeleteExercise(exerciseId, exerciseOrderIndex);
-      },
-      onDismissed: (_) async {
-        if (isLastSetRemaining) return;
-
-        await ref
-            .read(
-              workoutSessionExercisesProvider(widget.workoutSessionId).notifier,
-            )
-            .removeSetFromExercise(workoutSessionSetId);
+        return _removeSet(workoutSessionSetId);
       },
       child: child,
     );
@@ -149,11 +143,7 @@ class _WorkoutExerciseCardState extends ConsumerState<WorkoutExerciseCard> {
         return;
       }
 
-      await ref
-          .read(
-            workoutSessionExercisesProvider(widget.workoutSessionId).notifier,
-          )
-          .removeSetFromExercise(workoutSessionSetId);
+      await _removeSet(workoutSessionSetId);
     }
 
     final child = Column(
@@ -264,9 +254,41 @@ class _WorkoutExerciseCardState extends ConsumerState<WorkoutExerciseCard> {
 
     if (!mounted) return false;
 
-    await ref
-        .read(workoutSessionExercisesProvider(widget.workoutSessionId).notifier)
-        .deleteExercise(exerciseId, exerciseOrderIndex);
+    try {
+      await ref
+          .read(
+            workoutSessionExercisesProvider(widget.workoutSessionId).notifier,
+          )
+          .deleteExercise(exerciseId, exerciseOrderIndex);
+    } catch (_) {
+      if (!mounted) return false;
+
+      setState(() {
+        _isDeletingExercise = false;
+        _isCollapsed = false;
+      });
+
+      SnackBarError.show(
+        context,
+        'Could not delete exercise. Please try again.',
+      );
+    }
+
+    return false;
+  }
+
+  Future<bool> _removeSet(int workoutSessionSetId) async {
+    try {
+      await ref
+          .read(
+            workoutSessionExercisesProvider(widget.workoutSessionId).notifier,
+          )
+          .removeSetFromExercise(workoutSessionSetId);
+    } catch (_) {
+      if (!mounted) return false;
+
+      SnackBarError.show(context, 'Could not delete set. Please try again.');
+    }
 
     return false;
   }
@@ -329,6 +351,7 @@ class _WorkoutExerciseCardState extends ConsumerState<WorkoutExerciseCard> {
         exercise,
         ref,
         widget.workoutSessionId,
+        context,
       ),
       Positioned(
         bottom: 8,

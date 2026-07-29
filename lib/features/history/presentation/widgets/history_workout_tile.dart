@@ -1,6 +1,7 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:lifting_tracker_app/core/errors/snack_bar_error.dart';
 import 'package:lifting_tracker_app/features/history/presentation/editor/edit_workout_editor_flow.dart';
 import 'package:lifting_tracker_app/features/history/presentation/state/history_workout_position.dart';
 import 'package:lifting_tracker_app/features/history/presentation/view_data/history_workout_view_data.dart';
@@ -51,30 +52,18 @@ class _HistoryWorkoutTileState extends ConsumerState<HistoryWorkoutTile> {
 
     if (!mounted) return;
 
-    final didSucceed = await historyWorkoutActionsProvider.deleteWorkout(
-      widget.workoutData.workoutId,
-    );
-
-    if (!didSucceed && mounted) {
-      await showDialog(
-        context: context,
-        builder: (context) => CupertinoAlertDialog(
-          title: Text('An error has occured!'),
-          content: Text('The deletion has been rollbacked.'),
-          actions: [
-            CupertinoDialogAction(
-              onPressed: Navigator.of(context).pop,
-              child: Text('Ok'),
-            ),
-          ],
-        ),
+    try {
+      await historyWorkoutActionsProvider.deleteWorkout(
+        widget.workoutData.workoutId,
       );
+    } catch (_, _) {
+      if (!mounted) return;
 
-      if (mounted) {
-        setState(() {
-          isDeleting = false;
-        });
-      }
+      SnackBarError.show(context, 'The deletion has been rollbacked.');
+
+      setState(() {
+        isDeleting = false;
+      });
     }
   }
 
@@ -87,26 +76,31 @@ class _HistoryWorkoutTileState extends ConsumerState<HistoryWorkoutTile> {
       isPreparingEdit = true;
     });
 
-    final didPrepare = await historyWorkoutActionsProvider
-        .clearActiveSessionSets(widget.workoutData.workoutId);
+    try {
+      await historyWorkoutActionsProvider.clearActiveSessionSets(
+        widget.workoutData.workoutId,
+      );
+    } catch (_, _) {
+      if (!mounted) return;
+
+      SnackBarError.show(
+        context,
+        'Could not open this workout. Please try again.',
+      );
+
+      setState(() {
+        isPreparingEdit = false;
+      });
+
+      return;
+    }
 
     if (!mounted) return;
-
     setState(() {
       isPreparingEdit = false;
     });
 
-    if (!didPrepare) {
-      ScaffoldMessenger.of(context)
-        ..hideCurrentSnackBar()
-        ..showSnackBar(
-          const SnackBar(
-            content: Text('Could not open this workout. Please try again.'),
-          ),
-        );
-      return;
-    }
-
+    if (!mounted) return;
     await Navigator.of(context).push(
       MaterialPageRoute(
         builder: (context) => WorkoutEditorPage(

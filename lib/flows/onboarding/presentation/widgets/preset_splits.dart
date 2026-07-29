@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:lifting_tracker_app/core/errors/snack_bar_error.dart';
 import 'package:lifting_tracker_app/core/theme/app_colors.dart';
 import 'package:lifting_tracker_app/core/theme/app_gradients.dart';
 import 'package:lifting_tracker_app/core/ui/buttons/gradient_button.dart';
@@ -30,9 +31,19 @@ class PresetSplits extends ConsumerWidget {
                 gradientVariant: AppGradients.card,
                 isActive:
                     currentSplit != null && preset.splitId == currentSplit!.id,
-                onPressed: () => ref
-                    .read(activeSplitPlanProvider.notifier)
-                    .changeToExisting(preset.splitId),
+                onPressed: () async {
+                  try {
+                    await ref
+                        .read(activeSplitPlanProvider.notifier)
+                        .changeToExisting(preset.splitId);
+                  } catch (_) {
+                    if (!context.mounted) return;
+                    SnackBarError.show(
+                      context,
+                      'Could not activate split. Try again!',
+                    );
+                  }
+                },
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.stretch,
                   children: [

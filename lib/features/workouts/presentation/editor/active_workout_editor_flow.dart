@@ -1,6 +1,7 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:lifting_tracker_app/core/errors/snack_bar_error.dart';
 import 'package:lifting_tracker_app/features/workouts/application/active_session_lifecycle_controller.dart';
 import 'package:lifting_tracker_app/features/workouts/application/workout_name_controller.dart';
 import 'package:lifting_tracker_app/features/workouts/application/workout_editor_clean_up_actions_controller.dart';
@@ -60,9 +61,19 @@ class ActiveWorkoutEditorFlow extends WorkoutEditorFlow {
             CupertinoDialogAction(
               child: const Text('Yes, Autofill'),
               onPressed: () async {
-                await workoutCleanUpEditor.saveEmptySetsWithHints(
-                  workoutSessionId,
-                );
+                try {
+                  await workoutCleanUpEditor.saveEmptySetsWithHints(
+                    workoutSessionId,
+                  );
+                } catch (_) {
+                  if (!context.mounted) return;
+                  SnackBarError.show(
+                    context,
+                    'Could not autofill sets. Please try again.',
+                  );
+                  return;
+                }
+
                 if (!context.mounted) return;
                 Navigator.of(context).pop();
               },
@@ -96,7 +107,19 @@ class ActiveWorkoutEditorFlow extends WorkoutEditorFlow {
             CupertinoDialogAction(
               child: const Text('Update plan'),
               onPressed: () async {
-                await workoutCleanUpEditor.updateCurrentPlan(workoutSessionId);
+                try {
+                  await workoutCleanUpEditor.updateCurrentPlan(
+                    workoutSessionId,
+                  );
+                } catch (_) {
+                  if (!context.mounted) return;
+                  SnackBarError.show(
+                    context,
+                    'Could not update plan. Please try again.',
+                  );
+                  return;
+                }
+
                 if (!context.mounted) return;
                 Navigator.of(context).pop();
               },
@@ -122,7 +145,15 @@ class ActiveWorkoutEditorFlow extends WorkoutEditorFlow {
     WidgetRef ref,
     int workoutSessionId,
   ) async {
-    await _handleFinish(context, ref, workoutSessionId);
+    try {
+      await _handleFinish(context, ref, workoutSessionId);
+    } catch (_) {
+      if (!context.mounted) return;
+      SnackBarError.show(
+        context,
+        'Could not finish workout. Please try again.',
+      );
+    }
   }
 
   @override

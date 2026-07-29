@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:lifting_tracker_app/core/errors/snack_bar_error.dart';
 import 'package:lifting_tracker_app/features/plans/application/active_split_id_controller.dart';
 import 'package:lifting_tracker_app/features/plans/application/split_plan_provider.dart';
 import 'package:lifting_tracker_app/features/plans/application/split_plans_ids_controller.dart';
@@ -135,12 +136,21 @@ class _SplitPlanCard extends ConsumerWidget {
                     shape: const CircleBorder(),
                   ),
                   offset: Offset(0, 7),
+
                   itemBuilder: (_) => [
                     PopupMenuItem(
                       onTap: () async {
-                        await ref
-                            .read(activeSplitIdProvider.notifier)
-                            .changeToExisting(splitPlanId);
+                        try {
+                          await ref
+                              .read(activeSplitIdProvider.notifier)
+                              .changeToExisting(splitPlanId);
+                        } catch (_) {
+                          if (!context.mounted) return;
+                          SnackBarError.show(
+                            context,
+                            'Could not activate split. Try again!',
+                          );
+                        }
                       },
                       child: Row(
                         children: [

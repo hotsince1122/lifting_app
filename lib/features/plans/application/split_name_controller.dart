@@ -1,6 +1,11 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:lifting_tracker_app/core/database/app_database.dart';
 import 'package:lifting_tracker_app/features/plans/application/split_plan_provider.dart';
+
+import 'package:lifting_tracker_app/features/plans/data/split_plan_queries.dart'
+    as queries;
+
+import 'package:lifting_tracker_app/features/plans/data/split_plan_commands.dart'
+    as commands;
 
 final splitNameProvider = AsyncNotifierProvider.autoDispose
     .family<SplitNameController, String, int>(SplitNameController.new);
@@ -12,35 +17,11 @@ class SplitNameController extends AsyncNotifier<String> {
 
   @override
   Future<String> build() async {
-    final db = await AppDatabase.getDatabase();
-
-    final data = await db.rawQuery(
-      '''
-      SELECT name
-      FROM split_plans
-      WHERE id = ?
-      ''',
-      [splitId],
-    );
-
-    if (data.isEmpty) {
-      throw StateError('Split plan with id $splitId was not found.');
-    }
-
-    return data.first['name'] as String;
+    return queries.loadSplitName(splitId);
   }
 
   Future<void> renameSplit(String newName) async {
-    final db = await AppDatabase.getDatabase();
-
-    await db.rawUpdate(
-      '''
-      UPDATE split_plans
-      SET name = ?
-      WHERE id =?
-      ''',
-      [newName, splitId],
-    );
+    await commands.renameSplit(newName, splitId);
 
     ref.invalidate(splitPlanProvider(splitId));
 

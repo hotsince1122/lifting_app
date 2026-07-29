@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:lifting_tracker_app/core/errors/snack_bar_error.dart';
 import 'package:lifting_tracker_app/features/plans/application/planned_exercises_controller.dart';
 import 'package:lifting_tracker_app/features/plans/domain/split_day.dart';
 import 'package:lifting_tracker_app/features/plans/application/split_day_summary_controller.dart';
@@ -94,12 +95,21 @@ class WorkoutDayExpansionTile extends ConsumerWidget {
                           screenWidth,
                         );
 
-                    if (addedExercise != null) {
+                    if (!context.mounted || addedExercise == null) return;
+
+                    try {
                       await ref
                           .read(
                             plannedExercisesProvider(workoutDay.id).notifier,
                           )
                           .addExerciseToDay(addedExercise.id);
+                    } catch (_) {
+                      if (!context.mounted) return;
+
+                      SnackBarError.show(
+                        context,
+                        'Exercise could not be added. Try again.',
+                      );
                     }
                   },
                   label: Text('Add exercise'),

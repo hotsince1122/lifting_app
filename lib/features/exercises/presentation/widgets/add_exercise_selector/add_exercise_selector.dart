@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:lifting_tracker_app/core/errors/snack_bar_error.dart';
 import 'package:lifting_tracker_app/core/ui/transitions/sheet_parallax_route.dart';
 import 'package:lifting_tracker_app/features/exercises/domain/catalog_exercise.dart';
 import 'package:lifting_tracker_app/features/exercises/application/exercises_by_muscle_group_controller.dart';
@@ -174,12 +175,18 @@ class _AddExerciseSelectorState extends ConsumerState<AddExerciseSelector> {
 
     if (!mounted || !isValid || muscleGroup == null || name == null) return;
 
-    final newExercise = await ref
-        .read(exerciseByMuscleGroupProvider(muscleGroup).notifier)
-        .addCustomExercise(name.trim(), muscleGroup);
+    try {
+      final newExercise = await ref
+          .read(exerciseByMuscleGroupProvider(muscleGroup).notifier)
+          .addCustomExercise(name.trim(), muscleGroup);
 
-    if (!mounted) return;
-    Navigator.of(context, rootNavigator: true).pop(newExercise);
+      if (!mounted) return;
+      Navigator.of(context, rootNavigator: true).pop(newExercise);
+    } catch (_, _) {
+      if (!mounted) return;
+      SnackBarError.show(context, 'The new exercise could not be created.');
+      return;
+    }
   }
 
   void _saveEditingExercise(String? name, String? muscleGroup) async {
@@ -198,44 +205,57 @@ class _AddExerciseSelectorState extends ConsumerState<AddExerciseSelector> {
       return;
     }
 
-    await ref
-        .read(exerciseByMuscleGroupProvider(exercise.muscleGroup).notifier)
-        .updateExercise(exercise, name.trim(), muscleGroup);
+    try {
+      await ref
+          .read(exerciseByMuscleGroupProvider(exercise.muscleGroup).notifier)
+          .updateExercise(exercise, name.trim(), muscleGroup);
 
-    if (!mounted) return;
+      if (!mounted) return;
 
-    if (muscleGroup != exercise.muscleGroup) {
-      ref.invalidate(exerciseByMuscleGroupProvider(muscleGroup));
+      if (muscleGroup != exercise.muscleGroup) {
+        ref.invalidate(exerciseByMuscleGroupProvider(muscleGroup));
+      }
+
+      _navKey.currentState?.pop();
+      setState(() {
+        _step = AddExerciseStep.exercisesForGroup;
+        _editingExercise = null;
+      });
+    } catch (_, _) {
+      if (!mounted) return;
+      SnackBarError.show(context, 'The exercise could not be edited.');
     }
-
-    _navKey.currentState?.pop();
-    setState(() {
-      _step = AddExerciseStep.exercisesForGroup;
-      _editingExercise = null;
-    });
   }
 
   void _deleteEditingExercise() async {
     final exercise = _editingExercise;
     if (exercise == null) return;
 
-    await ref
-        .read(exerciseByMuscleGroupProvider(exercise.muscleGroup).notifier)
-        .deleteExercise(exercise.id);
+    try {
+      await ref
+          .read(exerciseByMuscleGroupProvider(exercise.muscleGroup).notifier)
+          .deleteExercise(exercise.id);
 
-    if (!mounted) return;
+      if (!mounted) return;
 
-    _navKey.currentState?.pop();
-    setState(() {
-      _step = AddExerciseStep.exercisesForGroup;
-      _editingExercise = null;
-    });
+      _navKey.currentState?.pop();
+      setState(() {
+        _step = AddExerciseStep.exercisesForGroup;
+        _editingExercise = null;
+      });
+    } catch (_, _) {
+      if (!mounted) return;
+      SnackBarError.show(
+        context,
+        'The exercise could not be deleted. Try again!',
+      );
+    }
   }
 
-  AddExerciseHeaderConfig _headerFor(AddExerciseStep currentStep) {
+  SheetHeaderConfig _headerFor(AddExerciseStep currentStep) {
     switch (currentStep) {
       case AddExerciseStep.selectMuscleGroup:
-        return AddExerciseHeaderConfig(
+        return SheetHeaderConfig(
           title: 'Select Muscle Group',
           leading: IconButton(
             onPressed: _closeSheet,
@@ -247,7 +267,7 @@ class _AddExerciseSelectorState extends ConsumerState<AddExerciseSelector> {
           ),
         );
       case AddExerciseStep.createExercise:
-        return AddExerciseHeaderConfig(
+        return SheetHeaderConfig(
           title: 'Add Exercise',
           leading: TextButton(
             onPressed: _backToMuscleGroupsOrExercises,
@@ -277,7 +297,7 @@ class _AddExerciseSelectorState extends ConsumerState<AddExerciseSelector> {
           ),
         );
       case AddExerciseStep.exercisesForGroup:
-        return AddExerciseHeaderConfig(
+        return SheetHeaderConfig(
           title: _muscleGroupPickedTitle ?? 'Select Exercise',
           leading: IconButton(
             onPressed: _backToMuscleGroupsOrExercises,
@@ -292,7 +312,7 @@ class _AddExerciseSelectorState extends ConsumerState<AddExerciseSelector> {
           ),
         );
       case AddExerciseStep.selectMuscleGroupForNewExercise:
-        return AddExerciseHeaderConfig(
+        return SheetHeaderConfig(
           title: 'Select Muscle Group',
           leading: IconButton(
             onPressed: () {
@@ -304,7 +324,7 @@ class _AddExerciseSelectorState extends ConsumerState<AddExerciseSelector> {
           trailing: null,
         );
       case AddExerciseStep.editExercise:
-        return AddExerciseHeaderConfig(
+        return SheetHeaderConfig(
           title: 'Edit Exercise',
           leading: IconButton(
             onPressed: _backToMuscleGroupsOrExercises,
@@ -338,7 +358,7 @@ class _AddExerciseSelectorState extends ConsumerState<AddExerciseSelector> {
         children: [
           Padding(
             padding: const EdgeInsets.fromLTRB(8, 8, 8, 0),
-            child: AddExerciseHeader(config: _headerFor(_step)),
+            child: SheetHeader(config: _headerFor(_step)),
           ),
           const SizedBox(height: 6),
           Expanded(

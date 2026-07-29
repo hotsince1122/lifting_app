@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:lifting_tracker_app/core/errors/snack_bar_error.dart';
 import 'package:lifting_tracker_app/core/theme/app_colors.dart';
 import 'package:lifting_tracker_app/core/theme/app_gradients.dart';
 import 'package:lifting_tracker_app/core/ui/cards/gradient_card.dart';
@@ -30,13 +31,21 @@ class AddExercisesToWorkout extends ConsumerWidget {
                     screenWidth,
                   );
               if (addedExercise != null) {
-                await ref
-                    .read(
-                      workoutSessionExercisesProvider(
-                        workoutSessionId,
-                      ).notifier,
-                    )
-                    .addExercise(addedExercise);
+                try {
+                  await ref
+                      .read(
+                        workoutSessionExercisesProvider(
+                          workoutSessionId,
+                        ).notifier,
+                      )
+                      .addExercise(addedExercise);
+                } catch (_) {
+                  if (!context.mounted) return;
+                  SnackBarError.show(
+                    context,
+                    'Could not add exercise. Please try again.',
+                  );
+                }
               }
             },
             child: Padding(

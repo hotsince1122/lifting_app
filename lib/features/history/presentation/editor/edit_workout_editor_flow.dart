@@ -1,6 +1,7 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:lifting_tracker_app/core/errors/snack_bar_error.dart';
 import 'package:lifting_tracker_app/features/workouts/application/active_session_lifecycle_controller.dart';
 import 'package:lifting_tracker_app/features/history/application/history_workout_actions_controller.dart';
 import 'package:lifting_tracker_app/features/workouts/application/workout_name_controller.dart';
@@ -29,24 +30,18 @@ class EditWorkoutEditorFlow extends WorkoutEditorFlow {
       workoutNameProvider(workoutSessionId).future,
     );
 
-    final didSave = await historyWorkoutActionsNotifier.saveEditedWorkout(
-      workoutSessionId,
-      workoutName: workoutNameFromDraft,
-    );
-
-    if (!context.mounted) return;
-
-    if (!didSave) {
-      ScaffoldMessenger.of(context)
-        ..hideCurrentSnackBar()
-        ..showSnackBar(
-          const SnackBar(
-            content: Text('Could not save changes. Please try again.'),
-          ),
-        );
+    try {
+      await historyWorkoutActionsNotifier.saveEditedWorkout(
+        workoutSessionId,
+        workoutName: workoutNameFromDraft,
+      );
+    } catch (_, _) {
+      if (!context.mounted) return;
+      SnackBarError.show(context, 'Could not save changes. Please try again.');
       return;
     }
 
+    if (!context.mounted) return;
     Navigator.of(context).pop();
   }
 
@@ -110,20 +105,22 @@ class EditWorkoutEditorFlow extends WorkoutEditorFlow {
             return;
           }
 
-          final newWorkoutId = await ref
-              .read(activeSessionLifecycleProvider.notifier)
-              .startRepeatedWorkout(id);
+          late final int newWorkoutId;
 
-          if (!context.mounted) return;
-
-          if (newWorkoutId == null) {
-            ScaffoldMessenger.of(context)
-              ..hideCurrentSnackBar()
-              ..showSnackBar(
-                const SnackBar(content: Text('Could not repeat this workout.')),
-              );
+          try {
+            newWorkoutId = await ref
+                .read(activeSessionLifecycleProvider.notifier)
+                .startRepeatedWorkout(id);
+          } catch (_) {
+            if (!context.mounted) return;
+            SnackBarError.show(
+              context,
+              'Could not repeat this workout. Please try again.',
+            );
             return;
           }
+
+          if (!context.mounted) return;
 
           await Future.delayed(const Duration(milliseconds: 300));
           if (context.mounted) Navigator.of(context).pop();

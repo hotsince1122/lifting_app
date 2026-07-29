@@ -236,6 +236,25 @@ presentation ──> application ──> data
 Aceasta este o arhitectură pragmatică. Nu introducem repository interfaces,
 use cases sau DTO-uri doar pentru a respecta formal o diagramă.
 
+### Excepție locală: salvarea din `dispose()`
+
+În `ExerciseSetTile`, salvările efectuate cât timp widget-ul este activ urmează
+fluxul normal:
+
+```text
+presentation → application → data
+```
+
+Salvarea finală pornită din `dispose()` poate apela direct comanda din `data`.
+Aceasta este o excepție limitată strict la persistarea best-effort a valorilor
+încă nesalvate: `dispose()` nu poate aștepta operația, widget-ul nu mai poate
+afișa o eroare, iar controllerul Riverpod poate fi deja în curs de distrugere.
+
+Excepția nu se extinde la flow-ul normal al widget-ului și nu permite logică de
+business sau actualizări de state direct din `presentation`. Dacă aplicația va
+avea nevoie de garanții mai puternice pentru aceste salvări, ownership-ul pentru
+debounce și pending saves trebuie mutat în `application`.
+
 ## Widget-uri reutilizabile
 
 Un widget reutilizat în mai multe locuri nu devine automat componentă globală.
@@ -288,6 +307,40 @@ final activeSplitProvider =
 class ActiveSplitController extends AsyncNotifier<SplitPlan?> {
   // ...
 }
+```
+
+### Fișiere din `data/`
+
+Fișierele de acces la date se numesc după conceptul asupra căruia operează,
+urmat de tipul operațiilor:
+
+```text
+<concept>_queries.dart
+<concept>_commands.dart
+```
+
+- `_queries.dart` conține numai citiri: încărcare, căutare, verificări și
+  maparea datelor citite.
+- `_commands.dart` conține operații care modifică datele: creare, actualizare,
+  ștergere și reordonare.
+- O comandă poate face și citiri interne pentru validare sau în interiorul
+  aceleiași tranzacții; fișierul rămâne `_commands.dart` deoarece rezultatul
+  operației este o modificare.
+- Dacă același concept are atât citiri, cât și modificări, acestea se separă în
+  două fișiere. Nu se folosesc nume generale precum `actions`, `helpers` sau
+  `operations`.
+- Nu este obligatoriu ca un concept să aibă ambele fișiere dacă are numai
+  queries sau numai commands.
+
+Exemple:
+
+```text
+exercise_catalog_queries.dart
+exercise_catalog_commands.dart
+split_plan_queries.dart
+split_plan_commands.dart
+planned_exercises_queries.dart
+planned_exercises_commands.dart
 ```
 
 ### Modele și variabile

@@ -1,6 +1,7 @@
 import 'dart:ui';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:lifting_tracker_app/core/errors/snack_bar_error.dart';
 import 'package:lifting_tracker_app/features/workouts/application/session_editor/workout_session_exercises_controller.dart';
 import 'package:lifting_tracker_app/core/theme/app_colors.dart';
 import 'package:lifting_tracker_app/features/workouts/domain/workout_exercise.dart';
@@ -175,16 +176,24 @@ class _ExerciseSettingsState extends ConsumerState<ExerciseSettingsSheet> {
                                     widget.screenWidth,
                                   );
 
-                              if (context.mounted) {
-                                Navigator.of(context).pop();
-                              }
+                              if (selectedExercise == null) return;
 
-                              if (selectedExercise != null) {
+                              try {
                                 await exercisesNotifier.replaceExercise(
                                   exerciseToReplace,
                                   selectedExercise,
                                 );
+                              } catch (_) {
+                                if (!context.mounted) return;
+                                SnackBarError.show(
+                                  context,
+                                  'Could not replace exercise. Please try again.',
+                                );
+                                return;
                               }
+
+                              if (!context.mounted) return;
+                              Navigator.of(context).pop();
                             },
                           ),
                           _separator(),

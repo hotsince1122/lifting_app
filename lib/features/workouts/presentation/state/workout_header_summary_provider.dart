@@ -1,43 +1,24 @@
 import 'dart:async';
+
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:lifting_tracker_app/core/database/app_database.dart';
+import 'package:lifting_tracker_app/features/workouts/data/workout_session_queries.dart'
+    as queries;
 import 'package:lifting_tracker_app/features/workouts/presentation/view_data/workout_header_summary_view_data.dart';
 
 FutureOr<WorkoutHeaderSummaryViewData?> _loadSummaryInfoFromDb(
   int workoutSessionId,
 ) async {
-  final db = await AppDatabase.getDatabase();
+  final summary = await queries.loadWorkoutSessionSummary(workoutSessionId);
+  if (summary == null) return null;
 
-  var data = await db.rawQuery(
-    '''
-  SELECT ws.workout_name AS workoutName, 
-    ws.started_at AS startedAt,
-    ws.finished_at AS finishedAt,
-    ws.duration_seconds AS durationSeconds
-  FROM workout_sessions ws
-  WHERE ws.id = ?
-  ''',
-    [workoutSessionId],
-  );
-
-  if (data.isEmpty) return null;
-
-  final row = data.first;
-
-  if (row.isEmpty) return null;
-
-  final bool isWorkoutFinished = row['finishedAt'] != null;
+  final isWorkoutFinished = summary.finishedAt != null;
 
   return WorkoutHeaderSummaryViewData(
-    workoutName: row['workoutName'] as String,
-    startTime: DateTime.fromMillisecondsSinceEpoch(
-      (row['startedAt'] as int) * 1000,
-    ),
-    endTime: isWorkoutFinished
-        ? DateTime.fromMillisecondsSinceEpoch((row['finishedAt'] as int) * 1000)
-        : null,
+    workoutName: summary.workoutName,
+    startTime: summary.startedAt,
+    endTime: summary.finishedAt,
     workoutDurationInMinutes: isWorkoutFinished
-        ? transformSecondsToMinutes(row['durationSeconds'] as int)
+        ? transformSecondsToMinutes(summary.durationSeconds!)
         : null,
   );
 }
@@ -46,7 +27,7 @@ int transformSecondsToMinutes(int seconds) {
   return (seconds / 60).toInt();
 }
 
-final workoutHeaderSummaryProvider =
-    FutureProvider.family<WorkoutHeaderSummaryViewData?, int>(
+final workoutHeaderSummaryProvider = FutureProvider.autoDispose
+    .family<WorkoutHeaderSummaryViewData?, int>(
       (ref, workoutSessionId) => _loadSummaryInfoFromDb(workoutSessionId),
     );

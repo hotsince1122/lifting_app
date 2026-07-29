@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:lifting_tracker_app/core/errors/snack_bar_error.dart';
 import 'package:lifting_tracker_app/features/plans/application/split_days_controller.dart';
 import 'package:lifting_tracker_app/features/plans/application/split_plan_provider.dart';
 import 'package:lifting_tracker_app/features/plans/application/split_day_summary_controller.dart';
@@ -114,9 +115,17 @@ class _Body extends ConsumerWidget {
                       onReorder: (oldIndex, newIndex) async {
                         final splitDayId = splitDay[oldIndex].id;
 
-                        await ref
-                            .read(splitDaysProvider(splitId).notifier)
-                            .reorderSplitDays(oldIndex, newIndex, splitDayId);
+                        try {
+                          await ref
+                              .read(splitDaysProvider(splitId).notifier)
+                              .reorderSplitDays(oldIndex, newIndex, splitDayId);
+                        } catch (_) {
+                          if (!context.mounted) return;
+                          SnackBarError.show(
+                            context,
+                            'An error has occured. Try again!',
+                          );
+                        }
                       },
                       dragBoundaryProvider: (context) =>
                           DragBoundary.forRectOf(context),

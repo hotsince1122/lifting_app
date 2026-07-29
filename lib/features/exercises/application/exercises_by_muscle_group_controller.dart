@@ -1,7 +1,10 @@
 import 'dart:async';
+
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:lifting_tracker_app/features/exercises/data/actions_on_exercise_catalog.dart'
-    as db_actions;
+import 'package:lifting_tracker_app/features/exercises/data/exercise_catalog_commands.dart'
+    as commands;
+import 'package:lifting_tracker_app/features/exercises/data/exercise_catalog_queries.dart'
+    as queries;
 import 'package:lifting_tracker_app/features/exercises/domain/catalog_exercise.dart';
 
 final exerciseByMuscleGroupProvider =
@@ -19,7 +22,7 @@ class ExerciseByMuscleGroupController
 
   @override
   FutureOr<List<CatalogExercise>> build() {
-    return db_actions.loadExercisesByMuscleGroup(muscleGroup);
+    return queries.loadExercisesByMuscleGroup(muscleGroup);
   }
 
   Future<CatalogExercise> addCustomExercise(
@@ -28,10 +31,10 @@ class ExerciseByMuscleGroupController
   ) async {
     final newExercise = CatalogExercise(name: name, muscleGroup: muscleGroup);
 
-    await db_actions.insertExercise(newExercise);
+    await commands.insertExercise(newExercise);
 
     state = AsyncData(
-      await db_actions.loadExercisesByMuscleGroup(this.muscleGroup),
+      await queries.loadExercisesByMuscleGroup(this.muscleGroup),
     );
     return newExercise;
   }
@@ -46,16 +49,16 @@ class ExerciseByMuscleGroupController
       muscleGroup: muscleGroup,
     );
 
-    await db_actions.updateExercise(updatedExercise);
+    await commands.updateExercise(updatedExercise);
 
     state = AsyncData(
-      await db_actions.loadExercisesByMuscleGroup(this.muscleGroup),
+      await queries.loadExercisesByMuscleGroup(this.muscleGroup),
     );
   }
 
   Future<void> deleteExercise(String exerciseId) async {
-    await db_actions.deleteExercise(exerciseId);
+    await commands.deleteExercise(exerciseId);
 
-    state = AsyncData(await db_actions.loadExercisesByMuscleGroup(muscleGroup));
+    state = AsyncData(await queries.loadExercisesByMuscleGroup(muscleGroup));
   }
 }

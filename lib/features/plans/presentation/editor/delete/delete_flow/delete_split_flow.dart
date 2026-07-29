@@ -1,6 +1,7 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:lifting_tracker_app/core/errors/snack_bar_error.dart';
 import 'package:lifting_tracker_app/features/plans/application/split_plans_ids_controller.dart';
 import 'package:lifting_tracker_app/features/plans/presentation/editor/delete/delete_flow/delete_flow_contract.dart';
 
@@ -54,26 +55,9 @@ class DeleteSplitFlow extends DeleteFlow {
       }
 
       return false;
-    } catch (error, stackTrace) {
-      debugPrint('$error');
-      debugPrintStack(stackTrace: stackTrace);
-
+    } catch (_, _) {
       if (context.mounted) {
-        await showDialog(
-          context: context,
-          builder: (context) {
-            return CupertinoAlertDialog(
-              title: const Text('An error has occurred.'),
-              content: const Text('Try again.'),
-              actions: [
-                CupertinoDialogAction(
-                  onPressed: () => Navigator.of(context).pop(),
-                  child: Text('Ok'),
-                ),
-              ],
-            );
-          },
-        );
+        SnackBarError.show(context, 'Could not delete split. Try again!');
       }
 
       return false;
@@ -82,26 +66,6 @@ class DeleteSplitFlow extends DeleteFlow {
 
   @override
   Future<void> onDelete(BuildContext context) async {
-    try {
-      await ref.read(splitPlansIdsProvider.notifier).deletePlan(splitPlanId);
-    } catch (error, _) {
-      if (context.mounted) {
-        await showDialog(
-          context: context,
-          builder: (context) {
-            return CupertinoAlertDialog(
-              title: const Text('An error has occurred.'),
-              content: const Text('Try again.'),
-              actions: [
-                CupertinoDialogAction(
-                  onPressed: () => Navigator.of(context).pop(),
-                  child: Text('Ok'),
-                ),
-              ],
-            );
-          },
-        );
-      }
-    }
+    await ref.read(splitPlansIdsProvider.notifier).deletePlan(splitPlanId);
   }
 }

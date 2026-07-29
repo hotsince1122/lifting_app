@@ -1,5 +1,6 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'package:lifting_tracker_app/core/errors/snack_bar_error.dart';
 import 'package:lifting_tracker_app/features/plans/presentation/editor/delete/delete_flow/delete_flow_contract.dart';
 
 Future<void> showDeleteValidation(
@@ -40,5 +41,10 @@ Future<void> showDeleteValidation(
 
   if (confirmed != true || !context.mounted) return;
 
-  await deleteFlow.onDelete(context);
+  try {
+    await deleteFlow.onDelete(context);
+  } catch (_) {
+    if (!context.mounted) return;
+    SnackBarError.show(context, 'Could not delete. Try again!');
+  }
 }
