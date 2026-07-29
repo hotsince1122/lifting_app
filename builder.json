@@ -6,7 +6,10 @@
     "repo": "lifting_app"
   },
   "ios": {
-    "path": "ios"
+    "path": "ios",
+    "scheme": "",
+    "signing": false,
+    "configuration": "Release"
   },
   "flutter": {
     "version": "3.38.9",
