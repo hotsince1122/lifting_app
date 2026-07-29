@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:lifting_tracker_app/features/workouts/application/picked_next_session_controller.dart';
-import 'package:lifting_tracker_app/flows/home_dashboard/application/active_split_days_options_provider.dart';
-import 'package:lifting_tracker_app/flows/home_dashboard/application/workout_focus_provider.dart';
+import 'package:lifting_tracker_app/flows/home_dashboard/presentation/state/active_split_days_options_provider.dart';
+import 'package:lifting_tracker_app/flows/home_dashboard/presentation/state/workout_focus_provider.dart';
 import 'package:lifting_tracker_app/core/theme/app_colors.dart';
 
 class PickNextWorkoutPopupMenu extends ConsumerWidget {

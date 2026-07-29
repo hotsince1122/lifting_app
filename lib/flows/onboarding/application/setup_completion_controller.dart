@@ -1,9 +1,11 @@
 import 'dart:async';
-
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:shared_preferences/shared_preferences.dart';
 
-const _setupStatusKey = 'did_user_finish_setup';
+import 'package:lifting_tracker_app/flows/onboarding/data/setup_completion_queries.dart'
+    as queries;
+
+import 'package:lifting_tracker_app/flows/onboarding/data/setup_completion_commands.dart'
+    as commands;
 
 final setupCompletionProvider =
     AsyncNotifierProvider<SetupCompletionController, bool>(
@@ -13,28 +15,17 @@ final setupCompletionProvider =
 class SetupCompletionController extends AsyncNotifier<bool> {
   @override
   FutureOr<bool> build() async {
-    final prefs = await SharedPreferences.getInstance();
-    return prefs.getBool(_setupStatusKey) ?? false;
+    return await queries.loadSetupCompletion();
   }
 
   Future<void> complete() async {
-    final prefs = await SharedPreferences.getInstance();
-    final didSave = await prefs.setBool(_setupStatusKey, true);
-
-    if (!didSave) {
-      throw StateError('Could not persist onboarding completion.');
-    }
+    await commands.setAsCompleted();
 
     state = const AsyncData(true);
   }
 
   Future<void> reset() async {
-    final prefs = await SharedPreferences.getInstance();
-    final didSave = await prefs.setBool(_setupStatusKey, false);
-
-    if (!didSave) {
-      throw StateError('Could not reset onboarding completion.');
-    }
+    await commands.reset();
 
     state = const AsyncData(false);
   }

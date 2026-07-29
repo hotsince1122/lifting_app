@@ -1,5 +1,5 @@
-class LastWorkoutCompletedCardViewData {
-  const LastWorkoutCompletedCardViewData({
+class LastCompletedWorkoutSummary {
+  const LastCompletedWorkoutSummary({
     required this.workoutName,
     required this.exerciseCount,
     required this.workoutDuration,

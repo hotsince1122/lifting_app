@@ -1,5 +1,4 @@
 import 'package:lifting_tracker_app/core/database/app_database.dart';
-import 'package:sqflite/sqflite.dart';
 
 Future<void> clearActiveSessionSets(int workoutSessionId) async {
   final db = await AppDatabase.getDatabase();
@@ -76,47 +75,51 @@ Future<void> saveEditedWorkout(
 }
 
 Future<({DateTime finishedTime, bool hasAnotherWorkoutOnSameDay})>
-deleteWorkout(Transaction txn, int workoutId) async {
-  final finishedTimeData = await txn.rawQuery(
-    '''
+deleteWorkout(int workoutId) async {
+  final db = await AppDatabase.getDatabase();
+
+  return db.transaction((txn) async {
+    final finishedTimeData = await txn.rawQuery(
+      '''
           SELECT finished_at
           FROM workout_sessions
           WHERE id = ?
           ''',
-    [workoutId],
-  );
+      [workoutId],
+    );
 
-  if (finishedTimeData.isEmpty ||
-      finishedTimeData.first['finished_at'] == null) {
-    throw Exception('Cannot fetch time of completion');
-  }
+    if (finishedTimeData.isEmpty ||
+        finishedTimeData.first['finished_at'] == null) {
+      throw Exception('Cannot fetch time of completion');
+    }
 
-  await txn.rawDelete(
-    '''
+    await txn.rawDelete(
+      '''
           DELETE FROM workout_sessions
           WHERE id = ?
           ''',
-    [workoutId],
-  );
+      [workoutId],
+    );
 
-  final finishedTime = DateTime.fromMillisecondsSinceEpoch(
-    (finishedTimeData.first['finished_at'] as int) * 1000,
-  );
-  final (startSeconds, endSeconds) = _secondsInterval(finishedTime);
+    final finishedTime = DateTime.fromMillisecondsSinceEpoch(
+      (finishedTimeData.first['finished_at'] as int) * 1000,
+    );
+    final (startSeconds, endSeconds) = _secondsInterval(finishedTime);
 
-  final otherWorkoutsData = await txn.rawQuery(
-    '''
+    final otherWorkoutsData = await txn.rawQuery(
+      '''
     SELECT id
     FROM workout_sessions
     WHERE finished_at >= ? AND finished_at < ?
     ''',
-    [startSeconds, endSeconds],
-  );
+      [startSeconds, endSeconds],
+    );
 
-  return (
-    finishedTime: finishedTime,
-    hasAnotherWorkoutOnSameDay: otherWorkoutsData.isNotEmpty,
-  );
+    return (
+      finishedTime: finishedTime,
+      hasAnotherWorkoutOnSameDay: otherWorkoutsData.isNotEmpty,
+    );
+  });
 }
 
 (int, int) _secondsInterval(DateTime date) {

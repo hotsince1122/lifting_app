@@ -1,8 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:lifting_tracker_app/core/errors/snack_bar_error.dart';
 import 'package:lifting_tracker_app/features/plans/application/active_split_days_provider.dart';
 import 'package:lifting_tracker_app/flows/onboarding/application/setup_completion_controller.dart';
-import 'package:lifting_tracker_app/flows/onboarding/application/can_finish_onboarding_controller.dart';
+import 'package:lifting_tracker_app/flows/onboarding/application/can_finish_onboarding_provider.dart';
 import 'package:lifting_tracker_app/core/theme/app_gradients.dart';
 import 'package:lifting_tracker_app/core/theme/app_colors.dart';
 import 'package:lifting_tracker_app/core/ui/cards/gradient_card.dart';
@@ -115,7 +116,12 @@ class _FinishOnboardingButton extends ConsumerWidget {
           height: 20,
           child: TextButton(
             onPressed: () async {
-              await ref.read(setupCompletionProvider.notifier).complete();
+              try {
+                await ref.read(setupCompletionProvider.notifier).complete();
+              } catch (_) {
+                if (!context.mounted) return;
+                SnackBarError.show(context, 'Could not skip. Try again!');
+              }
             },
             style: TextButton.styleFrom(padding: EdgeInsets.zero),
             child: Text(
@@ -138,9 +144,17 @@ class _FinishOnboardingButton extends ConsumerWidget {
               onPressed: !canFinishOnboarding
                   ? () {}
                   : () async {
-                      await ref
-                          .read(setupCompletionProvider.notifier)
-                          .complete();
+                      try {
+                        await ref
+                            .read(setupCompletionProvider.notifier)
+                            .complete();
+                      } catch (_) {
+                        if (!context.mounted) return;
+                        SnackBarError.show(
+                          context,
+                          'Could not finish setup. Try again!',
+                        );
+                      }
                     },
               child: Row(
                 mainAxisSize: MainAxisSize.min,

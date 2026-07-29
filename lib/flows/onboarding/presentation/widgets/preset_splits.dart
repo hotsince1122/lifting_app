@@ -6,7 +6,7 @@ import 'package:lifting_tracker_app/core/theme/app_gradients.dart';
 import 'package:lifting_tracker_app/core/ui/buttons/gradient_button.dart';
 import 'package:lifting_tracker_app/features/plans/application/active_split_plan_controller.dart';
 import 'package:lifting_tracker_app/features/plans/domain/split_plan.dart';
-import 'package:lifting_tracker_app/flows/onboarding/application/preset_split_view_data_controller.dart';
+import 'package:lifting_tracker_app/flows/onboarding/presentation/state/preset_split_view_data_provider.dart';
 
 class PresetSplits extends ConsumerWidget {
   const PresetSplits({super.key, required this.currentSplit});

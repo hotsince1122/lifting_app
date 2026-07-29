@@ -59,7 +59,10 @@ class _HistoryWorkoutTileState extends ConsumerState<HistoryWorkoutTile> {
     } catch (_, _) {
       if (!mounted) return;
 
-      SnackBarError.show(context, 'The deletion has been rollbacked.');
+      SnackBarError.show(
+        context,
+        'Could not complete deletion. Check your history and weekly progress.',
+      );
 
       setState(() {
         isDeleting = false;

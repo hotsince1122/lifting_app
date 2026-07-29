@@ -1,12 +1,14 @@
 import 'dart:async';
 
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:lifting_tracker_app/core/database/app_database.dart';
 import 'package:lifting_tracker_app/features/plans/application/planned_exercises_controller.dart';
 import 'package:lifting_tracker_app/features/workouts/application/active_session_id_controller.dart';
 import 'package:lifting_tracker_app/features/workouts/application/active_session_lifecycle_controller.dart';
 import 'package:lifting_tracker_app/features/workouts/application/next_session_preview_provider.dart';
 import 'package:lifting_tracker_app/features/workouts/application/picked_next_session_controller.dart';
+import 'package:lifting_tracker_app/features/workouts/application/workout_name_controller.dart';
+import 'package:lifting_tracker_app/features/workouts/data/workout_session_queries.dart'
+    as queries;
 import 'package:lifting_tracker_app/flows/home_dashboard/presentation/view_data/workout_focus_view_data.dart';
 
 Future<({int exerciseCount, String? muscleGroups})> _loadExerciseSummary(
@@ -42,22 +44,10 @@ Future<WorkoutFocusViewData?> _loadActiveWorkoutFocus(Ref ref) async {
 
   if (activeSessionId == null) return null;
 
-  final db = await AppDatabase.getDatabase();
-
-  final data = await db.rawQuery(
-    '''
-      SELECT day_id, workout_name
-      FROM workout_sessions
-      WHERE id = ?
-      ''',
-    [activeSessionId],
+  final workoutName = await ref.watch(
+    workoutNameProvider(activeSessionId).future,
   );
-
-  if (data.isEmpty) return null;
-
-  final row = data.first;
-  final workoutName = row['workout_name'] as String;
-  final dayId = row['day_id'] as String?;
+  final dayId = await queries.loadWorkoutSessionDayId(activeSessionId);
 
   if (dayId == null) {
     return WorkoutFocusViewData(

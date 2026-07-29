@@ -5,10 +5,12 @@ import 'package:lifting_tracker_app/flows/home_dashboard/presentation/view_data/
 
 final activeSplitDaysOptionsProvider =
     FutureProvider<List<WorkoutFocusViewData>>(
-      (ref) => loadWorkoutFocusViewDataList(ref),
+      (ref) => _loadWorkoutFocusViewDataList(ref),
     );
 
-Future<List<WorkoutFocusViewData>> loadWorkoutFocusViewDataList(Ref ref) async {
+Future<List<WorkoutFocusViewData>> _loadWorkoutFocusViewDataList(
+  Ref ref,
+) async {
   final activeSplitDays = await ref.watch(activeSplitDaysProvider.future);
   final workouts = <WorkoutFocusViewData>[];
 
