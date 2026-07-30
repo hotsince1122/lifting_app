@@ -40,6 +40,7 @@ class SelectSplitPage extends ConsumerWidget {
                             Text(
                               "Choose your training split",
                               style: Theme.of(context).textTheme.headlineMedium,
+                              textAlign: TextAlign.center,
                             ),
                             const SizedBox(height: AppSpacing.s8),
                             Text(

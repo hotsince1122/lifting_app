@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:lifting_tracker_app/app/shell/main_shell.dart';
+import 'package:lifting_tracker_app/core/theme/compressed_text_scaler.dart';
 import 'package:lifting_tracker_app/flows/onboarding/presentation/pages/onboarding_shell.dart';
 import 'package:lifting_tracker_app/core/theme/app_theme.dart';
 import 'package:lifting_tracker_app/flows/onboarding/application/setup_completion_controller.dart';
@@ -25,9 +26,23 @@ class MainApp extends ConsumerWidget {
       theme: AppTheme.dark,
       debugShowCheckedModeBanner: false,
       builder: (context, child) {
-        return MediaQuery.withClampedTextScaling(
-          minScaleFactor: 1.0,
-          maxScaleFactor: 1.2,
+        // return MediaQuery.withClampedTextScaling(
+        //   minScaleFactor: 1.0,
+        //   maxScaleFactor: 1.15,
+        //   child: child!,
+        // );
+
+        final mediaQuery = MediaQuery.of(context);
+
+        return MediaQuery(
+          data: mediaQuery.copyWith(
+            textScaler: CompressedTextScaler(
+              delegate: mediaQuery.textScaler,
+              compression: 0.4,
+              minScaleFactor: 1.0,
+              maxScaleFactor: 1.15,
+            ),
+          ),
           child: child!,
         );
       },
