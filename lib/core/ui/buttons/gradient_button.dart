@@ -19,7 +19,7 @@ class GradientButton extends StatelessWidget {
   final bool isActive;
   final VoidCallback onPressed;
   final AppGradients gradientVariant;
-  final double buttonWidth;
+  final double? buttonWidth;
   final double? buttonHeight;
   final EdgeInsets padding;
   final Color borderColor;

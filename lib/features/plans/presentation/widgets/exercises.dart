@@ -25,7 +25,7 @@ class Exercises extends StatelessWidget {
             padding: EdgeInsets.zero,
             child: PlannedExercisesListView(
               dayId,
-              includeTopAndBottomDivider: false,
+              includeBottomDivider: false,
               isTileDense: false,
             ),
           ),

@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:lifting_tracker_app/app/shell/main_shell.dart';
 import 'package:lifting_tracker_app/flows/onboarding/presentation/pages/onboarding_shell.dart';
@@ -7,6 +8,8 @@ import 'package:lifting_tracker_app/flows/onboarding/application/setup_completio
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
+
+  await SystemChrome.setPreferredOrientations([DeviceOrientation.portraitUp]);
 
   runApp(const ProviderScope(child: MainApp()));
 }
@@ -21,6 +24,13 @@ class MainApp extends ConsumerWidget {
     return MaterialApp(
       theme: AppTheme.dark,
       debugShowCheckedModeBanner: false,
+      builder: (context, child) {
+        return MediaQuery.withClampedTextScaling(
+          minScaleFactor: 1.0,
+          maxScaleFactor: 1.2,
+          child: child!,
+        );
+      },
       home: goToMenuAsync.when(
         loading: () => Scaffold(body: CircularProgressIndicator()),
         error: (_, _) => Scaffold(

@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:lifting_tracker_app/core/errors/snack_bar_error.dart';
 import 'package:lifting_tracker_app/core/theme/app_colors.dart';
 import 'package:lifting_tracker_app/core/theme/app_gradients.dart';
+import 'package:lifting_tracker_app/core/theme/app_spacing.dart';
 import 'package:lifting_tracker_app/core/ui/buttons/gradient_button.dart';
 import 'package:lifting_tracker_app/features/plans/application/active_split_plan_controller.dart';
 import 'package:lifting_tracker_app/features/plans/domain/split_plan.dart';
@@ -18,13 +19,15 @@ class PresetSplits extends ConsumerWidget {
     final presetSplitVmAsync = ref.watch(presetSplitViewDataProvider);
 
     return presetSplitVmAsync.when(
+      skipLoadingOnReload: true,
+      skipLoadingOnRefresh: true,
       loading: () => const Center(child: CircularProgressIndicator()),
       error: (_, _) =>
           const Center(child: Text('An error has occured. Try again.')),
       data: (presetSplitVm) {
         return Column(
           crossAxisAlignment: CrossAxisAlignment.stretch,
-          spacing: 12,
+          spacing: AppSpacing.s12,
           children: [
             for (final preset in presetSplitVm)
               GradientButton(
@@ -46,6 +49,7 @@ class PresetSplits extends ConsumerWidget {
                 },
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.stretch,
+                  mainAxisAlignment: MainAxisAlignment.center,
                   children: [
                     Row(
                       children: [
@@ -56,7 +60,7 @@ class PresetSplits extends ConsumerWidget {
                         const Spacer(),
                         Text(
                           '${preset.dayCount}-day cycle',
-                          style: Theme.of(context).textTheme.bodyMedium!
+                          style: Theme.of(context).textTheme.labelLarge!
                               .copyWith(color: AppColors.secondary),
                         ),
                       ],

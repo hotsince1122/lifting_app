@@ -348,8 +348,7 @@ class _AddExerciseSelectorState extends ConsumerState<AddExerciseSelector> {
   @override
   Widget build(BuildContext context) {
     return ModalScaffold(
-      height: 0.75,
-      width: MediaQuery.of(context).size.width,
+      heightFactor: 0.75,
       Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [

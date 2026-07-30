@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:lifting_tracker_app/core/theme/app_spacing.dart';
 import 'package:lifting_tracker_app/flows/onboarding/presentation/pages/pick_exercises_page.dart';
 import 'package:lifting_tracker_app/flows/onboarding/presentation/pages/select_split_page.dart';
 import 'package:lifting_tracker_app/flows/onboarding/presentation/pages/workouts_per_week_page.dart';
@@ -28,9 +29,13 @@ class _OnboardingShellState extends State<OnboardingShell> {
 
     return Scaffold(
       appBar: AppBar(
+        centerTitle: false,
         title: Text(
           'Profile Setup',
-          style: Theme.of(context).textTheme.headlineSmall,
+          style: Theme.of(context).textTheme.headlineSmall!.copyWith(
+            fontWeight: FontWeight.w800,
+            letterSpacing: 0.4,
+          ),
         ),
         automaticallyImplyLeading: false,
         leading: _currentPage == 0
@@ -48,19 +53,24 @@ class _OnboardingShellState extends State<OnboardingShell> {
       body: SafeArea(
         child: Stack(
           children: [
-            PageView(
-              physics: NeverScrollableScrollPhysics(),
-              controller: controller,
-              onPageChanged: (index) {
-                setState(() {
-                  _currentPage = index;
-                });
-              },
-              children: [
-                WorkoutsPerWeekPage(controller),
-                SelectSplitPage(controller),
-                PickExercisesPage(controller),
-              ],
+            Padding(
+              padding: const EdgeInsets.symmetric(
+                vertical: AppSpacing.s20
+              ),
+              child: PageView(
+                physics: NeverScrollableScrollPhysics(),
+                controller: controller,
+                onPageChanged: (index) {
+                  setState(() {
+                    _currentPage = index;
+                  });
+                },
+                children: [
+                  WorkoutsPerWeekPage(controller),
+                  SelectSplitPage(controller),
+                  PickExercisesPage(controller),
+                ],
+              ),
             ),
 
             Container(
@@ -70,7 +80,7 @@ class _OnboardingShellState extends State<OnboardingShell> {
                 count: 3,
                 effect: SlideEffect(
                   dotWidth: (screenWidth / 3) - 18,
-                  dotHeight: 6,
+                  dotHeight: 4,
                   spacing: 8,
                   dotColor: AppColors.surface,
                   activeDotColor: AppColors.secondary,

@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:lifting_tracker_app/core/errors/snack_bar_error.dart';
+import 'package:lifting_tracker_app/core/theme/app_spacing.dart';
 import 'package:lifting_tracker_app/features/plans/application/planned_exercises_controller.dart';
 import 'package:lifting_tracker_app/features/plans/domain/split_day.dart';
 import 'package:lifting_tracker_app/features/plans/application/split_day_summary_controller.dart';
@@ -8,18 +9,31 @@ import 'package:lifting_tracker_app/core/theme/app_colors.dart';
 import 'package:lifting_tracker_app/features/exercises/presentation/widgets/add_exercise_selector/add_exercise_selector.dart';
 import 'package:lifting_tracker_app/features/plans/presentation/widgets/planned_exercises_list_view.dart';
 
-class WorkoutDayExpansionTile extends ConsumerWidget {
+class WorkoutDayExpansionTile extends ConsumerStatefulWidget {
   const WorkoutDayExpansionTile(this.workoutDay, {super.key});
 
   final SplitDay workoutDay;
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
+  ConsumerState<WorkoutDayExpansionTile> createState() =>
+      _WorkoutDayExpansionTileState();
+}
+
+class _WorkoutDayExpansionTileState
+    extends ConsumerState<WorkoutDayExpansionTile> {
+  bool _isExpanded = false;
+
+  @override
+  Widget build(BuildContext context) {
+    final workoutDay = widget.workoutDay;
+
     final splitDaySummaryAsync = ref.watch(
       splitDaySummaryProvider(workoutDay.id),
     );
 
     return splitDaySummaryAsync.when(
+      skipLoadingOnReload: true,
+      skipLoadingOnRefresh: true,
       loading: () => Center(child: CircularProgressIndicator()),
       error: (_, _) => Center(child: Text('An error has occured! Try again.')),
       data: (splitDaySummary) {
@@ -27,6 +41,11 @@ class WorkoutDayExpansionTile extends ConsumerWidget {
         final exerciseCount = splitDaySummary.exerciseCount;
 
         return ExpansionTile(
+          initiallyExpanded: _isExpanded,
+          onExpansionChanged: (isExpanded) {
+            _isExpanded = isExpanded;
+          },
+          dense: true,
           title: Row(
             children: [
               Text(
@@ -38,7 +57,7 @@ class WorkoutDayExpansionTile extends ConsumerWidget {
                 '$exerciseCount selected',
                 style: Theme.of(
                   context,
-                ).textTheme.bodyMedium!.copyWith(color: AppColors.secondary),
+                ).textTheme.labelLarge!.copyWith(color: AppColors.secondary),
               ),
             ],
           ),
@@ -47,9 +66,11 @@ class WorkoutDayExpansionTile extends ConsumerWidget {
             muscleGroups.isNotEmpty
                 ? muscleGroups
                 : "Muscle groups will appear here",
-            style: Theme.of(
-              context,
-            ).textTheme.bodyMedium!.copyWith(color: AppColors.secondary),
+            style: Theme.of(context).textTheme.bodyMedium!.copyWith(
+              color: muscleGroups.isNotEmpty
+                  ? AppColors.primary
+                  : AppColors.onSurfaceMuted,
+            ),
           ),
 
           controlAffinity: ListTileControlAffinity.leading,
@@ -69,25 +90,19 @@ class WorkoutDayExpansionTile extends ConsumerWidget {
 
           children: [
             Divider(
-              height: 0.5,
+              height: 1,
               color: AppColors.cardBorder,
               indent: 16,
               endIndent: 16,
             ),
             PlannedExercisesListView(
               workoutDay.id,
-              includeTopAndBottomDivider: true,
+              includeBottomDivider: true,
               isTileDense: true,
-            ),
-            Divider(
-              height: 0.5,
-              color: AppColors.cardBorder,
-              indent: 16,
-              endIndent: 16,
             ),
 
             Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+              padding: const EdgeInsets.symmetric(horizontal: AppSpacing.s8),
               child: Align(
                 alignment: Alignment.centerLeft,
                 child: TextButton.icon(

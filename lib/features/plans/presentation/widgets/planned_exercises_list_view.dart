@@ -7,13 +7,13 @@ import 'package:lifting_tracker_app/features/plans/application/planned_exercises
 class PlannedExercisesListView extends ConsumerWidget {
   const PlannedExercisesListView(
     this.dayId, {
-    required this.includeTopAndBottomDivider,
+    required this.includeBottomDivider,
     required this.isTileDense,
     super.key,
   });
 
   final String dayId;
-  final bool includeTopAndBottomDivider;
+  final bool includeBottomDivider;
   final bool isTileDense;
 
   @override
@@ -82,13 +82,6 @@ class PlannedExercisesListView extends ConsumerWidget {
                 ),
                 child: Column(
                   children: [
-                    if (i == 0 && includeTopAndBottomDivider)
-                      Divider(
-                        height: 0.5,
-                        color: AppColors.cardBorder,
-                        indent: 16,
-                        endIndent: 16,
-                      ),
                     ListTile(
                       dense: isTileDense,
                       visualDensity: const VisualDensity(
@@ -109,9 +102,9 @@ class PlannedExercisesListView extends ConsumerWidget {
                       ),
                     ),
                     if (i != plannedExercises.length - 1 ||
-                        includeTopAndBottomDivider)
+                        includeBottomDivider)
                       Divider(
-                        height: 0.5,
+                        height: 1,
                         color: AppColors.cardBorder,
                         indent: 16,
                         endIndent: 16,
