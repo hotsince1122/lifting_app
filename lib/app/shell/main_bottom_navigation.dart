@@ -1,12 +1,18 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:lifting_tracker_app/core/theme/app_colors.dart';
+import 'package:lifting_tracker_app/core/theme/app_spacing.dart';
 import 'package:phosphor_flutter/phosphor_flutter.dart';
 
 class MainBottomNavigation extends ConsumerWidget {
-  const MainBottomNavigation({required this.onTabSelected, super.key});
+  const MainBottomNavigation({
+    required this.onTabSelected,
+    required this.currentIndex,
+    super.key,
+  });
 
   final void Function(int, WidgetRef) onTabSelected;
+  final int currentIndex;
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -26,13 +32,22 @@ class MainBottomNavigation extends ConsumerWidget {
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              PhosphorIcon(icon, color: AppColors.primary),
-              const SizedBox(height: 4),
+              PhosphorIcon(
+                icon,
+                size : currentIndex == tabIndex ? 24 : 22.5,
+                color: currentIndex == tabIndex
+                    ? AppColors.secondary
+                    : AppColors.primary,
+              ),
+              const SizedBox(height: AppSpacing.s4),
               Text(
                 text,
-                style: Theme.of(
-                  context,
-                ).textTheme.labelMedium!.copyWith(color: AppColors.primary),
+                style: Theme.of(context).textTheme.labelMedium!.copyWith(
+                  fontSize: currentIndex == tabIndex ? 10 : 8.5,
+                  color: currentIndex == tabIndex
+                      ? AppColors.secondary
+                      : AppColors.primary,
+                ),
               ),
             ],
           ),
@@ -42,13 +57,13 @@ class MainBottomNavigation extends ConsumerWidget {
 
     return Container(
       decoration: const BoxDecoration(
-        color: Color.fromARGB(255, 20, 26, 34),
+        color: AppColors.card,
         border: Border(top: BorderSide(color: AppColors.cardBorder, width: 2)),
       ),
       child: SafeArea(
         top: false,
         child: SizedBox(
-          height: 72,
+          height: 64,
           child: Row(
             mainAxisAlignment: MainAxisAlignment.spaceAround,
             children: [

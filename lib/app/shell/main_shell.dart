@@ -48,7 +48,10 @@ class _MainShellState extends State<MainShell> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: _appBars[_currentIndex],
-      bottomNavigationBar: MainBottomNavigation(onTabSelected: _onTabSelected),
+      bottomNavigationBar: MainBottomNavigation(
+        onTabSelected: _onTabSelected,
+        currentIndex: _currentIndex,
+      ),
       body: TabBodyTransition(
         animationKey: _currentIndex,
         child: IndexedStack(

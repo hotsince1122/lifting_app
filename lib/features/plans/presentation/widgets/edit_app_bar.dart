@@ -12,6 +12,7 @@ class EditAppBar extends StatelessWidget implements PreferredSizeWidget {
   @override
   Widget build(BuildContext context) {
     return AppBar(
+      toolbarHeight: compactAppBarHeight.height,
       title: Text(
         title,
         style: Theme.of(context).textTheme.headlineSmall!.copyWith(

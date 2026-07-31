@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:lifting_tracker_app/core/theme/app_spacing.dart';
 import 'package:lifting_tracker_app/features/workouts/application/active_session_lifecycle_controller.dart';
 import 'package:lifting_tracker_app/flows/home_dashboard/presentation/widgets/last_session_section.dart';
 import 'package:lifting_tracker_app/flows/home_dashboard/presentation/widgets/workout_focus_section.dart';
@@ -20,25 +21,39 @@ class HomePage extends ConsumerWidget {
     return SafeArea(
       bottom: false,
       child: Padding(
-        padding: const EdgeInsets.only(left: 18, right: 18, bottom: 32),
+        padding: const EdgeInsets.only(
+          left: AppSpacing.s16,
+          right: AppSpacing.s16,
+          bottom: AppSpacing.s16,
+        ),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
-            WeekProgress(),
-            const SizedBox(height: 24),
-            Row(
-              children: [
-                Expanded(child: LastSessionSection()),
-                const SizedBox(width: 16),
-                Expanded(child: WorkoutFocusSection()),
-              ],
+            Expanded(
+              child: SingleChildScrollView(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.stretch,
+                  children: [
+                    WeekProgress(),
+                    const SizedBox(height: AppSpacing.s24),
+                    Row(
+                      children: [
+                        Expanded(child: LastSessionSection()),
+                        const SizedBox(width: AppSpacing.s16),
+                        Expanded(child: WorkoutFocusSection()),
+                      ],
+                    ),
+                    const SizedBox(height: AppSpacing.s16),
+                    ProgressSpotlight(),
+                  ],
+                ),
+              ),
             ),
-            const SizedBox(height: 16),
-            ProgressSpotlight(),
-            const SizedBox(height: 16),
-
+            const SizedBox(height: AppSpacing.s16),
             isSessionAlreadyActiveAsync.when(
-              loading: () => const Center(child: CircularProgressIndicator()),
+              skipLoadingOnRefresh: true,
+              skipLoadingOnReload: true,
+              loading: () => const  SizedBox(height: 64 ,child: Center(child: CircularProgressIndicator())),
               error: (_, _) =>
                   const Center(child: Text('An error has occured! Try again.')),
               data: (isSessionAlreadyActive) {
@@ -47,7 +62,7 @@ class HomePage extends ConsumerWidget {
                     : Row(
                         children: [
                           Expanded(flex: 3, child: QuickWorkout()),
-                          const SizedBox(width: 8),
+                          const SizedBox(width: AppSpacing.s8),
                           Expanded(flex: 7, child: StartSession()),
                         ],
                       );
