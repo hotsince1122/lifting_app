@@ -27,6 +27,10 @@ class WeekProgress extends ConsumerWidget {
 
     final weeklyWorkoutProgressAsync = ref.watch(weeklyWorkoutProgressProvider);
 
+    const calendarHeight = 64.0;
+    const minBadgeSize = 32.0;
+    const maxBadgeSize = 44.0;
+
     Widget buildDayBadge(
       String calendarDay,
       bool didAttend,
@@ -75,7 +79,7 @@ class WeekProgress extends ConsumerWidget {
 
     return weeklyWorkoutProgressAsync.when(
       loading: () => const SizedBox(
-        height: 64,
+        height: calendarHeight,
         child: Center(child: CircularProgressIndicator()),
       ),
       error: (_, _) =>
@@ -100,7 +104,9 @@ class WeekProgress extends ConsumerWidget {
             LayoutBuilder(
               builder: (context, constraints) {
                 final cellWidth = constraints.maxWidth / weekdays.length;
-                final badgeSize = cellWidth.clamp(32.0, 44.0).toDouble();
+                final badgeSize = cellWidth
+                    .clamp(minBadgeSize, maxBadgeSize)
+                    .toDouble();
 
                 return SizedBox(
                   height: 64,
@@ -162,7 +168,7 @@ class WeekProgress extends ConsumerWidget {
                         ),
                       ),
                       Text(
-                        '${ref.read(weeklyWorkoutProgressProvider.notifier).returnCurrentProgress()}/${weeklyWorkoutProgress.target}',
+                        '$currentProgress/${weeklyWorkoutProgress.target}',
                         style: Theme.of(context).textTheme.titleSmall!.copyWith(
                           fontWeight: FontWeight.w900,
                         ),

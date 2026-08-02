@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:lifting_tracker_app/core/errors/snack_bar_error.dart';
+import 'package:lifting_tracker_app/core/theme/app_spacing.dart';
 import 'package:lifting_tracker_app/features/plans/application/split_days_controller.dart';
 import 'package:lifting_tracker_app/features/plans/application/split_plan_provider.dart';
 import 'package:lifting_tracker_app/features/plans/application/split_day_summary_controller.dart';
@@ -25,7 +26,7 @@ class TrainingDays extends StatelessWidget {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           _Header(splitId),
-          const SizedBox(height: 16),
+          const SizedBox(height: AppSpacing.s16),
           _Body(splitId),
         ],
       ),
@@ -278,8 +279,8 @@ class _Body extends ConsumerWidget {
                                     thickness: 1,
                                     height: 1,
                                     color: AppColors.cardBorder,
-                                    indent: 16,
-                                    endIndent: 16,
+                                    indent: AppSpacing.s16,
+                                    endIndent: AppSpacing.s16,
                                   )
                                 : const SizedBox.shrink(),
                           ],

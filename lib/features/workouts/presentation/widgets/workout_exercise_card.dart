@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:lifting_tracker_app/core/errors/snack_bar_error.dart';
+import 'package:lifting_tracker_app/core/theme/app_spacing.dart';
 import 'package:lifting_tracker_app/features/workouts/application/session_editor/workout_session_exercises_controller.dart';
 import 'package:lifting_tracker_app/core/theme/app_colors.dart';
 import 'package:lifting_tracker_app/features/workouts/domain/workout_exercise.dart';
@@ -29,10 +30,10 @@ class WorkoutExerciseCard extends ConsumerStatefulWidget {
 }
 
 class _WorkoutExerciseCardState extends ConsumerState<WorkoutExerciseCard> {
-  final double _verticalPaddig = 20;
-  final double _horizontalPadding = 20;
+  final double _verticalPaddig = AppSpacing.s20;
+  final double _horizontalPadding = AppSpacing.s20;
   final double _iconSize = 28;
-  final double _paddingBetween = 24;
+  final double _paddingBetween = AppSpacing.s24;
   final double _iconTouchTarget = 46;
 
   bool _isDeletingExercise = false;
@@ -104,7 +105,7 @@ class _WorkoutExerciseCardState extends ConsumerState<WorkoutExerciseCard> {
         width: double.infinity,
         height: double.infinity,
         color: Colors.red,
-        padding: EdgeInsets.symmetric(horizontal: 16),
+        padding: EdgeInsets.symmetric(horizontal: AppSpacing.s16),
         child: Icon(Icons.delete_outline_outlined),
       ),
       confirmDismiss: (_) async {
@@ -155,23 +156,22 @@ class _WorkoutExerciseCardState extends ConsumerState<WorkoutExerciseCard> {
           setIdentity,
           workoutSessionSetId,
           isLastSetRemaining,
-          _hp(
-            Column(
-              children: [
-                SizedBox(height: _paddingBetween / 2),
-                ExerciseSetTile(
-                  set,
-                  displaySetIndex,
-                  _iconSize,
-                  widget.workoutSessionId,
-                  exerciseId,
-                  exercise.orderIndex,
-                  onDeleteSet: deleteSetFromSettings,
-                  key: ValueKey(setIdentity),
-                ),
-                SizedBox(height: _paddingBetween / 2),
-              ],
-            ),
+          Column(
+            children: [
+              SizedBox(height: _paddingBetween / 2),
+              ExerciseSetTile(
+                set,
+                displaySetIndex,
+                _iconSize,
+                widget.workoutSessionId,
+                exerciseId,
+                exercise.orderIndex,
+                _horizontalPadding,
+                onDeleteSet: deleteSetFromSettings,
+                key: ValueKey(setIdentity),
+              ),
+              SizedBox(height: _paddingBetween / 2),
+            ],
           ),
         ),
       ],

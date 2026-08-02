@@ -98,6 +98,8 @@ class SessionLaunchButton extends ConsumerWidget {
     return ref
         .watch(activeSessionIdProvider)
         .when(
+          skipLoadingOnRefresh: true,
+          skipLoadingOnReload: true,
           loading: _loading,
           error: (_, _) => _error(),
           data: (activeSessionId) {
@@ -123,6 +125,8 @@ class SessionLaunchButton extends ConsumerWidget {
     return ref
         .watch(nextSessionPreviewProvider)
         .when(
+          skipLoadingOnRefresh: true,
+          skipLoadingOnReload: true,
           loading: _loading,
           error: (_, _) => _error(),
           data: (nextSession) => _buildLaunchButton(

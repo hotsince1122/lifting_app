@@ -20,40 +20,65 @@ class HomePage extends ConsumerWidget {
 
     return SafeArea(
       bottom: false,
-      child: Padding(
-        padding: const EdgeInsets.only(
-          left: AppSpacing.s16,
-          right: AppSpacing.s16,
-          bottom: AppSpacing.s16,
-        ),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.stretch,
-          children: [
-            Expanded(
-              child: SingleChildScrollView(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.stretch,
-                  children: [
-                    WeekProgress(),
-                    const SizedBox(height: AppSpacing.s24),
-                    Row(
-                      children: [
-                        Expanded(child: LastSessionSection()),
-                        const SizedBox(width: AppSpacing.s16),
-                        Expanded(child: WorkoutFocusSection()),
-                      ],
-                    ),
-                    const SizedBox(height: AppSpacing.s16),
-                    ProgressSpotlight(),
-                  ],
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          Expanded(
+            child: CustomScrollView(
+              physics: ScrollPhysics(),
+              slivers: [
+                SliverPadding(
+                  padding: EdgeInsets.symmetric(horizontal: AppSpacing.s16),
+                  sliver: SliverList.list(
+                    children: [
+                      WeekProgress(),
+                      const SizedBox(height: AppSpacing.s24),
+                      AnimatedSize(
+                        duration: const Duration(milliseconds: 220),
+                        curve: Curves.decelerate,
+                        alignment: Alignment.topCenter,
+                        child: IntrinsicHeight(
+                          child: Row(
+                            crossAxisAlignment: CrossAxisAlignment.stretch,
+                            children: [
+                              Expanded(child: LastSessionSection()),
+                              const SizedBox(width: AppSpacing.s16),
+                              Expanded(child: WorkoutFocusSection()),
+                            ],
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
                 ),
-              ),
+                SliverPadding(
+                  padding: EdgeInsets.fromLTRB(
+                    AppSpacing.s16,
+                    AppSpacing.s16,
+                    AppSpacing.s16,
+                    0,
+                  ),
+                  sliver: SliverFillRemaining(
+                    hasScrollBody: false,
+                    child: Padding(
+                      padding: const EdgeInsets.only(bottom: AppSpacing.s8),
+                      child: ProgressSpotlight(),
+                    ),
+                  ),
+                ),
+              ],
             ),
-            const SizedBox(height: AppSpacing.s16),
-            isSessionAlreadyActiveAsync.when(
+          ),
+          const SizedBox(height: AppSpacing.s16),
+          Padding(
+            padding: EdgeInsetsGeometry.symmetric(horizontal: AppSpacing.s16),
+            child: isSessionAlreadyActiveAsync.when(
               skipLoadingOnRefresh: true,
               skipLoadingOnReload: true,
-              loading: () => const  SizedBox(height: 64 ,child: Center(child: CircularProgressIndicator())),
+              loading: () => const SizedBox(
+                height: 64,
+                child: Center(child: CircularProgressIndicator()),
+              ),
               error: (_, _) =>
                   const Center(child: Text('An error has occured! Try again.')),
               data: (isSessionAlreadyActive) {
@@ -68,8 +93,9 @@ class HomePage extends ConsumerWidget {
                       );
               },
             ),
-          ],
-        ),
+          ),
+          const SizedBox(height: AppSpacing.s20),
+        ],
       ),
     );
   }

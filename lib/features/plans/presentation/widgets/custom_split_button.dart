@@ -1,6 +1,7 @@
 import 'package:dotted_border/dotted_border.dart';
 import 'package:flutter/material.dart';
 import 'package:lifting_tracker_app/core/theme/app_colors.dart';
+import 'package:lifting_tracker_app/core/theme/app_spacing.dart';
 import 'package:lifting_tracker_app/features/plans/presentation/widgets/custom_split_selector.dart';
 
 class CustomSplitButton extends StatelessWidget {
@@ -29,7 +30,7 @@ class CustomSplitButton extends StatelessWidget {
               crossAxisAlignment: CrossAxisAlignment.center,
               children: [
                 Icon(Icons.add, size: 18, color: AppColors.primary),
-                const SizedBox(width: 4),
+                const SizedBox(width: AppSpacing.s4),
                 Text(
                   'Create custom split',
                   style: Theme.of(

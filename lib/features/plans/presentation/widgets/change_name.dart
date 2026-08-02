@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:lifting_tracker_app/core/errors/snack_bar_error.dart';
 import 'package:lifting_tracker_app/core/theme/app_colors.dart';
+import 'package:lifting_tracker_app/core/theme/app_spacing.dart';
 import 'package:lifting_tracker_app/features/plans/presentation/editor/change_name_flow/change_name_contract.dart';
 
 class ChangeName extends ConsumerStatefulWidget {
@@ -91,7 +92,7 @@ class _ChangeNameState extends ConsumerState<ChangeName> {
               context,
             ).textTheme.titleLarge?.copyWith(color: AppColors.onSurfaceMuted),
           ),
-          const SizedBox(height: 8),
+          const SizedBox(height: AppSpacing.s8),
           nameAsync.when(
             loading: () => const Center(child: CircularProgressIndicator()),
             error: (_, _) =>

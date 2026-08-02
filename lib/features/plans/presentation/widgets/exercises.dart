@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:lifting_tracker_app/core/theme/app_colors.dart';
 import 'package:lifting_tracker_app/core/theme/app_gradients.dart';
+import 'package:lifting_tracker_app/core/theme/app_spacing.dart';
 import 'package:lifting_tracker_app/core/ui/cards/gradient_card.dart';
 import 'package:lifting_tracker_app/features/plans/application/planned_exercises_controller.dart';
 import 'package:lifting_tracker_app/features/plans/presentation/widgets/planned_exercises_list_view.dart';
@@ -19,7 +20,7 @@ class Exercises extends StatelessWidget {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           _Header(dayId),
-          const SizedBox(height: 16),
+          const SizedBox(height: AppSpacing.s16),
           GradientCard(
             gradientVariant: AppGradients.card,
             padding: EdgeInsets.zero,

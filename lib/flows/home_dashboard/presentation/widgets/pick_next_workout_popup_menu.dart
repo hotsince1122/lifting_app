@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:lifting_tracker_app/core/theme/app_spacing.dart';
 import 'package:lifting_tracker_app/features/workouts/application/picked_next_session_controller.dart';
 import 'package:lifting_tracker_app/flows/home_dashboard/presentation/state/active_split_days_options_provider.dart';
 import 'package:lifting_tracker_app/flows/home_dashboard/presentation/state/workout_focus_provider.dart';
@@ -21,8 +22,8 @@ class PickNextWorkoutPopupMenu extends ConsumerWidget {
       child: Divider(
         height: 1,
         thickness: 1,
-        indent: 10,
-        endIndent: 10,
+        indent: AppSpacing.s8,
+        endIndent: AppSpacing.s8,
         color: AppColors.cardBorder,
       ),
     );
@@ -78,7 +79,7 @@ class PickNextWorkoutPopupMenu extends ConsumerWidget {
               menuDivider,
               for (final splitDay in activeSplitDaysVm) ...[
                 PopupMenuItem(
-                  padding: EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                  padding: EdgeInsets.symmetric(horizontal: AppSpacing.s12, vertical: AppSpacing.s8),
                   height: 38,
                   onTap: () => ref
                       .read(pickedNextSessionProvider.notifier)

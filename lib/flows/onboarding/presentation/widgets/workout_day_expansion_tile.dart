@@ -92,8 +92,8 @@ class _WorkoutDayExpansionTileState
             Divider(
               height: 1,
               color: AppColors.cardBorder,
-              indent: 16,
-              endIndent: 16,
+              indent: AppSpacing.s16,
+              endIndent: AppSpacing.s16,
             ),
             PlannedExercisesListView(
               workoutDay.id,

@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:lifting_tracker_app/core/theme/app_colors.dart';
+import 'package:lifting_tracker_app/core/theme/app_spacing.dart';
 import 'package:lifting_tracker_app/features/workouts/presentation/widgets/workout_launch/session_launch_button.dart';
 import 'package:lifting_tracker_app/core/ui/buttons/solid_button.dart';
 import 'package:lifting_tracker_app/features/workouts/presentation/widgets/workout_launch/split_workout_launch_strategy.dart';
@@ -25,18 +26,22 @@ class StartSession extends ConsumerWidget {
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
             Icon(Icons.play_arrow, size: 30, color: AppColors.background),
-            const SizedBox(width: 6),
+            const SizedBox(width: AppSpacing.s4),
             Text(
               isActive ? 'Resume ' : 'Start ',
               style: Theme.of(
                 context,
               ).textTheme.titleMedium!.copyWith(color: AppColors.background),
             ),
-            Text(
-              workoutName,
-              style: Theme.of(context).textTheme.titleMedium!.copyWith(
-                color: AppColors.background,
-                fontWeight: FontWeight.w900,
+            Flexible(
+              child: Text(
+                workoutName,
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
+                style: Theme.of(context).textTheme.titleMedium!.copyWith(
+                  color: AppColors.background,
+                  fontWeight: FontWeight.w900,
+                ),
               ),
             ),
           ],

@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:lifting_tracker_app/core/theme/app_colors.dart';
 import 'package:lifting_tracker_app/core/theme/app_gradients.dart';
+import 'package:lifting_tracker_app/core/theme/app_spacing.dart';
 import 'package:lifting_tracker_app/core/ui/buttons/gradient_button.dart';
 import 'package:lifting_tracker_app/features/workouts/presentation/widgets/workout_launch/quick_workout_launch_strategy.dart';
 import 'package:lifting_tracker_app/features/workouts/presentation/widgets/workout_launch/session_launch_button.dart';
@@ -22,7 +23,7 @@ class QuickWorkout extends ConsumerWidget {
                 onPressed: onPressed,
                 gradientVariant: AppGradients.card,
                 buttonHeight: 64,
-                padding: EdgeInsets.all(8),
+                padding: EdgeInsets.all(AppSpacing.s8),
                 child: child,
               );
       },
@@ -31,7 +32,7 @@ class QuickWorkout extends ConsumerWidget {
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
             Icon(PhosphorIcons.lightning(), size: 18, color: AppColors.primary),
-            const SizedBox(width: 6),
+            const SizedBox(width: AppSpacing.s4),
             Text('Quick', style: Theme.of(context).textTheme.titleMedium),
           ],
         );

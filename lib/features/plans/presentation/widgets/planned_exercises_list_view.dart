@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:lifting_tracker_app/core/errors/snack_bar_error.dart';
 import 'package:lifting_tracker_app/core/theme/app_colors.dart';
+import 'package:lifting_tracker_app/core/theme/app_spacing.dart';
 import 'package:lifting_tracker_app/features/plans/application/planned_exercises_controller.dart';
 
 class PlannedExercisesListView extends ConsumerWidget {
@@ -90,7 +91,7 @@ class PlannedExercisesListView extends ConsumerWidget {
                       ),
                       minVerticalPadding: 0,
                       contentPadding: const EdgeInsets.symmetric(
-                        horizontal: 24,
+                        horizontal: AppSpacing.s24,
                       ),
                       title: Text(
                         label,
@@ -106,8 +107,8 @@ class PlannedExercisesListView extends ConsumerWidget {
                       Divider(
                         height: 1,
                         color: AppColors.cardBorder,
-                        indent: 16,
-                        endIndent: 16,
+                        indent: AppSpacing.s16,
+                        endIndent: AppSpacing.s16,
                       ),
                   ],
                 ),

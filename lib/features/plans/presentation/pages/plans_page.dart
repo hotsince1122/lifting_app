@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:lifting_tracker_app/core/theme/app_spacing.dart';
 import 'package:lifting_tracker_app/features/plans/presentation/widgets/active_plan_overview.dart';
 import 'package:lifting_tracker_app/features/plans/presentation/widgets/custom_split_button.dart';
 import 'package:lifting_tracker_app/features/progress/presentation/widgets/weekly_target.dart';
@@ -10,19 +11,20 @@ class PlansPage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 18),
+      padding: const EdgeInsets.symmetric(horizontal: AppSpacing.s16),
       child: SingleChildScrollView(
+        clipBehavior: Clip.none,
         child: Column(
           mainAxisAlignment: MainAxisAlignment.start,
           crossAxisAlignment: CrossAxisAlignment.center,
           children: [
             WeeklyTarget(),
             ActivePlanOverview(),
-            const SizedBox(height: 24),
+            const SizedBox(height: AppSpacing.s24),
             YourPlans(),
-            const SizedBox(height: 8),
+            const SizedBox(height: AppSpacing.s8),
             CustomSplitButton(),
-            const SizedBox(height: 16),
+            const SizedBox(height: AppSpacing.s16),
           ],
         ),
       ),

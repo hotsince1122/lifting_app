@@ -177,11 +177,8 @@ class ActiveWorkoutEditorFlow extends WorkoutEditorFlow {
       WorkoutEditorMenuAction(
         label: 'Reorder Exercises',
         icon: Icons.swap_vert_rounded,
-        onPressed: (context, ref, id) => ReorderExercisesSheet.openSheet(
-          context,
-          MediaQuery.of(context).size.width,
-          workoutSessionId,
-        ),
+        onPressed: (context, ref, id) =>
+            ReorderExercisesSheet.openSheet(context, workoutSessionId),
       ),
     ];
   }

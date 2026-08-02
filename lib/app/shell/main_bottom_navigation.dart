@@ -22,34 +22,39 @@ class MainBottomNavigation extends ConsumerWidget {
     const int progressIndex = 3;
 
     Widget navBarButton(String text, IconData icon, int tabIndex) {
-      return AspectRatio(
-        aspectRatio: 1,
-        child: InkWell(
-          borderRadius: BorderRadius.circular(24),
-          onTap: () {
-            onTabSelected(tabIndex, ref);
-          },
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              PhosphorIcon(
-                icon,
-                size : currentIndex == tabIndex ? 24 : 22.5,
-                color: currentIndex == tabIndex
-                    ? AppColors.secondary
-                    : AppColors.primary,
-              ),
-              const SizedBox(height: AppSpacing.s4),
-              Text(
-                text,
-                style: Theme.of(context).textTheme.labelMedium!.copyWith(
-                  fontSize: currentIndex == tabIndex ? 10 : 8.5,
+      return AnimatedScale(
+        scale: currentIndex == tabIndex ? 1 : 0.90,
+        duration: Duration(milliseconds: 300),
+        curve: Curves.bounceIn,
+        child: AspectRatio(
+          aspectRatio: 1,
+          child: InkWell(
+            borderRadius: BorderRadius.circular(24),
+            onTap: () {
+              onTabSelected(tabIndex, ref);
+            },
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                PhosphorIcon(
+                  icon,
+                  size : 24,
                   color: currentIndex == tabIndex
                       ? AppColors.secondary
                       : AppColors.primary,
                 ),
-              ),
-            ],
+                const SizedBox(height: AppSpacing.s4),
+                Text(
+                  text,
+                  style: Theme.of(context).textTheme.labelMedium!.copyWith(
+                    fontSize: 10,
+                    color: currentIndex == tabIndex
+                        ? AppColors.secondary
+                        : AppColors.primary,
+                  ),
+                ),
+              ],
+            ),
           ),
         ),
       );

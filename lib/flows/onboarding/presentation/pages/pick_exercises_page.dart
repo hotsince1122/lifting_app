@@ -132,7 +132,7 @@ class _FinishOnboardingButton extends ConsumerWidget {
             const SizedBox(height: AppSpacing.s8),
             SolidButton(
               isActive: !canFinishOnboarding,
-              buttonHeight: 54,
+              buttonHeight: 62,
               onPressed: !canFinishOnboarding
                   ? () {}
                   : () async {

@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:lifting_tracker_app/core/errors/snack_bar_error.dart';
+import 'package:lifting_tracker_app/core/theme/app_spacing.dart';
 import 'package:lifting_tracker_app/features/exercises/presentation/widgets/add_exercise_selector/add_exercise_selector.dart';
 import 'package:lifting_tracker_app/features/plans/application/planned_exercises_controller.dart';
 import 'package:lifting_tracker_app/features/plans/presentation/editor/delete_flow/delete_day_flow.dart';
@@ -26,7 +27,11 @@ class EditDayPage extends ConsumerWidget {
         top: false,
         child: SingleChildScrollView(
           child: Padding(
-            padding: const EdgeInsets.only(left: 18, right: 18, bottom: 32),
+            padding: const EdgeInsets.only(
+              left: AppSpacing.s16,
+              right: AppSpacing.s16,
+              bottom: AppSpacing.s32,
+            ),
             child: SizedBox(
               width: double.infinity,
               child: Column(
@@ -36,9 +41,9 @@ class EditDayPage extends ConsumerWidget {
                     flow: ChangeDayNameFlow(dayId: dayId),
                     key: ValueKey(dayId),
                   ),
-                  const SizedBox(height: 24),
+                  const SizedBox(height: AppSpacing.s24),
                   Exercises(dayId),
-                  const SizedBox(height: 18),
+                  const SizedBox(height: AppSpacing.s16),
                   AddToSplit(
                     buttonLabel: 'Add exercise',
                     addFunction: () async {
@@ -63,7 +68,7 @@ class EditDayPage extends ConsumerWidget {
                       }
                     },
                   ),
-                  const SizedBox(height: 48),
+                  const SizedBox(height: AppSpacing.s48),
                   TextButton.icon(
                     onPressed: () async {
                       final wasDeleted = await showDeleteValidation(

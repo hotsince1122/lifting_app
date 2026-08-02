@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:intl/intl.dart';
+import 'package:lifting_tracker_app/core/theme/app_spacing.dart';
 import 'package:lifting_tracker_app/features/progress/application/week_streak_controller.dart';
 import 'package:lifting_tracker_app/core/theme/app_colors.dart';
 
@@ -20,32 +21,23 @@ class HomeAppBar extends StatelessWidget implements PreferredSizeWidget {
     final String monthLabel = DateFormat('MMMM', 'en_US').format(now);
     final String weekdayLabel = DateFormat('EEEE', 'en_US').format(now);
 
-    // final Widget streakWidget = GradientCard(
-    //   padding: EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-    //   gradientVariant: AppGradients.card,
-    //   child: Row(
-    //     children: [
-    //       Image.asset('assets/fire.png', height: 16, width: 16),
-    //       const SizedBox(width: 8),
-    //       _StreakWeekAsync(),
-    //     ],
-    //   ),
-    // );
-
     final Widget streakWidget = Material(
       color: Colors.transparent,
-      child: InkWell(
-        splashColor: Colors.transparent,
-        highlightColor: Colors.transparent,
-        child: TextButton.icon(
-          onPressed: () {},
-          icon: Image.asset('assets/fire.png', height: 16, width: 16),
-          style: TextButton.styleFrom(
-            side: BorderSide(color: AppColors.cardBorder),
-            backgroundColor: AppColors.onCardTransparent,
-          ),
-          label: _StreakWeekAsync(),
+
+      child: TextButton.icon(
+        onPressed: () {},
+        icon: Image.asset(
+          'assets/fire.png',
+          height: AppSpacing.s16,
+          width: AppSpacing.s16,
         ),
+        style: TextButton.styleFrom(
+          side: BorderSide(color: AppColors.cardBorder),
+          backgroundColor: AppColors.onCardTransparent,
+          splashFactory: NoSplash.splashFactory,
+          overlayColor: Colors.transparent,
+        ),
+        label: _StreakWeekAsync(),
       ),
     );
 

@@ -79,7 +79,7 @@ class WorkoutsPerWeekPage extends StatelessWidget {
           const SizedBox(height: AppSpacing.s24),
           SolidButton(
             isActive: false,
-            buttonHeight: 54,
+            buttonHeight: 62,
             onPressed: () => controller.nextPage(
               duration: Duration(milliseconds: 300),
               curve: Curves.easeIn,

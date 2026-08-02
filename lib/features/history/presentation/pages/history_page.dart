@@ -2,6 +2,8 @@ import 'dart:math' as math;
 
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:lifting_tracker_app/core/theme/app_spacing.dart';
+import 'package:lifting_tracker_app/core/ui/app_bars/app_bar_settings.dart';
 import 'package:lifting_tracker_app/features/history/application/history_months_provider.dart';
 import 'package:lifting_tracker_app/core/theme/app_colors.dart';
 import 'package:lifting_tracker_app/core/theme/app_gradients.dart';
@@ -24,13 +26,27 @@ class HistoryPage extends ConsumerWidget {
       error: (_, _) => Center(child: Text('An error has occured! Try again.')),
       data: (historyMonthsData) {
         return Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 18),
+          padding: const EdgeInsets.symmetric(horizontal: AppSpacing.s16),
           child: historyMonthsData.isEmpty
               ? emptyState(context)
-              : ListView.builder(
-                  itemBuilder: (context, i) =>
-                      HistoryMonthCard(historyMonthsData[i]),
-                  itemCount: historyMonthsData.length,
+              : Stack(
+                  clipBehavior: Clip.none,
+
+                  children: [
+                    Positioned(
+                      top: -appBarHeight.height,
+                      bottom: 0,
+                      left: 0,
+                      right: 0,
+                      child: ListView.builder(
+                        padding: EdgeInsets.only(top: appBarHeight.height),
+                        clipBehavior: Clip.none,
+                        itemBuilder: (context, i) =>
+                            HistoryMonthCard(historyMonthsData[i]),
+                        itemCount: historyMonthsData.length,
+                      ),
+                    ),
+                  ],
                 ),
         );
       },
@@ -42,11 +58,11 @@ class HistoryPage extends ConsumerWidget {
       width: double.infinity,
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.center,
+        mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          const SizedBox(height: 96),
           GradientCard(
             gradientVariant: AppGradients.card,
-            padding: const EdgeInsets.all(28),
+            padding: const EdgeInsets.all(AppSpacing.s24),
             child: Transform.rotate(
               angle: math.pi / 4,
               child: Icon(
@@ -56,7 +72,7 @@ class HistoryPage extends ConsumerWidget {
               ),
             ),
           ),
-          const SizedBox(height: 18),
+          const SizedBox(height: AppSpacing.s16),
           Text(
             'No workouts yet',
             style: Theme.of(context).textTheme.headlineMedium!.copyWith(
@@ -64,7 +80,7 @@ class HistoryPage extends ConsumerWidget {
               letterSpacing: 0.6,
             ),
           ),
-          const SizedBox(height: 12),
+          const SizedBox(height: AppSpacing.s12),
           Text(
             'Complete your first training session and it will appear here.',
             textAlign: TextAlign.center,
@@ -73,7 +89,7 @@ class HistoryPage extends ConsumerWidget {
               letterSpacing: 0.4,
             ),
           ),
-          const SizedBox(height: 36),
+          const SizedBox(height: AppSpacing.s32),
 
           SessionLaunchButton(
             launchFlow: SplitWorkoutLaunchStrategy(),
@@ -88,8 +104,8 @@ class HistoryPage extends ConsumerWidget {
             contentBuilder: (context, isActive, workoutName) {
               return Padding(
                 padding: const EdgeInsets.symmetric(
-                  vertical: 16,
-                  horizontal: 4,
+                  vertical: AppSpacing.s16,
+                  horizontal: AppSpacing.s4,
                 ),
                 child: Row(
                   crossAxisAlignment: CrossAxisAlignment.center,
@@ -99,12 +115,16 @@ class HistoryPage extends ConsumerWidget {
                       children: [
                         Text(
                           '${isActive ? 'Resume' : 'Start'} your first workout',
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
                           style: Theme.of(context).textTheme.titleMedium,
                         ),
                         Text(
                           isActive
                               ? 'Continue your active workout'
                               : '$workoutName day is next in your plan',
+                          maxLines: 2,
+                          overflow: TextOverflow.ellipsis,
                           style: Theme.of(context).textTheme.bodyMedium!
                               .copyWith(color: AppColors.onSurfaceMuted),
                         ),

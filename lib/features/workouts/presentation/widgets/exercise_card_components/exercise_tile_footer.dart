@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:lifting_tracker_app/core/errors/snack_bar_error.dart';
+import 'package:lifting_tracker_app/core/theme/app_spacing.dart';
 import 'package:lifting_tracker_app/features/workouts/application/session_editor/workout_session_exercises_controller.dart';
 import 'package:lifting_tracker_app/core/theme/app_colors.dart';
 import 'package:lifting_tracker_app/features/workouts/domain/workout_exercise.dart';
@@ -54,7 +55,7 @@ class ExerciseTileFooter extends StatelessWidget {
           size: 22,
           color: AppColors.secondary,
         ),
-        const SizedBox(width: 6),
+        const SizedBox(width: AppSpacing.s4),
         Text(
           'Add Set',
           style: Theme.of(context).textTheme.titleMedium!.copyWith(
@@ -68,7 +69,7 @@ class ExerciseTileFooter extends StatelessWidget {
           size: 24,
           color: AppColors.secondary,
         ),
-        const SizedBox(width: 24),
+        const SizedBox(width: AppSpacing.s24),
         PhosphorIcon(
           PhosphorIcons.star(PhosphorIconsStyle.fill),
           size: 24,

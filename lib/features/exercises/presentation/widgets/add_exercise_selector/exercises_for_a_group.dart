@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:lifting_tracker_app/core/theme/app_spacing.dart';
 import 'package:lifting_tracker_app/features/exercises/domain/catalog_exercise.dart';
 import 'package:lifting_tracker_app/features/exercises/application/exercises_by_muscle_group_controller.dart';
 import 'package:lifting_tracker_app/core/theme/app_colors.dart';
@@ -28,7 +29,7 @@ class ExercisesForGroupPage extends ConsumerWidget {
         width: double.infinity,
         color: AppColors.card.withAlpha(253),
         child: Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 8.0),
+          padding: const EdgeInsets.symmetric(horizontal: AppSpacing.s8),
           child: ListView.separated(
             padding: EdgeInsets.zero,
             itemCount: exercises.length,
@@ -44,7 +45,9 @@ class ExercisesForGroupPage extends ConsumerWidget {
                 dense: true,
                 visualDensity: const VisualDensity(horizontal: 0, vertical: 0),
                 minVerticalPadding: 0,
-                contentPadding: const EdgeInsets.symmetric(horizontal: 6),
+                contentPadding: const EdgeInsets.symmetric(
+                  horizontal: AppSpacing.s8,
+                ),
                 trailing: IconButton(
                   onPressed: () {
                     onEditExercise(exercise);

@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:lifting_tracker_app/core/theme/app_spacing.dart';
 import 'package:lifting_tracker_app/features/plans/application/split_days_controller.dart';
 import 'package:lifting_tracker_app/features/plans/presentation/widgets/edit_app_bar.dart';
 import 'package:lifting_tracker_app/features/plans/presentation/widgets/add_to_split.dart';
@@ -20,7 +21,11 @@ class EditSplitPage extends ConsumerWidget {
         top: false,
         child: SingleChildScrollView(
           child: Padding(
-            padding: const EdgeInsets.only(left: 18, right: 18, bottom: 32),
+            padding: const EdgeInsets.only(
+              left: AppSpacing.s16,
+              right: AppSpacing.s16,
+              bottom: AppSpacing.s32,
+            ),
             child: SizedBox(
               width: double.infinity,
               child: Column(
@@ -30,16 +35,16 @@ class EditSplitPage extends ConsumerWidget {
                     flow: ChangeSplitNameFlow(splitId: splitId),
                     key: ValueKey(splitId),
                   ),
-                  const SizedBox(height: 24),
+                  const SizedBox(height: AppSpacing.s24),
                   TrainingDays(splitId),
-                  const SizedBox(height: 18),
+                  const SizedBox(height: AppSpacing.s16),
                   AddToSplit(
                     buttonLabel: 'Add day',
                     addFunction: () => ref
                         .read(splitDaysProvider(splitId).notifier)
                         .createNewDay(),
                   ),
-                  const SizedBox(height: 48),
+                  const SizedBox(height: AppSpacing.s48),
                   Center(
                     child: Text(
                       'Activate another split to delete',

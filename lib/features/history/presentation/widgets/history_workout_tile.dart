@@ -2,6 +2,7 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:lifting_tracker_app/core/errors/snack_bar_error.dart';
+import 'package:lifting_tracker_app/core/theme/app_spacing.dart';
 import 'package:lifting_tracker_app/features/history/presentation/editor/edit_workout_editor_flow.dart';
 import 'package:lifting_tracker_app/features/history/presentation/state/history_workout_position.dart';
 import 'package:lifting_tracker_app/features/history/presentation/view_data/history_workout_view_data.dart';
@@ -34,8 +35,8 @@ class _HistoryWorkoutTileState extends ConsumerState<HistoryWorkoutTile> {
   static const deletionIconPopDuration = Duration(milliseconds: 120);
   static const editingCollapseDuration = Duration(milliseconds: 180);
 
-  static const marginPadding = SizedBox(height: 18);
-  static const betweenPadding = SizedBox(height: 12);
+  static const marginPadding = SizedBox(height: AppSpacing.s16);
+  static const betweenPadding = SizedBox(height: AppSpacing.s12);
 
   void animateDeletion(
     HistoryWorkoutActionsController historyWorkoutActionsProvider,
@@ -115,9 +116,9 @@ class _HistoryWorkoutTileState extends ConsumerState<HistoryWorkoutTile> {
   }
 
   Future<bool> confirmDeletion() async {
-    late bool confirm;
+    late bool? confirm;
 
-    await showCupertinoDialog(
+    confirm = await showCupertinoDialog<bool>(
       context: context,
       builder: (context) => CupertinoAlertDialog(
         title: Text('Are you sure ?'),
@@ -127,15 +128,13 @@ class _HistoryWorkoutTileState extends ConsumerState<HistoryWorkoutTile> {
         actions: [
           CupertinoDialogAction(
             onPressed: () {
-              confirm = true;
-              Navigator.of(context).pop();
+              Navigator.of(context).pop(true);
             },
             child: Text('Confirm'),
           ),
           CupertinoDialogAction(
             onPressed: () {
-              confirm = false;
-              Navigator.of(context).pop();
+              Navigator.of(context).pop(false);
             },
             child: Text('Cancel'),
           ),
@@ -143,7 +142,7 @@ class _HistoryWorkoutTileState extends ConsumerState<HistoryWorkoutTile> {
       ),
     );
 
-    return confirm;
+    return confirm ?? false;
   }
 
   Widget padContent(HistoryWorkoutPosition position, Widget child) {
@@ -215,28 +214,34 @@ class _HistoryWorkoutTileState extends ConsumerState<HistoryWorkoutTile> {
                           scale: isEditingMode ? 1 : 0,
                           duration: deletionIconPopDuration,
                           curve: Curves.easeOutBack,
-                          child: InkWell(
-                            borderRadius: BorderRadius.circular(12),
-                            splashColor: Colors.transparent,
-                            highlightColor: Colors.transparent,
-                            hoverColor: Colors.transparent,
-                            onTap: isEditingMode && !isDeleting
-                                ? () => animateDeletion(
-                                    historyWorkoutActionsNotifier,
-                                  )
-                                : null,
-                            child: Container(
-                              width: 22,
-                              height: 22,
-                              decoration: const BoxDecoration(
-                                color: Colors.red,
-                                shape: BoxShape.circle,
-                              ),
+                          child: SizedBox.square(
+                            dimension: 44,
+                            child: InkWell(
+                              borderRadius: BorderRadius.circular(22),
+                              splashColor: Colors.transparent,
+                              splashFactory: InkSplash.splashFactory,
+                              highlightColor: Colors.transparent,
+                              hoverColor: Colors.transparent,
+                              onTap: isEditingMode && !isDeleting
+                                  ? () => animateDeletion(
+                                      historyWorkoutActionsNotifier,
+                                    )
+                                  : null,
                               child: Center(
-                                child: Icon(
-                                  Icons.remove_rounded,
-                                  color: AppColors.onSurface,
-                                  size: 18,
+                                child: Container(
+                                  width: 22,
+                                  height: 22,
+                                  decoration: const BoxDecoration(
+                                    color: Colors.red,
+                                    shape: BoxShape.circle,
+                                  ),
+                                  child: Center(
+                                    child: Icon(
+                                      Icons.remove_rounded,
+                                      color: AppColors.onSurface,
+                                      size: 18,
+                                    ),
+                                  ),
                                 ),
                               ),
                             ),
@@ -261,23 +266,26 @@ class _HistoryWorkoutTileState extends ConsumerState<HistoryWorkoutTile> {
                               weekday: workoutData.weekdayLabel,
                               calendarDay: workoutData.dayOfMonth,
                             ),
-                            const SizedBox(width: 12),
+                            const SizedBox(width: AppSpacing.s12),
                             Expanded(
                               child: Column(
                                 crossAxisAlignment: CrossAxisAlignment.stretch,
                                 children: [
-                                  SizedBox(
-                                    width: titleWidth,
-                                    child: Text(
-                                      workoutData.workoutName,
-                                      maxLines: 1,
-                                      overflow: TextOverflow.ellipsis,
-                                      style: Theme.of(context)
-                                          .textTheme
-                                          .titleLarge!
-                                          .copyWith(
-                                            fontWeight: FontWeight.w800,
-                                          ),
+                                  Align(
+                                    alignment: Alignment.centerLeft,
+                                    child: SizedBox(
+                                      width: titleWidth,
+                                      child: Text(
+                                        workoutData.workoutName,
+                                        maxLines: 1,
+                                        overflow: TextOverflow.ellipsis,
+                                        style: Theme.of(context)
+                                            .textTheme
+                                            .titleLarge!
+                                            .copyWith(
+                                              fontWeight: FontWeight.w800,
+                                            ),
+                                      ),
                                     ),
                                   ),
                                   const SizedBox(height: 2),

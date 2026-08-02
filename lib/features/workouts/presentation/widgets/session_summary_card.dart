@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:intl/intl.dart';
 import 'package:lifting_tracker_app/core/errors/snack_bar_error.dart';
+import 'package:lifting_tracker_app/core/theme/app_spacing.dart';
 import 'package:lifting_tracker_app/features/workouts/application/workout_name_controller.dart';
 import 'package:lifting_tracker_app/features/workouts/presentation/state/workout_header_summary_provider.dart';
 import 'package:lifting_tracker_app/core/theme/app_colors.dart';
@@ -113,6 +114,7 @@ class _SessionSummaryCardState extends ConsumerState<SessionSummaryCard> {
 
     Widget infoTile(String title, String description) {
       return Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Text(
             title,
@@ -120,12 +122,15 @@ class _SessionSummaryCardState extends ConsumerState<SessionSummaryCard> {
               context,
             ).textTheme.titleSmall!.copyWith(fontWeight: FontWeight.bold),
           ),
-          const Spacer(),
-          Text(
-            description,
-            style: Theme.of(context).textTheme.bodyMedium!.copyWith(
-              color: AppColors.primary,
-              letterSpacing: 0.1,
+          const SizedBox(width: AppSpacing.s16),
+          Expanded(
+            child: Text(
+              description,
+              textAlign: TextAlign.end,
+              style: Theme.of(context).textTheme.bodyMedium!.copyWith(
+                color: AppColors.primary,
+                letterSpacing: 0.1,
+              ),
             ),
           ),
         ],
@@ -188,30 +193,27 @@ class _SessionSummaryCardState extends ConsumerState<SessionSummaryCard> {
       durationInMinutes += ' min';
     }
 
-    return AspectRatio(
-      aspectRatio: 1.55,
-      child: GradientCard(
-        gradientVariant: AppGradients.card,
-        padding: EdgeInsets.symmetric(horizontal: 20, vertical: 24),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-          children:
-              [
-                    workoutName(workoutNameController),
-                    infoTile('Start Time', startTimeLabel),
-                    infoTile('End Time', endTimeLabel),
-                    infoTile('Duration', durationInMinutes),
-                  ]
-                  .expand(
-                    (item) => [
-                      item,
-                      const Divider(height: 1, color: AppColors.cardBorder),
-                    ],
-                  )
-                  .toList()
-                ..removeLast(),
-        ),
+    return GradientCard(
+      gradientVariant: AppGradients.card,
+      padding: EdgeInsets.all(AppSpacing.s20),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        spacing: AppSpacing.s16,
+        children:
+            [
+                  workoutName(workoutNameController),
+                  infoTile('Start Time', startTimeLabel),
+                  infoTile('End Time', endTimeLabel),
+                  infoTile('Duration', durationInMinutes),
+                ]
+                .expand(
+                  (item) => [
+                    item,
+                    const Divider(height: 1, color: AppColors.cardBorder),
+                  ],
+                )
+                .toList()
+              ..removeLast(),
       ),
     );
   }

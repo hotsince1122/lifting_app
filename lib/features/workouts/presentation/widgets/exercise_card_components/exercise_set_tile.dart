@@ -2,6 +2,7 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:lifting_tracker_app/core/errors/snack_bar_error.dart';
+import 'package:lifting_tracker_app/core/theme/app_spacing.dart';
 import 'package:lifting_tracker_app/features/workouts/data/workout_set_commands.dart';
 import 'package:lifting_tracker_app/features/workouts/application/session_editor/workout_session_exercises_controller.dart';
 import 'package:lifting_tracker_app/features/workouts/domain/training_set.dart';
@@ -18,7 +19,8 @@ class ExerciseSetTile extends ConsumerStatefulWidget {
     this.iconSize,
     this.workoutSessionId,
     this.exerciseId,
-    this.exerciseOrderIndex, {
+    this.exerciseOrderIndex,
+    this.horizontalPadding, {
     required this.onDeleteSet,
     super.key,
   });
@@ -29,6 +31,7 @@ class ExerciseSetTile extends ConsumerStatefulWidget {
   final int workoutSessionId;
   final String exerciseId;
   final int exerciseOrderIndex;
+  final double horizontalPadding;
   final Future<void> Function() onDeleteSet;
 
   @override
@@ -43,6 +46,8 @@ class _ExerciseSetTileState extends ConsumerState<ExerciseSetTile> {
   Timer? _debounceTimer;
 
   late final WorkoutSessionExercisesController _exercisesAndSetsNotifier;
+
+  static const double _smallCellWidth = 56.0;
 
   @override
   void initState() {
@@ -258,83 +263,93 @@ class _ExerciseSetTileState extends ConsumerState<ExerciseSetTile> {
         ? widget.set.hintWeight.toInt().toString()
         : widget.set.hintWeight.toString();
 
-    return Row(
-      crossAxisAlignment: CrossAxisAlignment.center,
-      children: [
-        indexContainer(widget.setIndex),
-        const SizedBox(width: 16),
-
-        Column(
-          mainAxisSize: MainAxisSize.min,
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Row(
-              children: [
-                SizedBox(width: 54, child: cellLabel('Kg')),
-                SizedBox(width: 54, child: cellLabel('Reps')),
-                SizedBox(width: 152, child: cellLabel('Notes')),
-              ],
-            ),
-            const SizedBox(height: 4),
-            Row(
+    return Padding(
+      padding: EdgeInsets.symmetric(horizontal: widget.horizontalPadding),
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.center,
+        children: [
+          indexContainer(widget.setIndex),
+          const SizedBox(width: AppSpacing.s16),
+          Expanded(
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                SizedBox(
-                  width: 54,
-                  child: cellField(
-                    weightLabel,
-                    _weightController,
-                    isNotes: false,
-                    isReps: false,
-                  ),
+                Row(
+                  children: [
+                    SizedBox(width: _smallCellWidth, child: cellLabel('Kg')),
+                    SizedBox(width: _smallCellWidth, child: cellLabel('Reps')),
+                    Expanded(child: cellLabel('Notes')),
+                  ],
                 ),
-                SizedBox(
-                  width: 54,
-                  child: cellField(
-                    widget.set.hintRepetitions.toString(),
-                    _repsController,
-                    isNotes: false,
-                    isReps: true,
-                  ),
-                ),
-                SizedBox(
-                  width: 152,
-                  child: cellField(
-                    widget.set.hintNotes,
-                    _notesController,
-                    isNotes: true,
-                    isReps: false,
-                  ),
+                const SizedBox(height: AppSpacing.s4),
+                Row(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    SizedBox(
+                      width: _smallCellWidth,
+                      child: cellField(
+                        weightLabel,
+                        _weightController,
+                        isNotes: false,
+                        isReps: false,
+                      ),
+                    ),
+                    SizedBox(
+                      width: _smallCellWidth,
+                      child: cellField(
+                        widget.set.hintRepetitions.toString(),
+                        _repsController,
+                        isNotes: false,
+                        isReps: true,
+                      ),
+                    ),
+                    Expanded(
+                      child: cellField(
+                        widget.set.hintNotes,
+                        _notesController,
+                        isNotes: true,
+                        isReps: false,
+                      ),
+                    ),
+                  ],
                 ),
               ],
             ),
-          ],
-        ),
-
-        const Spacer(),
-        SizedBox(
-          width: 29,
-          height: 44,
-          child: InkWell(
-            splashFactory: NoSplash.splashFactory,
-            onTap: () async {
-              await SetSettingsSheet.openSetSettings(
-                context,
-                screenWidth,
-                widget.set.workoutSessionSetId!,
-                widget.set.isWarmup!,
-                widget.workoutSessionId,
-                widget.onDeleteSet,
-              );
-            },
-            child: PhosphorIcon(
-              PhosphorIcons.dotsThree(PhosphorIconsStyle.bold),
-              color: AppColors.secondary,
-              size: widget.iconSize,
+          ),
+          SizedBox(
+            width: 44,
+            height: 44,
+            child: Material(
+              color: Colors.transparent,
+              shape: const CircleBorder(),
+              clipBehavior: Clip.antiAlias,
+              child: InkWell(
+                customBorder: const CircleBorder(),
+                splashFactory: NoSplash.splashFactory,
+                onTap: () async {
+                  await SetSettingsSheet.openSetSettings(
+                    context,
+                    screenWidth,
+                    widget.set.workoutSessionSetId!,
+                    widget.set.isWarmup!,
+                    widget.workoutSessionId,
+                    widget.onDeleteSet,
+                  );
+                },
+                child: Align(
+                  alignment: AlignmentGeometry.centerRight,
+                  child: PhosphorIcon(
+                    PhosphorIcons.dotsThree(PhosphorIconsStyle.bold),
+                    color: AppColors.secondary,
+                    size: widget.iconSize,
+                  ),
+                ),
+              ),
             ),
           ),
-        ),
-      ],
+        ],
+      ),
     );
   }
 }

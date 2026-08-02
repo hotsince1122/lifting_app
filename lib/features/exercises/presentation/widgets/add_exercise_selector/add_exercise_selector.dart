@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:lifting_tracker_app/core/errors/snack_bar_error.dart';
+import 'package:lifting_tracker_app/core/theme/app_spacing.dart';
 import 'package:lifting_tracker_app/core/ui/transitions/sheet_parallax_route.dart';
 import 'package:lifting_tracker_app/features/exercises/domain/catalog_exercise.dart';
 import 'package:lifting_tracker_app/features/exercises/application/exercises_by_muscle_group_controller.dart';
@@ -353,10 +354,15 @@ class _AddExerciseSelectorState extends ConsumerState<AddExerciseSelector> {
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
           Padding(
-            padding: const EdgeInsets.fromLTRB(8, 8, 8, 0),
+            padding: const EdgeInsets.fromLTRB(
+              AppSpacing.s8,
+              AppSpacing.s8,
+              AppSpacing.s8,
+              0,
+            ),
             child: SheetHeader(config: _headerFor(_step)),
           ),
-          const SizedBox(height: 6),
+          const SizedBox(height: AppSpacing.s8),
           Expanded(
             child: Navigator(
               clipBehavior: Clip.hardEdge,

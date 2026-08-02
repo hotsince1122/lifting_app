@@ -148,7 +148,6 @@ class _ExerciseSettingsState extends ConsumerState<ExerciseSettingsSheet> {
                             if (!context.mounted) return;
                             ReorderExercisesSheet.openSheet(
                               context,
-                              widget.screenWidth,
                               widget.workoutSessionId,
                             );
                           }),

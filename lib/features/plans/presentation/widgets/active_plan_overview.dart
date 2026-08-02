@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:lifting_tracker_app/core/theme/app_spacing.dart';
 import 'package:lifting_tracker_app/features/plans/application/active_split_days_provider.dart';
 import 'package:lifting_tracker_app/features/plans/application/active_split_id_controller.dart';
 import 'package:lifting_tracker_app/features/plans/application/active_split_plan_controller.dart';
@@ -28,9 +29,9 @@ class ActivePlanOverview extends StatelessWidget {
               mainAxisAlignment: MainAxisAlignment.center,
               children: const [
                 _ActivePill(),
-                SizedBox(height: 12),
+                SizedBox(height: AppSpacing.s12),
                 _SplitPlanSummary(),
-                SizedBox(height: 16),
+                SizedBox(height: AppSpacing.s16),
                 _SplitDays(),
               ],
             ),
@@ -53,7 +54,10 @@ class _ActivePill extends StatelessWidget {
         border: BoxBorder.all(color: AppColors.primary, width: 0.4),
         borderRadius: BorderRadius.circular(16),
       ),
-      padding: const EdgeInsets.symmetric(vertical: 4, horizontal: 8),
+      padding: const EdgeInsets.symmetric(
+        vertical: AppSpacing.s4,
+        horizontal: AppSpacing.s8,
+      ),
       child: Text(
         'ACTIVE',
         style: Theme.of(context).textTheme.labelMedium!.copyWith(
@@ -94,7 +98,7 @@ class _SplitPlanSummary extends ConsumerWidget {
                 context,
               ).textTheme.titleLarge!.copyWith(fontWeight: FontWeight.w900),
             ),
-            const SizedBox(height: 6),
+            const SizedBox(height: AppSpacing.s4),
             Text(
               '$cycleLengthInDays-day cycle · $exerciseCount exercise${exerciseCount > 1 ? 's' : ''}',
               style: Theme.of(
@@ -151,8 +155,8 @@ class _SplitDays extends ConsumerWidget {
                   if (i != activeSplitDaysData.length - 1)
                     Divider(
                       color: AppColors.cardBorder,
-                      endIndent: 4,
-                      indent: 4,
+                      endIndent: AppSpacing.s4,
+                      indent: AppSpacing.s4,
                       height: 1,
                     ),
                 ],

@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:lifting_tracker_app/core/errors/snack_bar_error.dart';
+import 'package:lifting_tracker_app/core/theme/app_spacing.dart';
 import 'package:lifting_tracker_app/features/plans/application/active_split_id_controller.dart';
 import 'package:lifting_tracker_app/features/plans/application/split_plan_provider.dart';
 import 'package:lifting_tracker_app/features/plans/application/split_plans_ids_controller.dart';
@@ -31,7 +32,7 @@ class YourPlans extends ConsumerWidget {
               context,
             ).textTheme.titleLarge?.copyWith(color: AppColors.onSurfaceMuted),
           ),
-          const SizedBox(height: 12),
+          const SizedBox(height: AppSpacing.s12),
 
           splitPlansIdsAsync.when(
             loading: () => const Center(child: CircularProgressIndicator()),
@@ -74,7 +75,7 @@ class _SplitPlanCard extends ConsumerWidget {
     final splitPlanAsync = ref.watch(splitPlanProvider(splitPlanId));
 
     return Padding(
-      padding: const EdgeInsets.only(bottom: 12),
+      padding: const EdgeInsets.only(bottom: AppSpacing.s12),
       child: splitPlanAsync.when(
         loading: () => const GradientCard(
           gradientVariant: AppGradients.card,
@@ -179,7 +180,7 @@ class _SplitPlanCard extends ConsumerWidget {
                       child: Row(
                         children: [
                           Icon(PhosphorIcons.pencil(), size: 18),
-                          const SizedBox(width: 4),
+                          const SizedBox(width: AppSpacing.s4),
                           Text(
                             'Edit',
                             style: Theme.of(context).textTheme.bodyLarge,
@@ -201,7 +202,7 @@ class _SplitPlanCard extends ConsumerWidget {
                             color: Colors.red,
                             size: 18,
                           ),
-                          const SizedBox(width: 4),
+                          const SizedBox(width: AppSpacing.s4),
                           Text(
                             'Delete',
                             style: Theme.of(context).textTheme.bodyLarge!

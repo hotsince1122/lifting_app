@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:lifting_tracker_app/core/theme/app_spacing.dart';
 import 'package:lifting_tracker_app/features/history/presentation/state/history_workout_position.dart';
 import 'package:lifting_tracker_app/features/history/presentation/view_data/history_month_view_data.dart';
 import 'package:lifting_tracker_app/features/history/presentation/state/history_editing_mode_controller.dart';
@@ -21,11 +22,13 @@ class HistoryMonthCard extends ConsumerWidget {
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
         Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 16),
+          padding: const EdgeInsets.symmetric(horizontal: AppSpacing.s16),
           child: Row(
             children: [
               Text(
                 historyMonthData.label,
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
                 style: Theme.of(context).textTheme.headlineSmall!.copyWith(
                   color: AppColors.onSurfaceMuted,
                   fontWeight: FontWeight.bold,
@@ -44,10 +47,10 @@ class HistoryMonthCard extends ConsumerWidget {
             ],
           ),
         ),
-        const SizedBox(height: 8),
+        const SizedBox(height: AppSpacing.s8),
         GradientCard(
           gradientVariant: AppGradients.card,
-          padding: const EdgeInsets.symmetric(horizontal: 18),
+          padding: const EdgeInsets.symmetric(horizontal: AppSpacing.s16),
           child: Column(
             children: [
               for (int i = 0; i < historyMonthData.workouts.length; i++) ...[
@@ -66,7 +69,7 @@ class HistoryMonthCard extends ConsumerWidget {
             ],
           ),
         ),
-        const SizedBox(height: 18),
+        const SizedBox(height: AppSpacing.s16),
       ],
     );
   }

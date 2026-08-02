@@ -139,7 +139,7 @@ class SelectSplitPage extends ConsumerWidget {
               const SizedBox(height: AppSpacing.s24),
               SolidButton(
                 isActive: activeSplitPlan == null,
-                buttonHeight: 54,
+                buttonHeight: 62,
                 onPressed: activeSplitPlan == null
                     ? () {}
                     : () => controller.nextPage(

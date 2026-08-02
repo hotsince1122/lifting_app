@@ -2,21 +2,17 @@ import 'dart:ui';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:lifting_tracker_app/core/errors/snack_bar_error.dart';
+import 'package:lifting_tracker_app/core/theme/app_spacing.dart';
 import 'package:lifting_tracker_app/features/workouts/application/session_editor/workout_session_exercises_controller.dart';
 import 'package:lifting_tracker_app/core/theme/app_colors.dart';
 import 'package:lifting_tracker_app/features/workouts/domain/workout_exercise.dart';
 
 class ReorderExercisesSheet extends ConsumerStatefulWidget {
-  const ReorderExercisesSheet(this.screenWidth, this.sessionId, {super.key});
+  const ReorderExercisesSheet(this.sessionId, {super.key});
 
-  final double screenWidth;
   final int sessionId;
 
-  static Future<void> openSheet(
-    BuildContext context,
-    double screenWidth,
-    int sessionId,
-  ) {
+  static Future<void> openSheet(BuildContext context, int sessionId) {
     return showModalBottomSheet(
       context: context,
       isDismissible: true,
@@ -24,7 +20,7 @@ class ReorderExercisesSheet extends ConsumerStatefulWidget {
       backgroundColor: Colors.transparent,
       barrierColor: Colors.black12,
       isScrollControlled: true,
-      builder: (context) => ReorderExercisesSheet(screenWidth, sessionId),
+      builder: (context) => ReorderExercisesSheet(sessionId),
     );
   }
 
@@ -56,18 +52,21 @@ class _ReorderExercisesSheetState extends ConsumerState<ReorderExercisesSheet> {
         return BackdropFilter(
           filter: ImageFilter.blur(sigmaX: 2.0, sigmaY: 2.0),
           child: Padding(
-            padding: EdgeInsets.symmetric(horizontal: 16, vertical: 32),
+            padding: EdgeInsets.symmetric(
+              horizontal: AppSpacing.s16,
+              vertical: AppSpacing.s32,
+            ),
             child: ClipRRect(
               borderRadius: BorderRadius.circular(24),
               child: Container(
-                height: MediaQuery.of(context).size.height * 0.85,
-                width: widget.screenWidth,
+                height: MediaQuery.of(context).size.height * 0.8,
+                width: MediaQuery.of(context).size.width,
                 decoration: BoxDecoration(
                   borderRadius: BorderRadius.circular(24),
                   color: AppColors.card.withAlpha(253),
                 ),
                 child: Padding(
-                  padding: const EdgeInsets.symmetric(vertical: 8),
+                  padding: const EdgeInsets.symmetric(vertical: AppSpacing.s8),
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.stretch,
                     children: [
@@ -92,7 +91,7 @@ class _ReorderExercisesSheetState extends ConsumerState<ReorderExercisesSheet> {
                           ],
                         ),
                       ),
-                      const SizedBox(height: 16),
+                      const SizedBox(height: AppSpacing.s16),
                       Expanded(
                         child: DragBoundary(
                           child: ReorderableListView.builder(
@@ -156,7 +155,9 @@ class _ReorderExercisesSheetState extends ConsumerState<ReorderExercisesSheet> {
                                   width: double.infinity,
                                   height: double.infinity,
                                   color: Colors.red,
-                                  padding: EdgeInsets.symmetric(horizontal: 16),
+                                  padding: EdgeInsets.symmetric(
+                                    horizontal: AppSpacing.s16,
+                                  ),
                                   child: Icon(Icons.delete_outline_outlined),
                                 ),
                                 child: Column(
@@ -164,8 +165,8 @@ class _ReorderExercisesSheetState extends ConsumerState<ReorderExercisesSheet> {
                                     Divider(
                                       height: 0.5,
                                       color: AppColors.cardBorder,
-                                      indent: 16,
-                                      endIndent: 16,
+                                      indent: AppSpacing.s16,
+                                      endIndent: AppSpacing.s16,
                                     ),
                                     ListTile(
                                       dense: true,
@@ -197,8 +198,8 @@ class _ReorderExercisesSheetState extends ConsumerState<ReorderExercisesSheet> {
                                     Divider(
                                       height: 0.5,
                                       color: AppColors.cardBorder,
-                                      indent: 16,
-                                      endIndent: 16,
+                                      indent: AppSpacing.s16,
+                                      endIndent: AppSpacing.s16,
                                     ),
                                   ],
                                 ),

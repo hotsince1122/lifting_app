@@ -1,6 +1,7 @@
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:lifting_tracker_app/core/theme/app_colors.dart';
+import 'package:lifting_tracker_app/core/theme/app_spacing.dart';
 import 'package:phosphor_flutter/phosphor_flutter.dart';
 
 class ExerciseForm extends StatelessWidget {
@@ -56,9 +57,9 @@ class ExerciseForm extends StatelessWidget {
                       border: InputBorder.none,
                     ),
                   ),
-                  const SizedBox(height: 4),
+                  const SizedBox(height: AppSpacing.s4),
                   Divider(color: AppColors.cardBorder, thickness: 1.5),
-                  const SizedBox(height: 4),
+                  const SizedBox(height: AppSpacing.s4),
                   InkWell(
                     onTap: onSelectMuscleGroup,
                     child: ValueListenableBuilder<String?>(
@@ -95,15 +96,15 @@ class ExerciseForm extends StatelessWidget {
               ),
             ),
           ),
-          const SizedBox(height: 6),
+          const SizedBox(height: AppSpacing.s8),
           if (onDelete != null)
             Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 16),
+              padding: const EdgeInsets.symmetric(horizontal: AppSpacing.s16),
               child: InkWell(
                 onTap: onDelete,
                 child: Container(
                   height: 52,
-                  padding: const EdgeInsets.symmetric(horizontal: 16),
+                  padding: const EdgeInsets.symmetric(horizontal: AppSpacing.s16),
                   decoration: BoxDecoration(
                     color: Color.alphaBlend(
                       Colors.red.withValues(alpha: 0.12),

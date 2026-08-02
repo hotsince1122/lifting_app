@@ -6,6 +6,6 @@ const appBarPadding = EdgeInsets.only(
   right: AppSpacing.s16,
   bottom: AppSpacing.s8,
 );
-const appBarHeight = Size.fromHeight(100);
+const appBarHeight = Size.fromHeight(90);
 
 const compactAppBarHeight = Size.fromHeight(70);

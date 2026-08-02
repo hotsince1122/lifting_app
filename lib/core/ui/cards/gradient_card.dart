@@ -28,14 +28,6 @@ class GradientCard extends StatelessWidget {
           borderRadius: radius,
           gradient: AppThemeGradients.of(gradientVariant),
           border: Border.all(color: borderColor, width: 1),
-          boxShadow: const [
-            BoxShadow(
-              color: AppColors.cardShadow,
-              blurRadius: 24,
-              spreadRadius: 1,
-              offset: Offset(0, 6),
-            ),
-          ],
         ),
         child: Padding(padding: padding, child: child),
       ),

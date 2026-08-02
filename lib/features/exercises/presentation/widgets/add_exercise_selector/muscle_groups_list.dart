@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:lifting_tracker_app/core/theme/app_spacing.dart';
 import 'package:lifting_tracker_app/features/exercises/domain/muscle_groups.dart';
 import 'package:lifting_tracker_app/core/theme/app_colors.dart';
 
@@ -14,7 +15,12 @@ class MuscleGroupList extends StatelessWidget {
       height: double.infinity,
       color: AppColors.card.withAlpha(253),
       child: Padding(
-        padding: const EdgeInsets.fromLTRB(8, 0, 8, 8),
+        padding: const EdgeInsets.fromLTRB(
+          AppSpacing.s8,
+          0,
+          AppSpacing.s8,
+          AppSpacing.s8,
+        ),
         child: ListView.separated(
           padding: EdgeInsets.zero,
           itemCount: MuscleGroups.names.length,
@@ -34,7 +40,9 @@ class MuscleGroupList extends StatelessWidget {
                 dense: true,
                 visualDensity: const VisualDensity(horizontal: 0, vertical: 0),
                 minVerticalPadding: 0,
-                contentPadding: const EdgeInsets.symmetric(horizontal: 6),
+                contentPadding: const EdgeInsets.symmetric(
+                  horizontal: AppSpacing.s4,
+                ),
                 title: Text(
                   label,
                   style: Theme.of(context).textTheme.bodyLarge,

@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:lifting_tracker_app/core/theme/app_spacing.dart';
 import 'package:lifting_tracker_app/features/workouts/application/session_editor/workout_session_exercises_controller.dart';
 import 'package:lifting_tracker_app/features/workouts/presentation/widgets/add_exercises_to_workout.dart';
 import 'package:lifting_tracker_app/features/workouts/presentation/widgets/workout_exercise_card.dart';
@@ -19,9 +20,9 @@ class WorkoutEditorPage extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final double horizontalPadding = 18;
-    final double spaceBetween = 24;
-    final double bottomPadding = 32;
+    final double horizontalPadding = AppSpacing.s16;
+    final double spaceBetween = AppSpacing.s24;
+    final double bottomPadding = AppSpacing.s32;
 
     final exercisesAndSetsAsync = ref.watch(
       workoutSessionExercisesProvider(workoutSessionId),
@@ -46,6 +47,7 @@ class WorkoutEditorPage extends ConsumerWidget {
             child: Padding(
               padding: EdgeInsets.only(bottom: bottomPadding),
               child: SingleChildScrollView(
+                clipBehavior: Clip.none,
                 child: Column(
                   children: [
                     hp(SessionSummaryCard(flow, sessionId: workoutSessionId)),
@@ -63,7 +65,7 @@ class WorkoutEditorPage extends ConsumerWidget {
                       SizedBox(height: spaceBetween),
                     ],
                     hp(AddExercisesToWorkout(workoutSessionId)),
-                    const SizedBox(height: 12),
+                    const SizedBox(height: AppSpacing.s12),
                   ],
                 ),
               ),
