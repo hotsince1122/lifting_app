@@ -8,6 +8,7 @@ import 'package:lifting_tracker_app/features/workouts/application/session_editor
 import 'package:lifting_tracker_app/features/workouts/domain/training_set.dart';
 
 import 'package:lifting_tracker_app/core/theme/app_colors.dart';
+import 'package:lifting_tracker_app/features/workouts/presentation/view_data/workout_set_focus_nodes.dart';
 import 'package:lifting_tracker_app/features/workouts/presentation/widgets/set_settings_sheet.dart';
 import 'package:phosphor_flutter/phosphor_flutter.dart';
 import 'package:flutter/services.dart';
@@ -22,6 +23,7 @@ class ExerciseSetTile extends ConsumerStatefulWidget {
     this.exerciseOrderIndex,
     this.horizontalPadding, {
     required this.onDeleteSet,
+    required this.focusNodes,
     super.key,
   });
 
@@ -33,6 +35,7 @@ class ExerciseSetTile extends ConsumerStatefulWidget {
   final int exerciseOrderIndex;
   final double horizontalPadding;
   final Future<void> Function() onDeleteSet;
+  final WorkoutSetFocusNodes focusNodes;
 
   @override
   ConsumerState<ExerciseSetTile> createState() => _ExerciseSetTileState();
@@ -176,6 +179,7 @@ class _ExerciseSetTileState extends ConsumerState<ExerciseSetTile> {
     Widget cellField(
       String hintText,
       TextEditingController controller, {
+      required FocusNode focusNode,
       required bool isNotes,
       required bool isReps,
     }) {
@@ -218,6 +222,7 @@ class _ExerciseSetTileState extends ConsumerState<ExerciseSetTile> {
 
       return TextField(
         controller: controller,
+        focusNode: focusNode,
         onChanged: (_) => _scheduleSave(),
         keyboardType: isNotes
             ? TextInputType.multiline
@@ -291,6 +296,7 @@ class _ExerciseSetTileState extends ConsumerState<ExerciseSetTile> {
                       child: cellField(
                         weightLabel,
                         _weightController,
+                        focusNode: widget.focusNodes.weight,
                         isNotes: false,
                         isReps: false,
                       ),
@@ -300,6 +306,7 @@ class _ExerciseSetTileState extends ConsumerState<ExerciseSetTile> {
                       child: cellField(
                         widget.set.hintRepetitions.toString(),
                         _repsController,
+                        focusNode: widget.focusNodes.reps,
                         isNotes: false,
                         isReps: true,
                       ),
@@ -308,6 +315,7 @@ class _ExerciseSetTileState extends ConsumerState<ExerciseSetTile> {
                       child: cellField(
                         widget.set.hintNotes,
                         _notesController,
+                        focusNode: widget.focusNodes.notes,
                         isNotes: true,
                         isReps: false,
                       ),

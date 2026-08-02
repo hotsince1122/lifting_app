@@ -5,6 +5,7 @@ import 'package:lifting_tracker_app/core/theme/app_spacing.dart';
 import 'package:lifting_tracker_app/features/workouts/application/session_editor/workout_session_exercises_controller.dart';
 import 'package:lifting_tracker_app/core/theme/app_colors.dart';
 import 'package:lifting_tracker_app/features/workouts/domain/workout_exercise.dart';
+import 'package:lifting_tracker_app/features/workouts/presentation/view_data/workout_set_focus_nodes.dart';
 import 'package:lifting_tracker_app/features/workouts/presentation/widgets/exercise_card_components/exercise_set_tile.dart';
 import 'package:lifting_tracker_app/features/workouts/presentation/widgets/exercise_card_components/exercise_tile_footer.dart';
 import 'package:lifting_tracker_app/features/workouts/presentation/widgets/exercise_card_components/exercise_tile_header.dart';
@@ -17,12 +18,14 @@ class WorkoutExerciseCard extends ConsumerStatefulWidget {
     this.exerciseAndItsSets,
     this.workoutSessionId,
     this.horizontalPaddingForCard, {
+    required this.focusNodesBySetId,
     super.key,
   });
 
   final WorkoutExercise exerciseAndItsSets;
   final int workoutSessionId;
   final double horizontalPaddingForCard;
+  final Map<int, WorkoutSetFocusNodes> focusNodesBySetId;
 
   @override
   ConsumerState<WorkoutExerciseCard> createState() =>
@@ -137,6 +140,7 @@ class _WorkoutExerciseCardState extends ConsumerState<WorkoutExerciseCard> {
         set.workoutSessionSetId ??
         (exerciseId, exercise.orderIndex, set.setIndex, setIndexUI);
     final workoutSessionSetId = set.workoutSessionSetId!;
+    final focusNodes = widget.focusNodesBySetId[workoutSessionSetId]!;
 
     Future<void> deleteSetFromSettings() async {
       if (isLastSetRemaining) {
@@ -168,6 +172,7 @@ class _WorkoutExerciseCardState extends ConsumerState<WorkoutExerciseCard> {
                 exercise.orderIndex,
                 _horizontalPadding,
                 onDeleteSet: deleteSetFromSettings,
+                focusNodes: focusNodes,
                 key: ValueKey(setIdentity),
               ),
               SizedBox(height: _paddingBetween / 2),

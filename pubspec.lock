@@ -280,6 +280,14 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "0.7.2"
+  keyboard_actions:
+    dependency: "direct main"
+    description:
+      name: keyboard_actions
+      sha256: "59483c0ece5e4f0f0d8e9fb2b641dbf20d8788e14f5ee4da2de31a4a3e33f388"
+      url: "https://pub.dev"
+    source: hosted
+    version: "4.2.2"
   leak_tracker:
     dependency: transitive
     description:

@@ -14,6 +14,7 @@ dependencies:
   flutter_riverpod: ^3.2.1
   google_fonts: ^8.0.2
   intl: ^0.20.2
+  keyboard_actions: ^4.2.2
   path: ^1.9.1
   path_provider: ^2.1.5
   phosphor_flutter: ^2.1.0
