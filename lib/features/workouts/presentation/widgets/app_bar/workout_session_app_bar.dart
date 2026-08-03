@@ -4,6 +4,7 @@ import 'package:intl/intl.dart';
 import 'package:lifting_tracker_app/core/theme/app_colors.dart';
 import 'package:lifting_tracker_app/core/theme/app_spacing.dart';
 import 'package:lifting_tracker_app/core/ui/app_bars/app_bar_settings.dart';
+import 'package:lifting_tracker_app/features/rest_timer/presentation/widgets/rest_timer_app_bar_control.dart';
 import 'package:lifting_tracker_app/features/workouts/presentation/editor/workout_editor_flow.dart';
 import 'package:lifting_tracker_app/core/ui/buttons/solid_button.dart';
 import 'package:lifting_tracker_app/core/ui/cards/solid_card.dart';
@@ -68,7 +69,6 @@ class WorkoutSessionAppBar extends ConsumerWidget
             child: Padding(
               padding: const EdgeInsets.symmetric(horizontal: AppSpacing.s16),
               child: Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
                   SolidButton(
                     onPressed: () => Navigator.of(context).pop(),
@@ -83,6 +83,8 @@ class WorkoutSessionAppBar extends ConsumerWidget
                       color: AppColors.onSurface,
                     ),
                   ),
+
+                  const SizedBox(width: AppSpacing.s12),
 
                   SolidButton(
                     onPressed: () async {
@@ -104,9 +106,20 @@ class WorkoutSessionAppBar extends ConsumerWidget
                     ),
                   ),
 
-                  Text(
-                    '$dayLabel $monthLabel',
-                    style: Theme.of(context).textTheme.titleLarge,
+                  Expanded(
+                    child: Padding(
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: AppSpacing.s8,
+                      ),
+                      child: Text(
+                        '$dayLabel $monthLabel',
+                        maxLines: 1,
+                        softWrap: false,
+                        overflow: TextOverflow.fade,
+                        textAlign: TextAlign.center,
+                        style: Theme.of(context).textTheme.titleLarge,
+                      ),
+                    ),
                   ),
 
                   SolidCard(
@@ -114,15 +127,11 @@ class WorkoutSessionAppBar extends ConsumerWidget
                     child: SizedBox(
                       height: buttonHeight,
                       child: Row(
+                        mainAxisSize: MainAxisSize.min,
                         children: [
-                          IconButton(
-                            onPressed: () {},
-                            icon: Icon(
-                              Icons.timer_sharp,
-                              size: iconSize,
-                              fontWeight: FontWeight.w900,
-                              color: AppColors.onSurface,
-                            ),
+                          RestTimerAppBarControl(
+                            height: buttonHeight,
+                            iconSize: iconSize,
                           ),
                           const SizedBox(width: AppSpacing.s12),
                           PopupMenuButton(

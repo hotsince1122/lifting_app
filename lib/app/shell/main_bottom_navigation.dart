@@ -24,7 +24,7 @@ class MainBottomNavigation extends ConsumerWidget {
     Widget navBarButton(String text, IconData icon, int tabIndex) {
       return AnimatedScale(
         scale: currentIndex == tabIndex ? 1 : 0.90,
-        duration: Duration(milliseconds: 300),
+        duration: Duration(milliseconds: 220),
         curve: Curves.bounceIn,
         child: AspectRatio(
           aspectRatio: 1,
@@ -38,7 +38,7 @@ class MainBottomNavigation extends ConsumerWidget {
               children: [
                 PhosphorIcon(
                   icon,
-                  size : 24,
+                  size: 24,
                   color: currentIndex == tabIndex
                       ? AppColors.secondary
                       : AppColors.primary,

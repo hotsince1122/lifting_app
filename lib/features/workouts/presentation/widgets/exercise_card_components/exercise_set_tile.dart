@@ -184,7 +184,7 @@ class _ExerciseSetTileState extends ConsumerState<ExerciseSetTile> {
       required bool isReps,
     }) {
       final hintStyle = isNotes
-          ? Theme.of(context).textTheme.bodyLarge!.copyWith(
+          ? Theme.of(context).textTheme.bodySmall!.copyWith(
               fontWeight: FontWeight.bold,
               color: AppColors.onSurfaceMuted,
             )
@@ -194,7 +194,7 @@ class _ExerciseSetTileState extends ConsumerState<ExerciseSetTile> {
             );
 
       final textStyle = isNotes
-          ? Theme.of(context).textTheme.bodyMedium!.copyWith(
+          ? Theme.of(context).textTheme.bodySmall!.copyWith(
               fontWeight: FontWeight.w900,
               color: AppColors.onSurface,
             )
@@ -233,7 +233,7 @@ class _ExerciseSetTileState extends ConsumerState<ExerciseSetTile> {
         minLines: 1,
         maxLines: isNotes ? null : 1,
         decoration: InputDecoration(
-          hintText: hintText,
+          hintText: controller.text.isEmpty ? hintText : null,
           hintMaxLines: isNotes ? null : 1,
           border: InputBorder.none,
           isCollapsed: true,
@@ -268,95 +268,102 @@ class _ExerciseSetTileState extends ConsumerState<ExerciseSetTile> {
         ? widget.set.hintWeight.toInt().toString()
         : widget.set.hintWeight.toString();
 
-    return Padding(
-      padding: EdgeInsets.symmetric(horizontal: widget.horizontalPadding),
-      child: Row(
-        crossAxisAlignment: CrossAxisAlignment.center,
-        children: [
-          indexContainer(widget.setIndex),
-          const SizedBox(width: AppSpacing.s16),
-          Expanded(
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Row(
-                  children: [
-                    SizedBox(width: _smallCellWidth, child: cellLabel('Kg')),
-                    SizedBox(width: _smallCellWidth, child: cellLabel('Reps')),
-                    Expanded(child: cellLabel('Notes')),
-                  ],
-                ),
-                const SizedBox(height: AppSpacing.s4),
-                Row(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    SizedBox(
-                      width: _smallCellWidth,
-                      child: cellField(
-                        weightLabel,
-                        _weightController,
-                        focusNode: widget.focusNodes.weight,
-                        isNotes: false,
-                        isReps: false,
+    return AnimatedSize(
+      duration: Duration(milliseconds: 180),
+      curve: Curves.bounceIn,
+      child: Padding(
+        padding: EdgeInsets.symmetric(horizontal: widget.horizontalPadding),
+        child: Row(
+          crossAxisAlignment: CrossAxisAlignment.center,
+          children: [
+            indexContainer(widget.setIndex),
+            const SizedBox(width: AppSpacing.s16),
+            Expanded(
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Row(
+                    children: [
+                      SizedBox(width: _smallCellWidth, child: cellLabel('Kg')),
+                      SizedBox(
+                        width: _smallCellWidth,
+                        child: cellLabel('Reps'),
                       ),
-                    ),
-                    SizedBox(
-                      width: _smallCellWidth,
-                      child: cellField(
-                        widget.set.hintRepetitions.toString(),
-                        _repsController,
-                        focusNode: widget.focusNodes.reps,
-                        isNotes: false,
-                        isReps: true,
+                      Expanded(child: cellLabel('Notes')),
+                    ],
+                  ),
+                  const SizedBox(height: AppSpacing.s4),
+                  Row(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      SizedBox(
+                        width: _smallCellWidth,
+                        child: cellField(
+                          weightLabel,
+                          _weightController,
+                          focusNode: widget.focusNodes.weight,
+                          isNotes: false,
+                          isReps: false,
+                        ),
                       ),
-                    ),
-                    Expanded(
-                      child: cellField(
-                        widget.set.hintNotes,
-                        _notesController,
-                        focusNode: widget.focusNodes.notes,
-                        isNotes: true,
-                        isReps: false,
+                      SizedBox(
+                        width: _smallCellWidth,
+                        child: cellField(
+                          widget.set.hintRepetitions.toString(),
+                          _repsController,
+                          focusNode: widget.focusNodes.reps,
+                          isNotes: false,
+                          isReps: true,
+                        ),
                       ),
-                    ),
-                  ],
-                ),
-              ],
+                      Expanded(
+                        child: cellField(
+                          widget.set.hintNotes,
+                          _notesController,
+                          focusNode: widget.focusNodes.notes,
+                          isNotes: true,
+                          isReps: false,
+                        ),
+                      ),
+                    ],
+                  ),
+                ],
+              ),
             ),
-          ),
-          SizedBox(
-            width: 44,
-            height: 44,
-            child: Material(
-              color: Colors.transparent,
-              shape: const CircleBorder(),
-              clipBehavior: Clip.antiAlias,
-              child: InkWell(
-                customBorder: const CircleBorder(),
-                splashFactory: NoSplash.splashFactory,
-                onTap: () async {
-                  await SetSettingsSheet.openSetSettings(
-                    context,
-                    screenWidth,
-                    widget.set.workoutSessionSetId!,
-                    widget.set.isWarmup!,
-                    widget.workoutSessionId,
-                    widget.onDeleteSet,
-                  );
-                },
-                child: Align(
-                  alignment: AlignmentGeometry.centerRight,
-                  child: PhosphorIcon(
-                    PhosphorIcons.dotsThree(PhosphorIconsStyle.bold),
-                    color: AppColors.secondary,
-                    size: widget.iconSize,
+            SizedBox(
+              width: 44,
+              height: 44,
+              child: Material(
+                color: Colors.transparent,
+                shape: const CircleBorder(),
+                clipBehavior: Clip.antiAlias,
+                child: InkWell(
+                  customBorder: const CircleBorder(),
+                  splashFactory: NoSplash.splashFactory,
+                  onTap: () async {
+                    await SetSettingsSheet.openSetSettings(
+                      context,
+                      screenWidth,
+                      widget.set.workoutSessionSetId!,
+                      widget.set.isWarmup!,
+                      widget.workoutSessionId,
+                      widget.onDeleteSet,
+                    );
+                  },
+                  child: Align(
+                    alignment: AlignmentGeometry.centerRight,
+                    child: PhosphorIcon(
+                      PhosphorIcons.dotsThree(PhosphorIconsStyle.bold),
+                      color: AppColors.secondary,
+                      size: widget.iconSize,
+                    ),
                   ),
                 ),
               ),
             ),
-          ),
-        ],
+          ],
+        ),
       ),
     );
   }
