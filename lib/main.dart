@@ -1,6 +1,8 @@
+import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:lifting_tracker_app/firebase_options.dart';
 import 'package:lifting_tracker_app/app/shell/main_shell.dart';
 import 'package:lifting_tracker_app/core/theme/compressed_text_scaler.dart';
 import 'package:lifting_tracker_app/flows/onboarding/presentation/pages/onboarding_shell.dart';
@@ -9,6 +11,8 @@ import 'package:lifting_tracker_app/flows/onboarding/application/setup_completio
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
+
+  await Firebase.initializeApp(options: DefaultFirebaseOptions.currentPlatform);
 
   await SystemChrome.setPreferredOrientations([DeviceOrientation.portraitUp]);
 

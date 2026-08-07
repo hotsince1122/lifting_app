@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "963495008261",
+    "project_id": "lifting-tracker-dev",
+    "storage_bucket": "lifting-tracker-dev.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:963495008261:android:485a07db82daf7399a246c",
+        "android_client_info": {
+          "package_name": "com.luca.liftingtracker"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyBs7dpgEIKjmkhi-hl6WrdqoXnI0EPtQEM"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
