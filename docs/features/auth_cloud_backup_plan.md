@@ -18,7 +18,7 @@ sursa persistenta de adevar pentru feature.
 
 **Status general:** in progress
 
-**Ultima actualizare:** 2026-08-07
+**Ultima actualizare:** 2026-08-08
 
 ## Obiectiv
 
@@ -80,6 +80,23 @@ aplicatiei.
   din stream-ul Firebase `userChanges()`.
 - Dependentele sunt injectabile si pot fi inlocuite cu fake-uri in unit tests,
   fara Firebase real sau conexiune la internet.
+- `AuthRepository` expune operatiile email/parola fara sa expuna tipuri sau
+  exceptii Firebase: creare cont, login, trimitere email de verificare, reload
+  utilizator, resetare parola si logout.
+- Erorile Firebase Auth sunt traduse la `AuthException` si `AuthErrorCode`
+  proprii aplicatiei. `wrong-password`, `user-not-found` si
+  `invalid-credential` sunt unificate ca `invalidCredentials`.
+- Aplicatia valideaza local numai regulile pe care le detine: campuri
+  obligatorii si confirmarea exacta a parolei. Firebase ramane autoritatea
+  pentru sintaxa emailului si politica de complexitate a parolei.
+- Emailurile sunt normalizate prin eliminarea spatiilor exterioare inaintea
+  operatiilor. Parolele nu sunt normalizate sau modificate.
+- Operatiile sunt coordonate de un `AsyncNotifier<void>` separat de stream-ul
+  sesiunii. Controller-ul expune loading/error, pastreaza erorile tipizate si
+  ignora un al doilea submit cat timp o operatie este in curs.
+- Crearea contului si trimiterea emailului de verificare raman operatii
+  separate. Astfel, un esec la trimiterea emailului nu este prezentat gresit
+  drept esec al crearii contului, iar verificarea poate fi reincercata.
 - Proiectul Firebase va folosi planul Blaze.
 - Cloud Storage va folosi un bucket aflat intr-o regiune europeana.
 - Aplicatia poate fi folosita fara cont.
@@ -298,7 +315,7 @@ Statusurile permise sunt `not started`, `in progress`, `blocked`, `deferred` si
 | --- | --- | --- |
 | 0 | Plan general, delimitarea scope-ului si deciziile initiale | done |
 | 1 | Firebase foundation si contractele de autentificare | done |
-| 2 | Email/parola: signup, verify, login, reset si logout | not started |
+| 2 | Email/parola: signup, verify, login, reset si logout | done |
 | 3 | Google Sign-In si provider linking | not started |
 | 4 | UX guest/account in onboarding si settings | not started |
 | 5 | Contractul snapshot-ului si export/import local tranzactional | not started |
@@ -371,6 +388,39 @@ La finalul unui task:
    inainte ca un task dependent sa inceapa.
 
 ## Implementation Log
+
+### 2026-08-08 - Auth 02: Email and password
+
+- Contractul `AuthRepository` a fost extins cu creare cont email/parola, login,
+  trimitere email de verificare, reload utilizator, resetare parola si logout.
+- `FirebaseAuthRepository` implementeaza toate operatiile si traduce numai
+  `FirebaseAuthException` in erorile proprii aplicatiei; erorile neasteptate nu
+  sunt ascunse.
+- Lipsa unui utilizator curent la verificare sau reload produce
+  `AuthErrorCode.noAuthenticatedUser`.
+- Au fost adaugate validarea locala a campurilor obligatorii, verificarea
+  confirmarii parolei si normalizarea emailului. Parolele sunt transmise fara
+  modificari.
+- `AuthController` coordoneaza operatiile prin `AsyncValue<void>`, captureaza
+  erorile de validare si repository, expune loading si previne submit-urile
+  duplicate.
+- Fake-ul repository-ului este reutilizabil intre teste, inregistreaza
+  apelurile si poate simula o eroare sau o operatie ramasa pending.
+- Au fost testate regulile locale, maparea tuturor codurilor Firebase sustinute,
+  starea controller-ului, normalizarea argumentelor, propagarea erorilor,
+  blocarea submit-urilor duplicate si delegarea operatiilor.
+- Operatiile nu au fost apelate live impotriva Firebase Auth si nu a fost folosit
+  Auth Emulator. Activarea provider-ului Email/Password in Firebase Console
+  trebuie confirmata inaintea smoke test-ului runtime din viitorul flow UI.
+- Formatter: 11 fisiere Dart verificate; 3 fisiere au fost reformate.
+- Analyzer: `No issues found`.
+- Teste authentication: toate cele 29 de teste au trecut.
+- Suita completa: toate cele 36 de teste au trecut.
+
+**Urmatorul pas recomandat:** `Auth 03 - Google Sign-In and provider linking`,
+pastrand acelasi contract fara tipuri SDK si reutilizand controller-ul de
+operatii. Configurarea si smoke test-ul live pentru Email/Password trebuie
+confirmate cel tarziu inainte de integrarea UI din `Auth 04`.
 
 ### 2026-08-07 - Auth 01: Firebase foundation
 

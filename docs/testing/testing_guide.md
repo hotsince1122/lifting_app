@@ -20,7 +20,7 @@ dependenta noua pentru teste sau o comanda noua verificata in workspace.
 
 **Status:** active
 
-**Ultima actualizare:** 2026-08-07
+**Ultima actualizare:** 2026-08-08
 
 ## Mod de lucru didactic
 
@@ -190,6 +190,37 @@ Pentru auth foundation verificam cel putin ambele stari ale contractului:
 - un `AuthUser` emis de repository este expus consumatorilor;
 - valoarea `null` este expusa pentru utilizatorul guest/sign out.
 
+### Testarea unui AsyncNotifier de operatii
+
+Pentru un controller de operatii, provider-ul este initializat explicit, apoi
+testul apeleaza notifier-ul si citeste `AsyncValue` rezultat:
+
+```dart
+final container = ProviderContainer.test(
+  overrides: [authRepositoryProvider.overrideWithValue(fakeRepository)],
+);
+
+await container.read(authControllerProvider.future);
+final controller = container.read(authControllerProvider.notifier);
+
+await controller.someOperation();
+
+final state = container.read(authControllerProvider);
+```
+
+Un `FakeAuthRepository` reutilizabil poate inregistra numarul apelurilor si
+argumentele primite. Poate primi si o exceptie pregatita, pentru a verifica daca
+aceeasi eroare ajunge in `AsyncError` fara Firebase real.
+
+Pentru o operatie pending folosim un `Completer<void>`. Future-ul fake-ului
+ramane nefinalizat pana la `completer.complete()`, permitand testului sa observe
+starea loading si sa verifice daca un al doilea submit este ignorat.
+
+Cand controller-ul foloseste `AsyncValue.guard`, eroarea este pastrata in
+starea provider-ului; metoda asincrona nu o arunca din nou catre test. Testul
+verifica `state.hasError`, tipul lui `state.error` si, cand este relevant,
+codul tipizat din exceptie.
+
 ## Comenzi pentru acest workspace
 
 Comanda Flutter obisnuita este:
@@ -259,6 +290,26 @@ Aceste intrebari se decid numai cand etapa curenta are nevoie de ele. Nu adaugam
 dependente de testare anticipat.
 
 ## Testing Log
+
+### 2026-08-08 - Auth 02: validare, mapper si controller async
+
+- Regulile locale pentru email, parola si confirmare au fost testate ca functii
+  pure, folosind Arrange, Act, Assert.
+- Maparea codurilor `FirebaseAuthException` a fost testata table-driven. Fiecare
+  cod genereaza un test separat, iar codurile necunoscute devin
+  `AuthErrorCode.unknown`.
+- `FakeAuthRepository` a fost extras intr-un test double reutilizabil, cu
+  inregistrarea apelurilor, eroare configurabila si future controlabil.
+- Testele `AuthController` folosesc `ProviderContainer.test`, provider override,
+  `AsyncValue` si `Completer<void>` pentru a verifica success, validation error,
+  repository error, loading si prevenirea submit-urilor duplicate.
+- Nu au fost folosite Firebase real, retea sau Firebase Auth Emulator.
+- Testele focalizate de authentication au trecut: 29 din 29.
+- Suita completa a trecut: 36 din 36.
+
+**Urmatorul pas:** pentru `Auth 03`, fake-ul existent va fi extins numai cu
+comportamentul Google Sign-In si provider linking care trebuie observat. Nu se
+introduce un framework de mocking anticipat.
 
 ### 2026-08-07 - Auth state cu fake si provider override
 
