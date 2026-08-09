@@ -18,7 +18,7 @@ sursa persistenta de adevar pentru feature.
 
 **Status general:** in progress
 
-**Ultima actualizare:** 2026-08-08
+**Ultima actualizare:** 2026-08-09
 
 ## Obiectiv
 
@@ -113,6 +113,22 @@ aplicatiei.
   necesita Apple Developer Program si acces la macOS/Xcode.
 - Providerii suplimentari trebuie legati contului existent prin provider
   linking, nu folositi pentru a crea accidental un al doilea Firebase UID.
+- Integrarea Google foloseste un adapter propriu, `GoogleIdentityClient`, astfel
+  incat lifecycle-ul `google_sign_in` sa ramana in layer-ul data, iar contractul
+  `AuthRepository` si controller-ul sa nu expuna tipuri SDK.
+- `GoogleSignIn` este initializat lazy o singura data pentru instanta injectata.
+  Flow-ul nu cere scope-uri suplimentare si nu porneste autentificare Google
+  automata; sesiunea Firebase ramane sursa de adevar la pornirea aplicatiei.
+- `AuthUser` expune providerii prin enum-ul propriu `AuthProviderType` si un set
+  read-only. In aceasta etapa sunt cunoscuti `emailPassword` si `google`.
+- Login-ul Google schimba credentialul Google pe un credential Firebase, iar
+  linking-ul foloseste `linkWithCredential` pe utilizatorul Firebase curent.
+  Astfel, providerul este atasat aceluiasi UID. Lipsa sesiunii si conflictele de
+  credential/provider sunt erori tipizate; nu se face account merge automat.
+- Logout-ul coordoneaza inchiderea sesiunii Firebase si a sesiunii locale Google.
+- Scope-ul Auth 03 este mobil, iOS si Android, cu produsul in continuare iOS-first.
+  Sign in with Apple ramane un flow separat, amanat pana exista Apple Developer
+  Program si acces la macOS/Xcode.
 - Utilizatorul isi va putea sterge contul din aplicatie.
 
 ### Backup si restore
@@ -316,7 +332,7 @@ Statusurile permise sunt `not started`, `in progress`, `blocked`, `deferred` si
 | 0 | Plan general, delimitarea scope-ului si deciziile initiale | done |
 | 1 | Firebase foundation si contractele de autentificare | done |
 | 2 | Email/parola: signup, verify, login, reset si logout | done |
-| 3 | Google Sign-In si provider linking | not started |
+| 3 | Google Sign-In si provider linking | done |
 | 4 | UX guest/account in onboarding si settings | not started |
 | 5 | Contractul snapshot-ului si export/import local tranzactional | not started |
 | 6 | Upload/download manual in Cloud Storage | not started |
@@ -388,6 +404,37 @@ La finalul unui task:
    inainte ca un task dependent sa inceapa.
 
 ## Implementation Log
+
+### 2026-08-09 - Auth 03: Google Sign-In and provider linking
+
+- Providerul Google a fost activat in Firebase. Configuratia iOS include client
+  ID-ul si URL scheme-ul Google in `Info.plist`, iar configuratia Android include
+  clientii OAuth generati dupa adaugarea fingerprint-urilor SHA-1 si SHA-256.
+  Aceste fisiere contin configuratie publica Firebase, nu secrete private.
+- A fost adaugat `google_sign_in` 7.2.0. Adapterul `GoogleIdentityClient` izoleaza
+  SDK-ul, iar `GoogleSignInClient` initializeaza clientul lazy, obtine ID token-ul
+  si poate inchide sesiunea Google.
+- `AuthUser` include un set read-only de provideri mapati din `providerData` prin
+  tipurile proprii aplicatiei.
+- `AuthRepository`, `FirebaseAuthRepository` si `AuthController` expun login si
+  linking Google fara tipuri SDK. Linking-ul opereaza pe utilizatorul Firebase
+  curent prin `linkWithCredential`, pastrand acelasi UID.
+- Erorile Google, token-ul lipsa, lipsa utilizatorului curent si conflictele de
+  linking sunt traduse la `AuthException` si `AuthErrorCode`.
+- Fake-ul repository-ului si testele controller-ului acopera delegarea,
+  anularea pastrata ca eroare tipizata si ignorarea unui al doilea submit cat
+  timp login-ul Google este pending.
+- Nu au fost folosite Firebase Auth live sau Auth Emulator. Smoke test-ul runtime
+  Google este amanat pentru `Auth 04`, cand exista UI-ul de autentificare; va fi
+  facut pe iOS mai intai si apoi pe Android. Tot atunci trebuie confirmat live si
+  flow-ul Email/Password.
+- Formatter: 18 fisiere Dart verificate; 1 fisier a fost reformatat.
+- Analyzer: `No issues found`.
+- Teste authentication: toate cele 43 de teste au trecut.
+- Suita completa: toate cele 50 de teste au trecut.
+
+**Urmatorul pas recomandat:** `Auth 04 - Guest and account UX`, urmat de smoke
+testele live pentru Email/Password si Google Sign-In pe UI-ul rezultat.
 
 ### 2026-08-08 - Auth 02: Email and password
 

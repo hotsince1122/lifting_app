@@ -10,6 +10,7 @@ coverage/
 dist/
 .flutter-plugins
 .flutter-plugins-dependencies
+flutter_*.log
 
 # Flutter tool metadata (personal repo: ignore)
 .metadata

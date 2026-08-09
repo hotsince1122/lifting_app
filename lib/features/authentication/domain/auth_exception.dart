@@ -9,6 +9,13 @@ enum AuthErrorCode {
   operationNotAllowed,
   noAuthenticatedUser,
   unknown,
+  signInCanceled,
+  identityProviderConfigurationError,
+  identityProviderUnavailable,
+  missingIdentityToken,
+  providerAlreadyLinked,
+  credentialAlreadyInUse,
+  accountExistsWithDifferentCredential,
 }
 
 final class AuthException implements Exception {

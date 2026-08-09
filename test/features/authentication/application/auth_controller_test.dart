@@ -239,4 +239,82 @@ void main() {
     expect(fakeRepository.reloadCurrentUserCallCount, 1);
     expect(fakeRepository.signOutCallCount, 1);
   });
+
+  test('delegates Google sign in and provider linking', () async {
+    // Arrange
+    final fakeRepository = FakeAuthRepository();
+
+    final container = ProviderContainer.test(
+      overrides: [authRepositoryProvider.overrideWithValue(fakeRepository)],
+    );
+
+    await container.read(authControllerProvider.future);
+    final controller = container.read(authControllerProvider.notifier);
+
+    // Act
+    await controller.signInWithGoogle();
+    await controller.linkGoogleProvider();
+
+    // Assert
+    expect(fakeRepository.googleSignInCallCount, 1);
+    expect(fakeRepository.googleLinkCallCount, 1);
+  });
+
+  test('preserves a Google sign-in cancellation', () async {
+    // Arrange
+    const expectedException = AuthException(AuthErrorCode.signInCanceled);
+    final fakeRepository = FakeAuthRepository(
+      googleSignInException: expectedException,
+    );
+
+    final container = ProviderContainer.test(
+      overrides: [authRepositoryProvider.overrideWithValue(fakeRepository)],
+    );
+
+    await container.read(authControllerProvider.future);
+    final controller = container.read(authControllerProvider.notifier);
+
+    // Act
+    await controller.signInWithGoogle();
+
+    final state = container.read(authControllerProvider);
+
+    // Assert
+    expect(fakeRepository.googleSignInCallCount, 1);
+    expect(state.hasError, isTrue);
+    expect(state.error, same(expectedException));
+  });
+
+  test('ignores a second Google sign-in while the first is loading', () async {
+    // Arrange
+    final completer = Completer<void>();
+    final fakeRepository = FakeAuthRepository(
+      googleSignInFuture: completer.future,
+    );
+
+    final container = ProviderContainer.test(
+      overrides: [authRepositoryProvider.overrideWithValue(fakeRepository)],
+    );
+
+    await container.read(authControllerProvider.future);
+    final controller = container.read(authControllerProvider.notifier);
+
+    // Act
+    final firstCall = controller.signInWithGoogle();
+
+    await Future<void>.delayed(Duration.zero);
+
+    expect(container.read(authControllerProvider).isLoading, isTrue);
+
+    await controller.signInWithGoogle();
+
+    // Assert
+    expect(fakeRepository.googleSignInCallCount, 1);
+
+    // Google response simulation
+    completer.complete();
+    await firstCall;
+
+    expect(container.read(authControllerProvider).hasValue, isTrue);
+  });
 }

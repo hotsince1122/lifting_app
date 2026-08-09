@@ -95,4 +95,12 @@ class AuthController extends AsyncNotifier<void> {
   Future<void> signOut() {
     return _runAuthOperation((repository) => repository.signOut());
   }
+
+  Future<void> signInWithGoogle() {
+    return _runAuthOperation((repository) => repository.signInWithGoogle());
+  }
+
+  Future<void> linkGoogleProvider() {
+    return _runAuthOperation((repository) => repository.linkGoogleProvider());
+  }
 }

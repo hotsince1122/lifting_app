@@ -20,7 +20,7 @@ dependenta noua pentru teste sau o comanda noua verificata in workspace.
 
 **Status:** active
 
-**Ultima actualizare:** 2026-08-08
+**Ultima actualizare:** 2026-08-09
 
 ## Mod de lucru didactic
 
@@ -290,6 +290,25 @@ Aceste intrebari se decid numai cand etapa curenta are nevoie de ele. Nu adaugam
 dependente de testare anticipat.
 
 ## Testing Log
+
+### 2026-08-09 - Auth 03: Google Sign-In si provider linking
+
+- Mapper-ul providerilor Firebase este testat table-driven pentru valorile
+  cunoscute si pentru providerii necunoscuti, care sunt ignorati.
+- Mapper-ul erorilor `google_sign_in` este testat table-driven pentru anulare,
+  configuratie invalida, UI indisponibil si fallback necunoscut.
+- Testele `AuthController` folosesc fake-ul manual si `Completer<void>` pentru a
+  verifica delegarea login/link, pastrarea anularii tipizate si blocarea unui al
+  doilea login Google cat timp primul este pending.
+- Nu a fost introdus un framework de mocking. Testarea izolata a adapterului
+  concret ar necesita cuplare directa la platform interface si un mock al
+  SDK-ului; pentru aceasta etapa, valoarea suplimentara nu justifica dependentele.
+  Integrarea concreta va fi verificata prin smoke test live in `Auth 04`.
+- Testele focalizate de authentication au trecut: 43 din 43.
+- Suita completa a trecut: 50 din 50.
+
+**Urmatorul pas:** in `Auth 04` se adauga widget tests pentru UX-ul guest/account
+si se executa smoke testele live Email/Password si Google, iOS-first.
 
 ### 2026-08-08 - Auth 02: validare, mapper si controller async
 

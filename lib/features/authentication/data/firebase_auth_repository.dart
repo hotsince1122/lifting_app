@@ -1,13 +1,17 @@
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:lifting_tracker_app/features/authentication/data/firebase_auth_error_mapper.dart';
+import 'package:lifting_tracker_app/features/authentication/data/firebase_auth_provider_mapper.dart';
+import 'package:lifting_tracker_app/features/authentication/data/google_identity_client.dart';
 import 'package:lifting_tracker_app/features/authentication/domain/auth_exception.dart';
+import 'package:lifting_tracker_app/features/authentication/domain/auth_provider_type.dart';
 import 'package:lifting_tracker_app/features/authentication/domain/auth_repository.dart';
 import 'package:lifting_tracker_app/features/authentication/domain/auth_user.dart';
 
 final class FirebaseAuthRepository implements AuthRepository {
-  const FirebaseAuthRepository(this._firebaseAuth);
+  const FirebaseAuthRepository(this._firebaseAuth, this._googleIdentityClient);
 
   final FirebaseAuth _firebaseAuth;
+  final GoogleIdentityClient _googleIdentityClient;
 
   @override
   Stream<AuthUser?> watchAuthState() {
@@ -18,6 +22,10 @@ final class FirebaseAuthRepository implements AuthRepository {
         id: user.uid,
         email: user.email,
         isEmailVerified: user.emailVerified,
+        providers: user.providerData
+            .map((provider) => mapFirebaseAuthProviderId(provider.providerId))
+            .whereType<AuthProviderType>()
+            .toSet(),
       );
     });
   }
@@ -79,7 +87,36 @@ final class FirebaseAuthRepository implements AuthRepository {
 
   @override
   Future<void> signOut() async {
-    await _runFirebaseAuthOperation(() => _firebaseAuth.signOut());
+    await Future.wait<void>([
+      _runFirebaseAuthOperation(() => _firebaseAuth.signOut()),
+      _googleIdentityClient.signOut(),
+    ]);
+  }
+
+  @override
+  Future<void> signInWithGoogle() async {
+    final idToken = await _googleIdentityClient.requestIdToken();
+    final credential = GoogleAuthProvider.credential(idToken: idToken);
+
+    await _runFirebaseAuthOperation(
+      () => _firebaseAuth.signInWithCredential(credential),
+    );
+  }
+
+  @override
+  Future<void> linkGoogleProvider() async {
+    final currentUser = _firebaseAuth.currentUser;
+
+    if (currentUser == null) {
+      throw const AuthException(AuthErrorCode.noAuthenticatedUser);
+    }
+
+    final idToken = await _googleIdentityClient.requestIdToken();
+    final credential = GoogleAuthProvider.credential(idToken: idToken);
+
+    await _runFirebaseAuthOperation(
+      () => currentUser.linkWithCredential(credential),
+    );
   }
 }
 

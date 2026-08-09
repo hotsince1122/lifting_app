@@ -3,6 +3,7 @@ import 'dart:async';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:lifting_tracker_app/features/authentication/application/auth_providers.dart';
+import 'package:lifting_tracker_app/features/authentication/domain/auth_provider_type.dart';
 import 'package:lifting_tracker_app/features/authentication/domain/auth_user.dart';
 
 import '../test_doubles/fake_auth_repository.dart';
@@ -14,6 +15,7 @@ void main() {
       id: 'user-123',
       email: 'test@example.com',
       isEmailVerified: true,
+      providers: {AuthProviderType.emailPassword},
     );
 
     final fakeRepo = FakeAuthRepository(authState: Stream.value(expectedUser));

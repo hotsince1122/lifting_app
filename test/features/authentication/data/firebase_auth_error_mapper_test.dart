@@ -17,6 +17,10 @@ void main() {
       'too-many-requests': AuthErrorCode.tooManyRequests,
       'network-request-failed': AuthErrorCode.networkRequestFailed,
       'operation-not-allowed': AuthErrorCode.operationNotAllowed,
+      'provider-already-linked': AuthErrorCode.providerAlreadyLinked,
+      'credential-already-in-use': AuthErrorCode.credentialAlreadyInUse,
+      'account-exists-with-different-credential':
+          AuthErrorCode.accountExistsWithDifferentCredential,
     };
 
     firebaseErrorToLocalErrorMap.forEach((firebaseError, errorCode) {

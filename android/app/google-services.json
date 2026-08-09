@@ -12,7 +12,20 @@
           "package_name": "com.luca.liftingtracker"
         }
       },
-      "oauth_client": [],
+      "oauth_client": [
+        {
+          "client_id": "963495008261-313klavemp0g7bu328bqp8moun9m9l6f.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.luca.liftingtracker",
+            "certificate_hash": "cce655b844ce8921e62e087aaf29505690e06baa"
+          }
+        },
+        {
+          "client_id": "963495008261-qdpmvtm4qgeon7n2a2osmta8kj3e2h1v.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
       "api_key": [
         {
           "current_key": "AIzaSyBs7dpgEIKjmkhi-hl6WrdqoXnI0EPtQEM"
@@ -20,7 +33,19 @@
       ],
       "services": {
         "appinvite_service": {
-          "other_platform_oauth_client": []
+          "other_platform_oauth_client": [
+            {
+              "client_id": "963495008261-qdpmvtm4qgeon7n2a2osmta8kj3e2h1v.apps.googleusercontent.com",
+              "client_type": 3
+            },
+            {
+              "client_id": "963495008261-28hk4o03bass418g05hcimkqpdk6pi5v.apps.googleusercontent.com",
+              "client_type": 2,
+              "ios_info": {
+                "bundle_id": "com.example.liftingTrackerApp"
+              }
+            }
+          ]
         }
       }
     }

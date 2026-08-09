@@ -6,6 +6,8 @@ class FakeAuthRepository implements AuthRepository {
     Stream<AuthUser?>? authState,
     this.createAccountException,
     this.createAccountFuture,
+    this.googleSignInException,
+    this.googleSignInFuture,
   }) : _authState = authState ?? Stream<AuthUser?>.value(null);
 
   final Stream<AuthUser?> _authState;
@@ -27,6 +29,12 @@ class FakeAuthRepository implements AuthRepository {
   int emailVerificationCallCount = 0;
   int reloadCurrentUserCallCount = 0;
   int signOutCallCount = 0;
+
+  int googleSignInCallCount = 0;
+  int googleLinkCallCount = 0;
+
+  final Object? googleSignInException;
+  final Future<void>? googleSignInFuture;
 
   @override
   Stream<AuthUser?> watchAuthState() {
@@ -82,5 +90,25 @@ class FakeAuthRepository implements AuthRepository {
   @override
   Future<void> signOut() async {
     signOutCallCount++;
+  }
+
+  @override
+  Future<void> signInWithGoogle() async {
+    googleSignInCallCount++;
+
+    final pendingFuture = googleSignInFuture;
+    if (pendingFuture != null) {
+      await pendingFuture;
+    }
+
+    final exception = googleSignInException;
+    if (exception != null) {
+      throw exception;
+    }
+  }
+
+  @override
+  Future<void> linkGoogleProvider() async {
+    googleLinkCallCount++;
   }
 }

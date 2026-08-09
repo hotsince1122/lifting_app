@@ -23,6 +23,12 @@ AuthException mapFirebaseAuthException(FirebaseAuthException exception) {
       return AuthException(AuthErrorCode.networkRequestFailed);
     case 'operation-not-allowed':
       return AuthException(AuthErrorCode.operationNotAllowed);
+    case 'provider-already-linked':
+      return AuthException(AuthErrorCode.providerAlreadyLinked);
+    case 'credential-already-in-use':
+      return AuthException(AuthErrorCode.credentialAlreadyInUse);
+    case 'account-exists-with-different-credential':
+      return AuthException(AuthErrorCode.accountExistsWithDifferentCredential);
     default:
       return AuthException(AuthErrorCode.unknown);
   }
