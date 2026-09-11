@@ -8,6 +8,8 @@ class FakeAuthRepository implements AuthRepository {
     this.createAccountFuture,
     this.googleSignInException,
     this.googleSignInFuture,
+    this.changePasswordException,
+    this.changePasswordFuture,
   }) : _authState = authState ?? Stream<AuthUser?>.value(null);
 
   final Stream<AuthUser?> _authState;
@@ -25,6 +27,12 @@ class FakeAuthRepository implements AuthRepository {
 
   int passwordResetCallCount = 0;
   String? lastPasswordResetEmail;
+
+  int changePasswordCallCount = 0;
+  String? lastCurrentPassword;
+  String? lastNewPassword;
+  final Object? changePasswordException;
+  final Future<void>? changePasswordFuture;
 
   int emailVerificationCallCount = 0;
   int reloadCurrentUserCallCount = 0;
@@ -75,6 +83,26 @@ class FakeAuthRepository implements AuthRepository {
   Future<void> sendPasswordResetEmail({required String email}) async {
     passwordResetCallCount++;
     lastPasswordResetEmail = email;
+  }
+
+  @override
+  Future<void> changePassword({
+    required String currentPassword,
+    required String newPassword,
+  }) async {
+    changePasswordCallCount++;
+    lastCurrentPassword = currentPassword;
+    lastNewPassword = newPassword;
+
+    final pendingFuture = changePasswordFuture;
+    if (pendingFuture != null) {
+      await pendingFuture;
+    }
+
+    final exception = changePasswordException;
+    if (exception != null) {
+      throw exception;
+    }
   }
 
   @override

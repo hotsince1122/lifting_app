@@ -23,6 +23,8 @@ AuthException mapFirebaseAuthException(FirebaseAuthException exception) {
       return AuthException(AuthErrorCode.networkRequestFailed);
     case 'operation-not-allowed':
       return AuthException(AuthErrorCode.operationNotAllowed);
+    case 'requires-recent-login':
+      return AuthException(AuthErrorCode.requiresRecentLogin);
     case 'provider-already-linked':
       return AuthException(AuthErrorCode.providerAlreadyLinked);
     case 'credential-already-in-use':

@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:lifting_tracker_app/core/theme/app_spacing.dart';
 import 'package:lifting_tracker_app/features/plans/application/split_days_controller.dart';
-import 'package:lifting_tracker_app/features/plans/presentation/widgets/edit_app_bar.dart';
+import 'package:lifting_tracker_app/core/ui/app_bars/simple_app_bar.dart';
 import 'package:lifting_tracker_app/features/plans/presentation/widgets/add_to_split.dart';
 import 'package:lifting_tracker_app/features/plans/presentation/widgets/change_name.dart';
 import 'package:lifting_tracker_app/features/plans/presentation/editor/change_name_flow/change_split_name_flow.dart';
@@ -16,7 +16,7 @@ class EditSplitPage extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     return Scaffold(
-      appBar: EditAppBar('Edit split'),
+      appBar: SimpleAppBar('Edit split', isTitleCentered: true),
       body: SafeArea(
         top: false,
         child: SingleChildScrollView(

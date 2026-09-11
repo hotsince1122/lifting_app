@@ -39,7 +39,8 @@ class SelectSplitPage extends ConsumerWidget {
                           children: [
                             Text(
                               "Choose your training split",
-                              style: Theme.of(context).textTheme.headlineMedium,
+                              style: Theme.of(context).textTheme.headlineMedium!
+                                  .copyWith(fontWeight: FontWeight.w900),
                               textAlign: TextAlign.center,
                             ),
                             const SizedBox(height: AppSpacing.s8),
@@ -74,20 +75,21 @@ class SelectSplitPage extends ConsumerWidget {
                             Expanded(
                               child: const Divider(
                                 color: AppColors.cardBorder,
-                                thickness: 1.5,
+                                thickness: 1,
                               ),
                             ),
                             Padding(
                               padding: const EdgeInsets.all(AppSpacing.s12),
                               child: Text(
-                                'Or',
-                                style: Theme.of(context).textTheme.titleLarge,
+                                'or',
+                                style: Theme.of(context).textTheme.labelLarge!
+                                    .copyWith(color: AppColors.onSurfaceMuted),
                               ),
                             ),
                             Expanded(
                               child: const Divider(
                                 color: AppColors.cardBorder,
-                                thickness: 1.5,
+                                thickness: 1,
                               ),
                             ),
                           ],

@@ -33,7 +33,8 @@ class WorkoutsPerWeekPage extends StatelessWidget {
                         children: [
                           Text(
                             'Welcome to Focus Lifts',
-                            style: Theme.of(context).textTheme.displaySmall,
+                            style: Theme.of(context).textTheme.headlineLarge!
+                                .copyWith(fontWeight: FontWeight.w900),
                             textAlign: TextAlign.center,
                           ),
                           const SizedBox(height: AppSpacing.s12),

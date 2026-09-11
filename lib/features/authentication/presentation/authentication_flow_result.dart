@@ -1,0 +1,1 @@
+enum AuthenticationFlowResult { authenticated }

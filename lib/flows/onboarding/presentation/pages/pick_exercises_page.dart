@@ -1,10 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:lifting_tracker_app/core/errors/snack_bar_error.dart';
 import 'package:lifting_tracker_app/core/theme/app_spacing.dart';
 import 'package:lifting_tracker_app/features/plans/application/active_split_days_provider.dart';
-import 'package:lifting_tracker_app/flows/onboarding/application/setup_completion_controller.dart';
-import 'package:lifting_tracker_app/flows/onboarding/application/can_finish_onboarding_provider.dart';
+import 'package:lifting_tracker_app/flows/onboarding/application/exercise_selected_for_each_day_provider.dart';
 import 'package:lifting_tracker_app/core/theme/app_gradients.dart';
 import 'package:lifting_tracker_app/core/theme/app_colors.dart';
 import 'package:lifting_tracker_app/core/ui/cards/gradient_card.dart';
@@ -37,7 +35,8 @@ class PickExercisesPage extends ConsumerWidget {
                   children: [
                     Text(
                       "Select your exercises",
-                      style: Theme.of(context).textTheme.headlineMedium,
+                      style: Theme.of(context).textTheme.headlineMedium!
+                          .copyWith(fontWeight: FontWeight.w900),
                     ),
                     const SizedBox(height: AppSpacing.s8),
                     Text(
@@ -79,7 +78,7 @@ class PickExercisesPage extends ConsumerWidget {
                 ),
               ),
               const SizedBox(height: AppSpacing.s12),
-              _FinishOnboardingButton(dayIds),
+              _FinishOnboardingButton(dayIds, controller),
             ],
           ),
         );
@@ -89,13 +88,16 @@ class PickExercisesPage extends ConsumerWidget {
 }
 
 class _FinishOnboardingButton extends ConsumerWidget {
-  const _FinishOnboardingButton(this.dayIds);
+  const _FinishOnboardingButton(this.dayIds, this.controller);
 
   final List<String> dayIds;
+  final PageController controller;
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final canFinishOnboardingAsync = ref.watch(canFinishOnboardingProvider);
+    final canFinishOnboardingAsync = ref.watch(
+      exerciseSelectedForEachDayProvider,
+    );
 
     return canFinishOnboardingAsync.when(
       loading: () => const Center(child: CircularProgressIndicator()),
@@ -105,14 +107,10 @@ class _FinishOnboardingButton extends ConsumerWidget {
         Widget skipButton = SizedBox(
           height: AppSpacing.s20,
           child: TextButton(
-            onPressed: () async {
-              try {
-                await ref.read(setupCompletionProvider.notifier).complete();
-              } catch (_) {
-                if (!context.mounted) return;
-                SnackBarError.show(context, 'Could not skip. Try again!');
-              }
-            },
+            onPressed: () => controller.nextPage(
+              duration: Duration(milliseconds: 300),
+              curve: Curves.easeIn,
+            ),
             style: TextButton.styleFrom(padding: EdgeInsets.zero),
             child: Text(
               'Skip',
@@ -135,25 +133,16 @@ class _FinishOnboardingButton extends ConsumerWidget {
               buttonHeight: 62,
               onPressed: !canFinishOnboarding
                   ? () {}
-                  : () async {
-                      try {
-                        await ref
-                            .read(setupCompletionProvider.notifier)
-                            .complete();
-                      } catch (_) {
-                        if (!context.mounted) return;
-                        SnackBarError.show(
-                          context,
-                          'Could not finish setup. Try again!',
-                        );
-                      }
-                    },
+                  : () => controller.nextPage(
+                      duration: Duration(milliseconds: 300),
+                      curve: Curves.easeIn,
+                    ),
               child: Row(
                 mainAxisSize: MainAxisSize.min,
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
                   Text(
-                    'Finish',
+                    'Next',
                     style: Theme.of(context).textTheme.titleLarge!.copyWith(
                       color: AppColors.background,
                     ),

@@ -27,6 +27,6 @@ class AppColors {
   static const cardSpotlightStart = Color.fromARGB(255, 26, 34, 47);
   static const cardSpotlightEnd = Color.fromARGB(255, 39, 50, 66);
 
-  static const cardBorder = Color.fromARGB(15, 255, 255, 255);
+  static const cardBorder = Color.fromARGB(18, 255, 255, 255);
   static const cardShadow = Color.fromARGB(38, 0, 0, 0);
 }

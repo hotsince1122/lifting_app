@@ -7,7 +7,7 @@ import 'package:lifting_tracker_app/features/plans/application/planned_exercises
 import 'package:lifting_tracker_app/features/plans/presentation/editor/delete_flow/delete_day_flow.dart';
 import 'package:lifting_tracker_app/features/plans/presentation/widgets/add_to_split.dart';
 import 'package:lifting_tracker_app/features/plans/presentation/widgets/delete_validation.dart';
-import 'package:lifting_tracker_app/features/plans/presentation/widgets/edit_app_bar.dart';
+import 'package:lifting_tracker_app/core/ui/app_bars/simple_app_bar.dart';
 import 'package:lifting_tracker_app/features/plans/presentation/widgets/change_name.dart';
 import 'package:lifting_tracker_app/features/plans/presentation/editor/change_name_flow/change_day_name_flow.dart';
 import 'package:lifting_tracker_app/features/plans/presentation/widgets/exercises.dart';
@@ -22,10 +22,11 @@ class EditDayPage extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     return Scaffold(
-      appBar: EditAppBar('Edit day'),
+      appBar: SimpleAppBar('Edit day', isTitleCentered: true),
       body: SafeArea(
         top: false,
         child: SingleChildScrollView(
+          clipBehavior: Clip.none,
           child: Padding(
             padding: const EdgeInsets.only(
               left: AppSpacing.s16,

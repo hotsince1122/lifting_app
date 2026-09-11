@@ -29,9 +29,9 @@ class ActivePlanOverview extends StatelessWidget {
               mainAxisAlignment: MainAxisAlignment.center,
               children: const [
                 _ActivePill(),
-                SizedBox(height: AppSpacing.s12),
+                SizedBox(height: AppSpacing.s8),
                 _SplitPlanSummary(),
-                SizedBox(height: AppSpacing.s16),
+                SizedBox(height: AppSpacing.s8),
                 _SplitDays(),
               ],
             ),

@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:lifting_tracker_app/core/theme/app_spacing.dart';
 import 'package:lifting_tracker_app/flows/onboarding/presentation/pages/pick_exercises_page.dart';
+import 'package:lifting_tracker_app/flows/onboarding/presentation/pages/protect_your_progress_page.dart';
 import 'package:lifting_tracker_app/flows/onboarding/presentation/pages/select_split_page.dart';
 import 'package:lifting_tracker_app/flows/onboarding/presentation/pages/workouts_per_week_page.dart';
 import 'package:lifting_tracker_app/core/theme/app_colors.dart';
@@ -54,9 +55,7 @@ class _OnboardingShellState extends State<OnboardingShell> {
         child: Stack(
           children: [
             Padding(
-              padding: const EdgeInsets.symmetric(
-                vertical: AppSpacing.s20
-              ),
+              padding: const EdgeInsets.symmetric(vertical: AppSpacing.s20),
               child: PageView(
                 physics: NeverScrollableScrollPhysics(),
                 controller: controller,
@@ -69,6 +68,7 @@ class _OnboardingShellState extends State<OnboardingShell> {
                   WorkoutsPerWeekPage(controller),
                   SelectSplitPage(controller),
                   PickExercisesPage(controller),
+                  ProtectYourProgressPage(),
                 ],
               ),
             ),
@@ -77,9 +77,9 @@ class _OnboardingShellState extends State<OnboardingShell> {
               alignment: Alignment.topCenter,
               child: SmoothPageIndicator(
                 controller: controller,
-                count: 3,
+                count: 4,
                 effect: SlideEffect(
-                  dotWidth: (screenWidth / 3) - 18,
+                  dotWidth: (screenWidth / 4) - 18,
                   dotHeight: 4,
                   spacing: 8,
                   dotColor: AppColors.surface,

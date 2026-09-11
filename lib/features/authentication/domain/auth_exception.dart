@@ -8,6 +8,7 @@ enum AuthErrorCode {
   networkRequestFailed,
   operationNotAllowed,
   noAuthenticatedUser,
+  requiresRecentLogin,
   unknown,
   signInCanceled,
   identityProviderConfigurationError,

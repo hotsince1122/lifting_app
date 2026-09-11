@@ -2,11 +2,13 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:intl/intl.dart';
 import 'package:lifting_tracker_app/core/theme/app_spacing.dart';
+import 'package:lifting_tracker_app/features/authentication/presentation/pages/account_and_backup_page.dart';
 import 'package:lifting_tracker_app/features/progress/application/week_streak_controller.dart';
 import 'package:lifting_tracker_app/core/theme/app_colors.dart';
 
 import 'package:lifting_tracker_app/core/ui/app_bars/app_bar_settings.dart';
 import 'package:lifting_tracker_app/core/ui/app_bars/screen_app_bar.dart';
+import 'package:phosphor_flutter/phosphor_flutter.dart';
 
 class HomeAppBar extends StatelessWidget implements PreferredSizeWidget {
   const HomeAppBar({super.key});
@@ -41,10 +43,29 @@ class HomeAppBar extends StatelessWidget implements PreferredSizeWidget {
       ),
     );
 
+    final Widget profileSettingsWidget = IconButton(
+      onPressed: () {
+        Navigator.of(
+          context,
+        ).push(MaterialPageRoute(builder: (context) => AccountAndBackupPage()));
+      },
+      icon: Icon(PhosphorIcons.user(), size: 16, color: AppColors.primary),
+      style: IconButton.styleFrom(
+        side: BorderSide(color: AppColors.cardBorder),
+        backgroundColor: AppColors.onCardTransparent,
+      ),
+    );
+
     return ScreenAppBar(
       title: weekdayLabel,
       subtitle: '$monthLabel ${now.day},',
-      trailing: streakWidget,
+      trailing: Row(
+        children: [
+          streakWidget,
+          const SizedBox(width: AppSpacing.s4),
+          profileSettingsWidget,
+        ],
+      ),
     );
   }
 }

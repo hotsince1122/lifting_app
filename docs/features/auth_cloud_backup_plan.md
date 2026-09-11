@@ -18,7 +18,7 @@ sursa persistenta de adevar pentru feature.
 
 **Status general:** in progress
 
-**Ultima actualizare:** 2026-08-09
+**Ultima actualizare:** 2026-09-11
 
 ## Obiectiv
 
@@ -82,7 +82,7 @@ aplicatiei.
   fara Firebase real sau conexiune la internet.
 - `AuthRepository` expune operatiile email/parola fara sa expuna tipuri sau
   exceptii Firebase: creare cont, login, trimitere email de verificare, reload
-  utilizator, resetare parola si logout.
+  utilizator, resetare parola, schimbare parola si logout.
 - Erorile Firebase Auth sunt traduse la `AuthException` si `AuthErrorCode`
   proprii aplicatiei. `wrong-password`, `user-not-found` si
   `invalid-credential` sunt unificate ca `invalidCredentials`.
@@ -100,10 +100,20 @@ aplicatiei.
 - Proiectul Firebase va folosi planul Blaze.
 - Cloud Storage va folosi un bucket aflat intr-o regiune europeana.
 - Aplicatia poate fi folosita fara cont.
-- Autentificarea va fi oferita in onboarding, dar pozitia exacta din onboarding
-  nu este inca stabilita.
-- Un utilizator care continua ca guest se poate autentifica ulterior din
-  setari. Flow-ul UX exact nu este inca stabilit.
+- Autentificarea este oferita la finalul onboarding-ului, dupa configurarea
+  planului si exercitiilor. Utilizatorul poate crea un cont, se poate autentifica
+  sau poate continua ca guest.
+- Un utilizator care continua ca guest se poate autentifica ulterior din pagina
+  `Account & Backup`, accesibila din app bar-ul ecranului principal.
+- Flow-urile email/parola pentru creare cont si autentificare folosesc aceeasi
+  pagina si acelasi controller. Crearea contului, autentificarea, resetarea
+  parolei si verificarea emailului au loading si feedback de eroare proprii.
+- Dupa autentificarea cu un email neverificat, utilizatorul poate continua in
+  aplicatie si poate finaliza verificarea ulterior din `Account & Backup`.
+  Backup-ul cloud ramane indisponibil pana la verificarea emailului.
+- Pagina `Account & Backup` afiseaza starea guest, contul autentificat si cazul
+  emailului neverificat. Starea sanatoasa nu necesita un notice separat; notice-ul
+  este rezervat situatiilor care necesita o actiune sau explica o limitare.
 - Metodele planificate sunt:
   - email si parola;
   - Google Sign-In;
@@ -126,10 +136,18 @@ aplicatiei.
   Astfel, providerul este atasat aceluiasi UID. Lipsa sesiunii si conflictele de
   credential/provider sunt erori tipizate; nu se face account merge automat.
 - Logout-ul coordoneaza inchiderea sesiunii Firebase si a sesiunii locale Google.
+- Schimbarea parolei se face direct in aplicatie pentru conturile care au
+  providerul email/parola. Utilizatorul introduce parola curenta, repository-ul
+  face reautentificarea Firebase cu credentialul email/parola si abia apoi
+  apeleaza actualizarea parolei. Parolele nu sunt normalizate, iar politica de
+  complexitate ramane detinuta de Firebase.
 - Scope-ul Auth 03 este mobil, iOS si Android, cu produsul in continuare iOS-first.
   Sign in with Apple ramane un flow separat, amanat pana exista Apple Developer
   Program si acces la macOS/Xcode.
 - Utilizatorul isi va putea sterge contul din aplicatie.
+- Stergerea contului ramane un mock-up dezactivat pana la implementarea
+  reautentificarii, stergerii backup-urilor remote si stergerii contului Firebase.
+  Aceasta operatie ramane urmarita intr-o etapa ulterioara de account lifecycle.
 
 ### Backup si restore
 
@@ -150,6 +168,10 @@ aplicatiei.
   cand autentificarea are loc in onboarding, cat si cand are loc ulterior din
   aplicatie.
 - Restore-ul va putea fi initiat si dupa login, dintr-o zona de cont/backup.
+- Implementarea fiecarei capabilitati de backup include si starea de application
+  necesara UI-ului, plus integrarea corespunzatoare in `Account & Backup`.
+  Contractele, repository-urile, controllerele si testele se stabilizeaza inainte
+  de construirea UI-ului acelei etape.
 - Intr-o etapa ulterioara, backup-ul va fi declansat automat dupa terminarea
   fiecarui workout.
 - Daca backup-ul automat nu poate fi efectuat, aplicatia va pastra local un flag
@@ -220,6 +242,9 @@ authentication
 
 cloud_backup
   -> export, validare, upload, download, restore, backup status
+
+account_and_backup flow
+  -> compune starea authentication si cloud_backup pentru pagina si notice-uri
 ```
 
 Codul existent de workout, plans, history si progress continua sa lucreze cu
@@ -238,6 +263,12 @@ FirebaseAuth
 `firebaseAuthProvider` detine dependenta SDK, `authRepositoryProvider` expune
 contractul aplicatiei, iar `authStateProvider` transforma stream-ul sesiunii in
 stare Riverpod observabila. Aceste layere nu fac login si nu modifica SQLite.
+
+Cat timp pagina `Account & Backup` afiseaza numai autentificarea, ea poate ramane
+temporar in feature-ul `authentication`. Cand incepe sa consume si
+`cloud_backup`, pagina si selectorul care combina cele doua stari se muta in
+`flows/account_and_backup`. Feature-urile continua sa detina separat operatiile
+si starea lor interna.
 
 ### Continutul snapshot-ului
 
@@ -285,8 +316,8 @@ Masurile planificate includ:
 - Firebase App Check inainte de lansarea production;
 - alerte de buget si monitorizarea usage-ului in Google Cloud;
 - evitarea Phone Auth, care nu este necesara si are costuri SMS;
-- email verification pentru conturile email/parola; momentul exact in care
-  backup-ul devine permis ramane de confirmat;
+- email verification pentru conturile email/parola; backup-ul devine permis
+  numai dupa verificarea emailului;
 - testarea regulilor cu Firebase Emulator Suite, daca flow-ul de dezvoltare o
   permite;
 - stergerea backup-urilor asociate atunci cand este sters contul.
@@ -300,27 +331,26 @@ keystore-urile si alte credentiale secrete nu se salveaza in repository.
 Aceste puncte nu trebuie tratate drept decizii pana cand utilizatorul nu le
 confirma:
 
-1. Autentificarea apare la inceputul sau la finalul onboarding-ului?
-2. Cum arata entry point-ul de Account/Backup din aplicatia deja configurata?
-3. Care este textul final: `Sync with cloud`, `Back up now` sau alta formulare?
-4. Ce inseamna exact `Keep local data` pentru backup-ul remote existent?
-5. Se face automat un prim backup dupa autentificare sau numai la apasarea
+1. Care este textul final: `Sync with cloud`, `Back up now` sau alta formulare?
+2. Ce inseamna exact `Keep local data` pentru backup-ul remote existent?
+3. Se face automat un prim backup dupa autentificare sau numai la apasarea
    explicita a butonului?
-6. Ce tabele si ce chei din SharedPreferences intra in primul format de backup?
-7. Sunt incluse sesiunile active/neterminate sau numai workout-urile finalizate?
-8. Snapshot-ul JSON este comprimat cu gzip din prima iteratie?
-9. Cate snapshot-uri sunt pastrate: unul, doua sau trei?
-10. Folosim sloturi fixe sau fisiere timestamped cu o politica de retention?
-11. Care este dimensiunea maxima permisa pentru un backup?
-12. Care este regiunea europeana exacta a bucket-ului?
-13. Cum marcam local ownership-ul bazei pentru a preveni asocierea ei cu un UID
+4. Ce tabele si ce chei din SharedPreferences intra in primul format de backup?
+5. Sunt incluse sesiunile active/neterminate sau numai workout-urile finalizate?
+6. Snapshot-ul JSON este comprimat cu gzip din prima iteratie?
+7. Cate snapshot-uri sunt pastrate: unul, doua sau trei?
+8. Folosim sloturi fixe sau fisiere timestamped cu o politica de retention?
+9. Care este dimensiunea maxima permisa pentru un backup?
+10. Care este regiunea europeana exacta a bucket-ului?
+11. Cum marcam local ownership-ul bazei pentru a preveni asocierea ei cu un UID
     diferit dupa logout/login?
-14. Ce se intampla cu datele locale cand utilizatorul isi sterge contul?
-15. Cum tratam un telefon vechi care incearca sa faca backup dupa ce datele au
+12. Ce se intampla cu datele locale cand utilizatorul isi sterge contul?
+13. Cum tratam un telefon vechi care incearca sa faca backup dupa ce datele au
     fost restaurate pe un telefon nou?
-16. Care sunt momentele exacte de retry pentru un backup pending?
-17. Unde si cum afisam `last successful backup` si starea `backup pending`?
-18. Cand introducem Sign in with Apple in raport cu publicarea pe iOS?
+14. Care sunt momentele exacte de retry pentru un backup pending?
+15. Care sunt textele finale si prioritatea vizuala pentru `last successful
+    backup`, backup pending, backup esuat si restore in progres?
+16. Cand introducem Sign in with Apple in raport cu publicarea pe iOS?
 
 ## Roadmap si status
 
@@ -333,12 +363,12 @@ Statusurile permise sunt `not started`, `in progress`, `blocked`, `deferred` si
 | 1 | Firebase foundation si contractele de autentificare | done |
 | 2 | Email/parola: signup, verify, login, reset si logout | done |
 | 3 | Google Sign-In si provider linking | done |
-| 4 | UX guest/account in onboarding si settings | not started |
-| 5 | Contractul snapshot-ului si export/import local tranzactional | not started |
-| 6 | Upload/download manual in Cloud Storage | not started |
-| 7 | Restore la login si restore manual dupa login | not started |
-| 8 | Account deletion si stergerea datelor remote asociate | not started |
-| 9 | Backup automat, pending flag si retry | not started |
+| 4 | UX guest/account in onboarding si Account & Backup | in progress |
+| 5 | Contractul snapshot-ului, export/import local tranzactional si teste; fara UI | not started |
+| 6 | Upload/download manual, controller/status si UI pentru backup manual | not started |
+| 7 | Detectare backup, conflicte, restore si UI-ul aferent | not started |
+| 8 | Account lifecycle ramas: account deletion si stergerea datelor remote | not started |
+| 9 | Backup automat, pending/retry si starile UI aferente | not started |
 | 10 | Storage Rules, App Check, bugete si hardening | not started |
 | 11 | Sign in with Apple si linking | deferred |
 
@@ -352,9 +382,9 @@ analyzer si testele relevante.
 3. `Auth 03 - Google Sign-In and provider linking`
 4. `Auth 04 - Guest and account UX`
 5. `Backup 01 - Snapshot contract and local export/import`
-6. `Backup 02 - Manual Cloud Storage backup`
-7. `Backup 03 - Restore flows and account deletion`
-8. `Backup 04 - Automatic backup and hardening`
+6. `Backup 02 - Manual Cloud Storage backup and UI`
+7. `Backup 03 - Restore flows, conflict UI and account lifecycle`
+8. `Backup 04 - Automatic backup, pending UI and hardening`
 9. `Auth 05 - Sign in with Apple`, cand exista prerechizitele externe
 
 Task-urile dependente se executa secvential. Daca sunt folosite worktree-uri
@@ -404,6 +434,43 @@ La finalul unui task:
    inainte ca un task dependent sa inceapa.
 
 ## Implementation Log
+
+### 2026-09-11 - Auth 04: Guest and account UX (in progress)
+
+- Autentificarea a fost integrata la finalul onboarding-ului prin pagina
+  `Protect your progress`, cu optiuni Google, email/parola si continuare ca guest.
+- Flow-ul email/parola permite creare cont si sign in, valideaza local campurile
+  obligatorii si confirmarea parolei si afiseaza erorile normalizate ale
+  controller-ului.
+- Au fost adaugate verificarea emailului, retrimiterea emailului de verificare,
+  continuarea temporara cu email neverificat si modalul functional de resetare a
+  parolei.
+- Din aplicatie, `Account & Backup` afiseaza starea guest/account, providerii de
+  sign-in, starea verificarii emailului si permite autentificarea si sign out.
+- Change password este functional pentru conturile email/parola. Modalul
+  valideaza campurile obligatorii si confirmarea, afiseaza erorile pe campul
+  relevant, expune loading si succes, iar repository-ul face reautentificarea
+  inainte de actualizarea parolei. Delete account ramane mock-up dezactivat si
+  legat de stergerea backup-urilor remote.
+- Componentele de feedback si actiunile de verificare au fost extrase pentru
+  reutilizare intre onboarding si `Account & Backup`. Dependentele respecta
+  directia `flow -> feature`.
+- Flow-urile initiale au fost verificate manual pe emulator in timpul
+  implementarii. Integrarea live Firebase pentru schimbarea parolei trebuie
+  verificata printr-un smoke test inainte de inchiderea etapei.
+- Widget tests acopera deciziile principale din Auth 04: starea guest si
+  actiunile disponibile per provider, notice-ul de protectie, validarea si
+  loading-ul paginii email/parola, precum si validarea, eroarea credentialului
+  curent si succesul modalului de schimbare a parolei.
+- Formatter: toate cele 51 de fisiere Dart modificate au fost verificate; trei
+  fisiere de test au fost reformate.
+- Analyzer: `No issues found` la verificarea din 2026-09-11.
+- Suita completa: toate cele 77 de teste au trecut la verificarea din
+  2026-09-11.
+
+**Urmatorul pas recomandat:** smoke test live pentru schimbarea parolei, apoi
+inchiderea si salvarea Auth 04 intr-un commit. Dupa commit, incepe `Backup 01`
+cu snapshot-ul si export/import local testat, fara UI de backup.
 
 ### 2026-08-09 - Auth 03: Google Sign-In and provider linking
 

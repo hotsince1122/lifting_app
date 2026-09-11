@@ -82,6 +82,31 @@ class AuthController extends AsyncNotifier<void> {
     });
   }
 
+  Future<void> changePassword({
+    required String currentPassword,
+    required String newPassword,
+    required String passwordConfirmation,
+  }) {
+    return _runAuthOperation((repository) async {
+      final validationError =
+          validatePassword(currentPassword) ??
+          validatePassword(newPassword) ??
+          validatePasswordConfirmation(
+            password: newPassword,
+            confirmation: passwordConfirmation,
+          );
+
+      if (validationError != null) {
+        throw AuthValidationException(validationError);
+      }
+
+      await repository.changePassword(
+        currentPassword: currentPassword,
+        newPassword: newPassword,
+      );
+    });
+  }
+
   Future<void> sendEmailVerification() {
     return _runAuthOperation(
       (repository) => repository.sendEmailVerification(),

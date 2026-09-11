@@ -218,6 +218,63 @@ void main() {
     expect(validationException.error, AuthInputValidationError.emptyEmail);
   });
 
+  test('delegates password change without modifying either password', () async {
+    // Arrange
+    final fakeRepository = FakeAuthRepository();
+    final container = ProviderContainer.test(
+      overrides: [authRepositoryProvider.overrideWithValue(fakeRepository)],
+    );
+
+    await container.read(authControllerProvider.future);
+    final controller = container.read(authControllerProvider.notifier);
+
+    const currentPassword = '  current password  ';
+    const newPassword = '  new password  ';
+
+    // Act
+    await controller.changePassword(
+      currentPassword: currentPassword,
+      newPassword: newPassword,
+      passwordConfirmation: newPassword,
+    );
+
+    // Assert
+    expect(fakeRepository.changePasswordCallCount, 1);
+    expect(fakeRepository.lastCurrentPassword, currentPassword);
+    expect(fakeRepository.lastNewPassword, newPassword);
+    expect(container.read(authControllerProvider).hasValue, isTrue);
+  });
+
+  test('password change rejects mismatched new passwords', () async {
+    // Arrange
+    final fakeRepository = FakeAuthRepository();
+    final container = ProviderContainer.test(
+      overrides: [authRepositoryProvider.overrideWithValue(fakeRepository)],
+    );
+
+    await container.read(authControllerProvider.future);
+    final controller = container.read(authControllerProvider.notifier);
+
+    // Act
+    await controller.changePassword(
+      currentPassword: 'currentPassword',
+      newPassword: 'newPassword',
+      passwordConfirmation: 'differentPassword',
+    );
+
+    final state = container.read(authControllerProvider);
+
+    // Assert
+    expect(state.error, isA<AuthValidationException>());
+    expect(fakeRepository.changePasswordCallCount, 0);
+
+    final validationException = state.error! as AuthValidationException;
+    expect(
+      validationException.error,
+      AuthInputValidationError.passwordsDoNotMatch,
+    );
+  });
+
   test('delegates verification reload and sign out', () async {
     // Arrange
     final fakeRepository = FakeAuthRepository();

@@ -1,12 +1,13 @@
 import 'package:flutter/material.dart';
 import 'package:lifting_tracker_app/core/theme/app_colors.dart';
 import 'package:lifting_tracker_app/core/theme/app_gradients.dart';
+import 'package:lifting_tracker_app/core/theme/app_spacing.dart';
 
 class GradientCard extends StatelessWidget {
   const GradientCard({
     super.key,
     required this.gradientVariant,
-    this.padding = const EdgeInsets.all(18),
+    this.padding = const EdgeInsets.all(AppSpacing.s16),
     required this.child,
     this.borderColor = AppColors.cardBorder,
   });

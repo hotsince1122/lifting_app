@@ -17,6 +17,7 @@ void main() {
       'too-many-requests': AuthErrorCode.tooManyRequests,
       'network-request-failed': AuthErrorCode.networkRequestFailed,
       'operation-not-allowed': AuthErrorCode.operationNotAllowed,
+      'requires-recent-login': AuthErrorCode.requiresRecentLogin,
       'provider-already-linked': AuthErrorCode.providerAlreadyLinked,
       'credential-already-in-use': AuthErrorCode.credentialAlreadyInUse,
       'account-exists-with-different-credential':

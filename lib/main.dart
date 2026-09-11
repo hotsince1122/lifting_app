@@ -30,12 +30,6 @@ class MainApp extends ConsumerWidget {
       theme: AppTheme.dark,
       debugShowCheckedModeBanner: false,
       builder: (context, child) {
-        // return MediaQuery.withClampedTextScaling(
-        //   minScaleFactor: 1.0,
-        //   maxScaleFactor: 1.15,
-        //   child: child!,
-        // );
-
         final mediaQuery = MediaQuery.of(context);
 
         return MediaQuery(
