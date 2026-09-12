@@ -1,20 +1,26 @@
-import 'package:lifting_tracker_app/flows/onboarding/data/setup_completion_preference_keys.dart';
-import 'package:shared_preferences/shared_preferences.dart';
+import 'package:lifting_tracker_app/core/database/app_database.dart';
+import 'package:lifting_tracker_app/flows/onboarding/data/setup_completion_sql_keys.dart';
 
 Future<void> setAsCompleted() async {
-  final prefs = await SharedPreferences.getInstance();
-  final didSave = await prefs.setBool(setupStatusKey, true);
-
-  if (!didSave) {
-    throw StateError('Could not persist onboarding completion.');
-  }
+  await _saveSetupCompletion(true);
 }
 
 Future<void> reset() async {
-  final prefs = await SharedPreferences.getInstance();
-  final didSave = await prefs.setBool(setupStatusKey, false);
+  await _saveSetupCompletion(false);
+}
 
-  if (!didSave) {
-    throw StateError('Could not reset onboarding completion.');
+Future<void> _saveSetupCompletion(bool isCompleted) async {
+  final db = await AppDatabase.getDatabase();
+  final didUpdate = await db.rawUpdate(
+    '''
+    UPDATE app_settings
+    SET $setupStatusSqlKey = ?
+    WHERE id = 1
+    ''',
+    [isCompleted ? 1 : 0],
+  );
+
+  if (didUpdate != 1) {
+    throw StateError('Could not persist onboarding completion.');
   }
 }

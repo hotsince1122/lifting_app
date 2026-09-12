@@ -1,14 +1,31 @@
-import 'package:lifting_tracker_app/features/progress/data/progress_preference_keys.dart';
-import 'package:shared_preferences/shared_preferences.dart';
+import 'package:lifting_tracker_app/core/database/app_database.dart';
+import 'package:lifting_tracker_app/features/progress/data/progress_sql_keys.dart';
 
 Future<int?> loadWeeklyWorkoutTarget() async {
-  final prefs = await SharedPreferences.getInstance();
-  return prefs.getInt(weeklyWorkoutTargetPreferenceKey);
+  final db = await AppDatabase.getDatabase();
+  final data = await db.rawQuery('''
+    SELECT $weeklyWorkoutTargetSqlKey
+    FROM app_settings
+    WHERE id = 1
+    ''');
+
+  if (data.isEmpty) return null;
+
+  return data.first[weeklyWorkoutTargetSqlKey] as int?;
 }
 
 Future<List<bool>?> loadWeeklyGymAttendance() async {
-  final prefs = await SharedPreferences.getInstance();
-  final encodedAttendance = prefs.getString(weeklyGymAttendancePreferenceKey);
+  final db = await AppDatabase.getDatabase();
+
+  final data = await db.rawQuery('''
+    SELECT $weeklyGymAttendanceSqlKey
+    FROM app_settings
+    WHERE id = 1
+    ''');
+
+  if (data.isEmpty) return null;
+
+  final encodedAttendance = data.first[weeklyGymAttendanceSqlKey] as String?;
 
   if (encodedAttendance == null) return null;
 
@@ -16,6 +33,14 @@ Future<List<bool>?> loadWeeklyGymAttendance() async {
 }
 
 Future<String?> loadWeeklyGymAttendanceWeekStart() async {
-  final prefs = await SharedPreferences.getInstance();
-  return prefs.getString(weeklyGymAttendanceWeekStartPreferenceKey);
+  final db = await AppDatabase.getDatabase();
+  final data = await db.rawQuery('''
+    SELECT $weeklyGymAttendanceWeekStartSqlKey
+    FROM app_settings
+    WHERE id = 1
+    ''');
+
+  if (data.isEmpty) return null;
+
+  return data.first[weeklyGymAttendanceWeekStartSqlKey] as String?;
 }

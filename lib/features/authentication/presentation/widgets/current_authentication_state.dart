@@ -122,10 +122,13 @@ class _SignedInState extends ConsumerWidget {
             Row(
               children: [
                 hasGoogle
-                    ? Image.asset(
-                        'assets/google.png',
-                        height: AppSpacing.s8,
-                        width: AppSpacing.s8,
+                    ? Padding(
+                        padding: EdgeInsetsGeometry.only(right: AppSpacing.s4),
+                        child: Image.asset(
+                          'assets/google.png',
+                          height: AppSpacing.s8,
+                          width: AppSpacing.s8,
+                        ),
                       )
                     : SizedBox.shrink(),
                 Text(

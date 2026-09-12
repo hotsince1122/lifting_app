@@ -171,6 +171,24 @@ class AppDatabase {
     },
   ];
 
+  static Future<void> _createAppSettingsTable(sql.DatabaseExecutor db) async {
+    await db.execute('''
+        CREATE TABLE app_settings (
+        id INTEGER PRIMARY KEY CHECK (id = 1),
+        week_streak INTEGER,
+        workouts_per_week_target INTEGER,
+        weekly_gym_attendance TEXT,
+        weekly_gym_attendance_week_start TEXT,
+        did_user_finish_setup INTEGER NOT NULL DEFAULT 0
+          CHECK (did_user_finish_setup IN (0, 1))
+      )
+    ''');
+
+    await db.rawInsert('''
+      INSERT INTO app_settings (id) VALUES (1)
+      ''');
+  }
+
   static Future<sql.Database> getDatabase() async {
     if (_db != null) return _db!;
 
@@ -181,7 +199,7 @@ class AppDatabase {
 
     _db = await sql.openDatabase(
       path.join(dbPath, 'lifting.db'),
-      version: 1,
+      version: 2,
       onConfigure: (db) async {
         await db.execute('PRAGMA foreign_keys = ON');
       },
@@ -272,6 +290,8 @@ class AppDatabase {
           )
         ''');
 
+        await _createAppSettingsTable(db);
+
         final batch = db.batch();
         for (final splitPlan in _presetSplitPlans) {
           batch.insert('split_plans', splitPlan);
@@ -283,6 +303,11 @@ class AppDatabase {
           batch.insert('exercises', ex);
         }
         await batch.commit(noResult: true);
+      },
+      onUpgrade: (db, oldVersion, newVersion) async {
+        if (oldVersion < 2) {
+          await _createAppSettingsTable(db);
+        }
       },
     );
 

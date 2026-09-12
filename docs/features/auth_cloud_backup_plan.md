@@ -363,7 +363,7 @@ Statusurile permise sunt `not started`, `in progress`, `blocked`, `deferred` si
 | 1 | Firebase foundation si contractele de autentificare | done |
 | 2 | Email/parola: signup, verify, login, reset si logout | done |
 | 3 | Google Sign-In si provider linking | done |
-| 4 | UX guest/account in onboarding si Account & Backup | in progress |
+| 4 | UX guest/account in onboarding si Account & Backup | done |
 | 5 | Contractul snapshot-ului, export/import local tranzactional si teste; fara UI | not started |
 | 6 | Upload/download manual, controller/status si UI pentru backup manual | not started |
 | 7 | Detectare backup, conflicte, restore si UI-ul aferent | not started |
@@ -435,7 +435,7 @@ La finalul unui task:
 
 ## Implementation Log
 
-### 2026-09-11 - Auth 04: Guest and account UX (in progress)
+### 2026-09-11 - Auth 04: Guest and account UX (done)
 
 - Autentificarea a fost integrata la finalul onboarding-ului prin pagina
   `Protect your progress`, cu optiuni Google, email/parola si continuare ca guest.
@@ -455,9 +455,9 @@ La finalul unui task:
 - Componentele de feedback si actiunile de verificare au fost extrase pentru
   reutilizare intre onboarding si `Account & Backup`. Dependentele respecta
   directia `flow -> feature`.
-- Flow-urile initiale au fost verificate manual pe emulator in timpul
-  implementarii. Integrarea live Firebase pentru schimbarea parolei trebuie
-  verificata printr-un smoke test inainte de inchiderea etapei.
+- Flow-urile au fost verificate manual pe emulator. Smoke test-ul live pentru
+  schimbarea parolei a confirmat integrarea Firebase, inclusiv reautentificarea
+  cu parola curenta si autentificarea ulterioara cu parola noua.
 - Widget tests acopera deciziile principale din Auth 04: starea guest si
   actiunile disponibile per provider, notice-ul de protectie, validarea si
   loading-ul paginii email/parola, precum si validarea, eroarea credentialului
@@ -467,10 +467,13 @@ La finalul unui task:
 - Analyzer: `No issues found` la verificarea din 2026-09-11.
 - Suita completa: toate cele 77 de teste au trecut la verificarea din
   2026-09-11.
+- Implementarea Auth 04 a fost salvata si publicata pe `main` in commit-ul
+  `9bf31ab` (`feature(auth): add UI for logging or signing in from the onboarding
+  or inside the app.`).
 
-**Urmatorul pas recomandat:** smoke test live pentru schimbarea parolei, apoi
-inchiderea si salvarea Auth 04 intr-un commit. Dupa commit, incepe `Backup 01`
-cu snapshot-ul si export/import local testat, fara UI de backup.
+**Urmatorul pas recomandat:** incepe `Backup 01` cu auditarea datelor locale,
+definirea contractului snapshot-ului si implementarea exportului/importului
+local tranzactional, insotite de teste si fara UI de backup.
 
 ### 2026-08-09 - Auth 03: Google Sign-In and provider linking
 
