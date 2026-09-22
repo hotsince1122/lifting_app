@@ -20,7 +20,7 @@ dependenta noua pentru teste sau o comanda noua verificata in workspace.
 
 **Status:** active
 
-**Ultima actualizare:** 2026-08-09
+**Ultima actualizare:** 2026-09-22
 
 ## Mod de lucru didactic
 
@@ -134,6 +134,17 @@ Exemple pentru autentificare si cloud backup:
 
 Nu vom incepe direct cu aceste teste. Mai intai invatam unit tests si widget
 tests, care sunt mai rapide si localizeaza mai bine cauza unui esec.
+
+### Testarea SQLite locala
+
+Restore-ul tranzactional foloseste `sqflite_common_ffi` ca dev dependency pentru
+a rula SQLite real in testele Flutter fara device sau emulator. Testul seteaza
+temporar `databaseFactoryFfi`, deschide schema reala prin `AppDatabase` intr-un
+director temporar si sterge directorul la final.
+
+Acest tipar permite verificarea atat a importului reusit, cat si a rollback-ului
+produs de o eroare SQL aparuta dupa ce tranzactia a inceput. Baza folosita de
+aplicatie pe telefon nu este accesata.
 
 ### 4. Security Rules tests
 
@@ -278,18 +289,33 @@ necesite aceasta aprobare suplimentara.
 
 ## Intrebari deschise despre infrastructura de testare
 
-1. Pentru testele SQLite folosim o baza reala pe device/emulator sau adaugam
-   ulterior `sqflite_common_ffi` pentru teste locale?
-2. In ce etapa introducem Firebase Emulator Suite pentru Auth, Storage si
+1. In ce etapa introducem Firebase Emulator Suite pentru Auth, Storage si
    verificarea Security Rules?
-3. Avem nevoie de o librarie de mocking sau fake-urile manuale raman suficiente
+2. Avem nevoie de o librarie de mocking sau fake-urile manuale raman suficiente
    pentru primele feature-uri testate?
-4. Ce praguri sau rapoarte de coverage ar aduce valoare reala proiectului?
+3. Ce praguri sau rapoarte de coverage ar aduce valoare reala proiectului?
 
 Aceste intrebari se decid numai cand etapa curenta are nevoie de ele. Nu adaugam
 dependente de testare anticipat.
 
 ## Testing Log
+
+### 2026-09-22 - Backup 01: import SQLite tranzactional
+
+- A fost adaugat `sqflite_common_ffi` numai ca dev dependency.
+- Testul importului foloseste schema reala creata de `AppDatabase` intr-un
+  director temporar separat.
+- Snapshot-ul parcurge flow-ul
+  `export -> encode -> decode -> validate -> import` si este comparat cu toate
+  cele opt tabele restaurate.
+- Rollback-ul este verificat provocand o incalcare a constrangerii compuse
+  `UNIQUE` din `active_session_sets`, dupa ce celelalte operatii ale importului
+  au fost pregatite.
+- Testul focalizat, suita `cloud_backup` cu 56 de teste si suita completa cu
+  133 de teste au trecut.
+
+**Urmatorul pas:** incepe `Backup 02` si pastreaza testele Firebase separate de
+testul local SQLite.
 
 ### 2026-08-09 - Auth 03: Google Sign-In si provider linking
 

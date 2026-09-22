@@ -18,7 +18,7 @@ sursa persistenta de adevar pentru feature.
 
 **Status general:** in progress
 
-**Ultima actualizare:** 2026-09-11
+**Ultima actualizare:** 2026-09-22
 
 ## Obiectiv
 
@@ -47,6 +47,12 @@ aplicatiei.
   dar toti trebuie sa conduca la acelasi Firebase UID.
 - Restore-ul bazei locale trebuie sa fie atomic: ori se importa intregul backup,
   ori baza locala ramane nemodificata.
+- Formatul v1 include integral `split_plans`, `split_days`, `exercises`,
+  `day_exercises`, `workout_sessions`, `logged_sets` si
+  `active_session_sets`, inclusiv sesiunile active/neterminate.
+- Preferintele necesare restore-ului sunt pastrate in randul singleton
+  `app_settings`: streak-ul saptamanal, targetul saptamanal, prezenta din
+  saptamana curenta, inceputul acelei saptamani si finalizarea onboarding-ului.
 - Securitatea si controlul costurilor fac parte din feature, nu sunt pasi
   optionali de final.
 
@@ -272,15 +278,11 @@ si starea lor interna.
 
 ### Continutul snapshot-ului
 
-Lista exacta trebuie stabilita dupa auditarea completa a schemei. Directia este
-sa includem datele necesare reconstruirii progresului:
-
-- planurile si zilele configurate de utilizator;
-- ordinea exercitiilor din planuri;
-- exercitiile custom, daca exista;
-- workout-urile finalizate;
-- seturile salvate;
-- preferintele persistente care fac parte din progres sau configurare.
+Formatul v1 include integral tabelele `split_plans`, `split_days`, `exercises`,
+`day_exercises`, `workout_sessions`, `logged_sets` si `active_session_sets`.
+Sesiunile active/neterminate sunt incluse. Randul singleton `app_settings`
+include `week_streak`, `workouts_per_week_target`, `weekly_gym_attendance`,
+`weekly_gym_attendance_week_start` si `did_user_finish_setup`.
 
 Date temporare sau derivate, precum starea unui rest timer activ, notificari
 programate sau cache-uri, nu ar trebui incluse implicit.
@@ -289,19 +291,18 @@ Pentru ca restore-ul este complet si nu exista merge, ID-urile locale existente
 pot fi pastrate in snapshot si reintroduse la import. Nu este necesara migrarea
 generala la UUID doar pentru acest feature.
 
-### Forma conceptuala a metadata-ului
+### Forma metadata-ului v1
 
 ```json
 {
   "backupFormatVersion": 1,
   "createdAt": "2026-08-04T00:00:00Z",
-  "appVersion": "0.1.0",
-  "installationId": "to-be-decided",
   "data": {}
 }
 ```
 
-Campurile finale si structura sectiunii `data` nu sunt inca stabilite.
+`createdAt` este serializat in UTC. Structura `data` foloseste numele coloanelor
+SQLite pentru campurile fiecarui rand.
 
 ## Securitate si controlul costurilor
 
@@ -335,22 +336,20 @@ confirma:
 2. Ce inseamna exact `Keep local data` pentru backup-ul remote existent?
 3. Se face automat un prim backup dupa autentificare sau numai la apasarea
    explicita a butonului?
-4. Ce tabele si ce chei din SharedPreferences intra in primul format de backup?
-5. Sunt incluse sesiunile active/neterminate sau numai workout-urile finalizate?
-6. Snapshot-ul JSON este comprimat cu gzip din prima iteratie?
-7. Cate snapshot-uri sunt pastrate: unul, doua sau trei?
-8. Folosim sloturi fixe sau fisiere timestamped cu o politica de retention?
-9. Care este dimensiunea maxima permisa pentru un backup?
-10. Care este regiunea europeana exacta a bucket-ului?
-11. Cum marcam local ownership-ul bazei pentru a preveni asocierea ei cu un UID
+4. Snapshot-ul JSON este comprimat cu gzip din prima iteratie?
+5. Cate snapshot-uri sunt pastrate: unul, doua sau trei?
+6. Folosim sloturi fixe sau fisiere timestamped cu o politica de retention?
+7. Care este dimensiunea maxima permisa pentru un backup?
+8. Care este regiunea europeana exacta a bucket-ului?
+9. Cum marcam local ownership-ul bazei pentru a preveni asocierea ei cu un UID
     diferit dupa logout/login?
-12. Ce se intampla cu datele locale cand utilizatorul isi sterge contul?
-13. Cum tratam un telefon vechi care incearca sa faca backup dupa ce datele au
+10. Ce se intampla cu datele locale cand utilizatorul isi sterge contul?
+11. Cum tratam un telefon vechi care incearca sa faca backup dupa ce datele au
     fost restaurate pe un telefon nou?
-14. Care sunt momentele exacte de retry pentru un backup pending?
-15. Care sunt textele finale si prioritatea vizuala pentru `last successful
+12. Care sunt momentele exacte de retry pentru un backup pending?
+13. Care sunt textele finale si prioritatea vizuala pentru `last successful
     backup`, backup pending, backup esuat si restore in progres?
-16. Cand introducem Sign in with Apple in raport cu publicarea pe iOS?
+14. Cand introducem Sign in with Apple in raport cu publicarea pe iOS?
 
 ## Roadmap si status
 
@@ -364,7 +363,7 @@ Statusurile permise sunt `not started`, `in progress`, `blocked`, `deferred` si
 | 2 | Email/parola: signup, verify, login, reset si logout | done |
 | 3 | Google Sign-In si provider linking | done |
 | 4 | UX guest/account in onboarding si Account & Backup | done |
-| 5 | Contractul snapshot-ului, export/import local tranzactional si teste; fara UI | not started |
+| 5 | Contractul snapshot-ului, export/import local tranzactional si teste; fara UI | done |
 | 6 | Upload/download manual, controller/status si UI pentru backup manual | not started |
 | 7 | Detectare backup, conflicte, restore si UI-ul aferent | not started |
 | 8 | Account lifecycle ramas: account deletion si stergerea datelor remote | not started |
@@ -434,6 +433,31 @@ La finalul unui task:
    inainte ca un task dependent sa inceapa.
 
 ## Implementation Log
+
+### 2026-09-22 - Backup 01: snapshot si import local (done)
+
+- A fost definit formatul v1 al snapshot-ului pentru cele sapte tabele de date
+  si randul singleton `app_settings`.
+- Exportul citeste toate tabelele intr-o singura tranzactie SQLite si produce
+  record-uri tipizate, apoi JSON-ul complet cu versiune si timestamp.
+- Decoderul verifica structura si tipurile, iar validatorul verifica ID-urile
+  duplicate, randul `app_settings` si toate relatiile dintre tabele, inclusiv
+  `workout_sessions.day_id`, care poate fi null.
+- Importul valideaza snapshot-ul inainte sa modifice baza, sterge si reintroduce
+  datele in ordinea foreign key-urilor si actualizeaza `app_settings` in aceeasi
+  tranzactie.
+- Testul SQLite local verifica flow-ul complet
+  `export -> encode -> decode -> validate -> import`, restaurarea tuturor
+  tabelelor si rollback-ul complet la o eroare SQL aparuta spre finalul
+  importului.
+- Formatter: fisierele Dart modificate au fost formatate.
+- Analyzer: `No issues found`.
+- Teste cloud backup: toate cele 56 de teste au trecut.
+- Suita completa: toate cele 133 de teste au trecut.
+
+**Urmatorul pas recomandat:** incepe `Backup 02` cu deciziile pentru fisierul
+remote, apoi implementeaza repository-ul Firebase Cloud Storage, controller-ul
+si backup-ul manual.
 
 ### 2026-09-11 - Auth 04: Guest and account UX (done)
 
