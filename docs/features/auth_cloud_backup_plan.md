@@ -59,6 +59,7 @@ aplicatiei.
 ## In afara scopului
 
 - sincronizare live intre dispozitive;
+- istoric de backup-uri sau alegerea unui snapshot dintr-o zi anterioara;
 - merge la nivel de workout, set sau plan;
 - colaborare intre mai multi utilizatori;
 - folosirea Firestore drept baza operationala;
@@ -157,10 +158,25 @@ aplicatiei.
 
 ### Backup si restore
 
+- Scopul backup-ului este recuperarea progresului dupa reinstalarea aplicatiei
+  sau mutarea pe alt dispozitiv.
+- Varianta finala pastreaza un singur backup per UID: ultimul upload reusit
+  inlocuieste backup-ul anterior. Aceasta este o decizie de produs definitiva,
+  nu o simplificare temporara pentru prima iteratie.
+- Se foloseste o singura cale fixa per UID, fara fisiere timestamped, istoric
+  sau selectie de versiuni. Numele exact al caii se stabileste la implementare.
 - Prima iteratie va avea backup manual.
 - Actiunea manuala va fi expusa initial printr-un control cu sensul
   `Sync with cloud`; textul final din UI ramane de stabilit.
 - Backup-ul va fi un snapshot JSON.
+- Snapshot-ul JSON va fi comprimat cu gzip pentru upload si decomprimat
+  inainte de decodare si validare la download. Formatul JSON v1 ramane acelasi.
+- Limitele confirmate sunt 2 MiB (2 * 1024 * 1024 bytes) pentru fisierul gzip
+  si 20 MiB (20 * 1024 * 1024 bytes) pentru JSON-ul necomprimat. Limita gzip
+  se aplica in client si in Storage Rules; limita JSON se verifica inainte de
+  compresie si in timpul decomprimarii, inainte de acumularea intregului output.
+- Depasirea limitelor opreste operatia fara trunchierea istoricului si fara
+  stergerea backup-ului remote existent.
 - Backup-ul va contine un timestamp si o versiune explicita a formatului, de
   exemplu `schemaVersion` sau `backupFormatVersion`.
 - Backup-ul va fi salvat in Firebase Cloud Storage sub UID-ul utilizatorului.
@@ -312,7 +328,7 @@ Masurile planificate includ:
   UID-ului din calea obiectului;
 - cai de backup controlate de aplicatie, nu nume arbitrare nelimitate;
 - limita maxima pentru dimensiunea unui backup, impusa si prin Storage Rules;
-- un numar limitat de snapshot-uri per utilizator;
+- un singur snapshot per utilizator, la o cale fixa;
 - validarea content type-ului si a metadata-ului permis de Storage Rules;
 - Firebase App Check inainte de lansarea production;
 - alerte de buget si monitorizarea usage-ului in Google Cloud;
@@ -336,20 +352,16 @@ confirma:
 2. Ce inseamna exact `Keep local data` pentru backup-ul remote existent?
 3. Se face automat un prim backup dupa autentificare sau numai la apasarea
    explicita a butonului?
-4. Snapshot-ul JSON este comprimat cu gzip din prima iteratie?
-5. Cate snapshot-uri sunt pastrate: unul, doua sau trei?
-6. Folosim sloturi fixe sau fisiere timestamped cu o politica de retention?
-7. Care este dimensiunea maxima permisa pentru un backup?
-8. Care este regiunea europeana exacta a bucket-ului?
-9. Cum marcam local ownership-ul bazei pentru a preveni asocierea ei cu un UID
+4. Care este regiunea europeana exacta a bucket-ului?
+5. Cum marcam local ownership-ul bazei pentru a preveni asocierea ei cu un UID
     diferit dupa logout/login?
-10. Ce se intampla cu datele locale cand utilizatorul isi sterge contul?
-11. Cum tratam un telefon vechi care incearca sa faca backup dupa ce datele au
+6. Ce se intampla cu datele locale cand utilizatorul isi sterge contul?
+7. Cum tratam un telefon vechi care incearca sa faca backup dupa ce datele au
     fost restaurate pe un telefon nou?
-12. Care sunt momentele exacte de retry pentru un backup pending?
-13. Care sunt textele finale si prioritatea vizuala pentru `last successful
+8. Care sunt momentele exacte de retry pentru un backup pending?
+9. Care sunt textele finale si prioritatea vizuala pentru `last successful
     backup`, backup pending, backup esuat si restore in progres?
-14. Cand introducem Sign in with Apple in raport cu publicarea pe iOS?
+10. Cand introducem Sign in with Apple in raport cu publicarea pe iOS?
 
 ## Roadmap si status
 
@@ -364,7 +376,7 @@ Statusurile permise sunt `not started`, `in progress`, `blocked`, `deferred` si
 | 3 | Google Sign-In si provider linking | done |
 | 4 | UX guest/account in onboarding si Account & Backup | done |
 | 5 | Contractul snapshot-ului, export/import local tranzactional si teste; fara UI | done |
-| 6 | Upload/download manual, controller/status si UI pentru backup manual | not started |
+| 6 | Upload/download manual, controller/status si UI pentru backup manual | in progress |
 | 7 | Detectare backup, conflicte, restore si UI-ul aferent | not started |
 | 8 | Account lifecycle ramas: account deletion si stergerea datelor remote | not started |
 | 9 | Backup automat, pending/retry si starile UI aferente | not started |
@@ -433,6 +445,72 @@ La finalul unui task:
    inainte ca un task dependent sa inceapa.
 
 ## Implementation Log
+
+### 2026-09-22 - Backup 02: limite gzip confirmate
+
+- Utilizatorul a confirmat limitele de 2 MiB comprimat si 20 MiB decomprimat.
+- Implementarea ghidata continua cu adaptarea upload-ului inceput de utilizator:
+  validare, verificarea limitei JSON, gzip, verificarea limitei gzip, upload si
+  returnarea metadata-ului rezultat.
+- A fost actualizat numai planul. Formatter: nenecesar. Analyzer si teste:
+  nerulate in acest pas.
+
+**Urmatorul pas recomandat:** finalizarea upload-ului gzip, apoi download cu
+decomprimare limitata si teste pentru limitele de dimensiune.
+
+### 2026-09-22 - Backup 02: compresie gzip confirmata
+
+- Utilizatorul a ales gzip pentru snapshot-ul remote; implementarea compresiei
+  urmeaza, fara schimbarea structurii JSON v1.
+- Limitele comprimat/decomprimat raman in discutie. Propunerea de 2 MiB/20 MiB
+  reduce plafonul fata de propunerea anterioara de 10 MiB/50 MiB.
+- Limita fisierului comprimat trebuie impusa in Storage Rules, nu numai in
+  client. Limita decomprimarii protejeaza resursele aplicatiei la restore;
+  Storage Rules nu inspecteaza JSON-ul din gzip.
+- Limita per obiect nu reprezinta protectie completa impotriva upload-urilor
+  repetate sau a crearii multor conturi. App Check si masurile de control al
+  abuzului raman necesare inainte de production.
+- A fost actualizata numai documentatia; formatter-ul nu a fost necesar,
+  analyzer-ul si testele nu au fost rulate.
+
+**Urmatorul pas recomandat:** confirmarea limitelor de dimensiune, apoi
+implementarea compresiei si decomprimarii cu limita de output.
+
+### 2026-09-22 - Backup 02: contract remote si teste pentru mapper
+
+- Utilizatorul a adaugat `CloudBackupRepository`, `CloudBackupMetadata`,
+  `CloudBackupException` si mapper-ul erorilor Firebase Storage.
+- Contractul expune upload, download si citirea metadata-ului pentru un UID.
+  Download-ul si citirea metadata-ului permit `null` pentru un backup absent;
+  tratarea efectiva a absentei va fi implementata in repository.
+- A fost adaugat
+  `test/features/cloud_backup/data/firebase_storage_error_mapper_test.dart`:
+  zece cazuri de mapare si un caz de fallback pentru un cod necunoscut.
+- Testele construiesc exceptii Firebase local, fara initializare Firebase,
+  retea, emulator sau dependente noi.
+- Formatter: fisierul de test verificat, fara modificari necesare.
+- Analyzer: `No issues found`.
+- Teste focalizate: toate cele 11 teste au trecut. Suita completa nu a fost
+  rulata in acest pas.
+
+**Urmatorul pas recomandat:** implementarea ghidata a repository-ului Firebase
+Cloud Storage, incepand cu dependenta SDK si citirea metadata-ului.
+
+### 2026-09-22 - Backup 02: un singur backup remote (in progress)
+
+- Utilizatorul a confirmat ca produsul final pastreaza numai ultimul backup
+  reusit per UID, destinat reinstalarii aplicatiei sau mutarii pe alt dispozitiv.
+- Fiecare upload reusit inlocuieste snapshot-ul de la aceeasi cale fixa; nu
+  exista istoric, selectie de versiuni sau politica de retention pentru mai
+  multe snapshot-uri.
+- A fost actualizat numai acest plan; implementarea Dart nu a fost modificata.
+- Formatter: nu a fost necesar.
+- Analyzer: nu a fost rulat, deoarece au fost modificate numai documente.
+- Teste: nu au fost rulate, deoarece au fost modificate numai documente.
+
+**Urmatorul pas recomandat:** definirea contractului repository-ului remote
+pentru un singur backup per UID, apoi implementarea ghidata a transportului
+Firebase Cloud Storage si a testelor aferente.
 
 ### 2026-09-22 - Backup 01: snapshot si import local (done)
 

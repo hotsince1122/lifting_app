@@ -84,22 +84,6 @@ class AppDatabase {
     },
     {'id': 'hammer_curl', 'name': 'Hammer Curl', 'muscle_group': 'biceps'},
 
-    // Cardio
-    {'id': 'cycling', 'name': 'Cycling', 'muscle_group': 'cardio'},
-    {
-      'id': 'elliptical_trainer',
-      'name': 'Elliptical Trainer',
-      'muscle_group': 'cardio',
-    },
-    {
-      'id': 'rowing_machine',
-      'name': 'Rowing Machine',
-      'muscle_group': 'cardio',
-    },
-    {'id': 'running', 'name': 'Running', 'muscle_group': 'cardio'},
-    {'id': 'treadmill', 'name': 'Treadmill', 'muscle_group': 'cardio'},
-    {'id': 'walking', 'name': 'Walking', 'muscle_group': 'cardio'},
-
     // Chest
     {'id': 'bench_press', 'name': 'Bench Press', 'muscle_group': 'chest'},
     {

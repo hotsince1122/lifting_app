@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:intl/intl.dart';
 import 'package:lifting_tracker_app/core/theme/app_spacing.dart';
-import 'package:lifting_tracker_app/features/authentication/presentation/pages/account_and_backup_page.dart';
+import 'package:lifting_tracker_app/flows/account_and_backup.dart/presentation/page/account_and_backup_page.dart';
 import 'package:lifting_tracker_app/features/progress/application/week_streak_controller.dart';
 import 'package:lifting_tracker_app/core/theme/app_colors.dart';
 

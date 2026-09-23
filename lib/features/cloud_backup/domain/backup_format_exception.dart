@@ -6,6 +6,7 @@ enum BackupFormatErrorCode {
   unsupportedVersion,
   duplicateId,
   invalidReference,
+  invalidArchive,
 }
 
 final class BackupFormatException implements Exception {
@@ -32,13 +33,9 @@ final class BackupFormatException implements Exception {
   }
 }
 
-
-
 //============================
 
 //============================
-
-
 
 // BackupFormatErrorCode.missingField
 // // Lipsește cheia "name".
@@ -58,14 +55,9 @@ final class BackupFormatException implements Exception {
 // BackupFormatErrorCode.unsupportedVersion
 // // Snapshot-ul are formatVersion 2, iar aplicația știe doar v1.
 
-
-
-
 //============================
 
 //============================
-
-
 
 //path trebuie primit de DTO, deoarece indexul rândului este cunoscut de clasa care parcurge lista:
 // factory SplitPlanBackupRecord.fromDatabaseRow(
@@ -85,13 +77,9 @@ final class BackupFormatException implements Exception {
 //   // ...
 // }
 
-
-
 //============================
 
 //============================
-
-
 
 // Apelul arată astfel:
 // final splitPlans = <SplitPlanBackupRecord>[];
