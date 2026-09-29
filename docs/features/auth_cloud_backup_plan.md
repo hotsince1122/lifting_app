@@ -166,8 +166,7 @@ aplicatiei.
 - Se foloseste o singura cale fixa per UID, fara fisiere timestamped, istoric
   sau selectie de versiuni. Numele exact al caii se stabileste la implementare.
 - Prima iteratie va avea backup manual.
-- Actiunea manuala va fi expusa initial printr-un control cu sensul
-  `Sync with cloud`; textul final din UI ramane de stabilit.
+- Actiunea manuala este expusa in `Account & Backup` ca `Back up now`.
 - Backup-ul va fi un snapshot JSON.
 - Snapshot-ul JSON va fi comprimat cu gzip pentru upload si decomprimat
   inainte de decodare si validare la download. Formatul JSON v1 ramane acelasi.
@@ -348,20 +347,19 @@ keystore-urile si alte credentiale secrete nu se salveaza in repository.
 Aceste puncte nu trebuie tratate drept decizii pana cand utilizatorul nu le
 confirma:
 
-1. Care este textul final: `Sync with cloud`, `Back up now` sau alta formulare?
-2. Ce inseamna exact `Keep local data` pentru backup-ul remote existent?
-3. Se face automat un prim backup dupa autentificare sau numai la apasarea
+1. Ce inseamna exact `Keep local data` pentru backup-ul remote existent?
+2. Se face automat un prim backup dupa autentificare sau numai la apasarea
    explicita a butonului?
-4. Care este regiunea europeana exacta a bucket-ului?
-5. Cum marcam local ownership-ul bazei pentru a preveni asocierea ei cu un UID
+3. Care este regiunea europeana exacta a bucket-ului?
+4. Cum marcam local ownership-ul bazei pentru a preveni asocierea ei cu un UID
     diferit dupa logout/login?
-6. Ce se intampla cu datele locale cand utilizatorul isi sterge contul?
-7. Cum tratam un telefon vechi care incearca sa faca backup dupa ce datele au
+5. Ce se intampla cu datele locale cand utilizatorul isi sterge contul?
+6. Cum tratam un telefon vechi care incearca sa faca backup dupa ce datele au
     fost restaurate pe un telefon nou?
-8. Care sunt momentele exacte de retry pentru un backup pending?
-9. Care sunt textele finale si prioritatea vizuala pentru `last successful
+7. Care sunt momentele exacte de retry pentru un backup pending?
+8. Care sunt textele finale si prioritatea vizuala pentru `last successful
     backup`, backup pending, backup esuat si restore in progres?
-10. Cand introducem Sign in with Apple in raport cu publicarea pe iOS?
+9. Cand introducem Sign in with Apple in raport cu publicarea pe iOS?
 
 ## Roadmap si status
 
@@ -376,7 +374,7 @@ Statusurile permise sunt `not started`, `in progress`, `blocked`, `deferred` si
 | 3 | Google Sign-In si provider linking | done |
 | 4 | UX guest/account in onboarding si Account & Backup | done |
 | 5 | Contractul snapshot-ului, export/import local tranzactional si teste; fara UI | done |
-| 6 | Upload/download manual, controller/status si UI pentru backup manual | in progress |
+| 6 | Upload/download manual, controller/status si UI pentru backup manual | done |
 | 7 | Detectare backup, conflicte, restore si UI-ul aferent | not started |
 | 8 | Account lifecycle ramas: account deletion si stergerea datelor remote | not started |
 | 9 | Backup automat, pending/retry si starile UI aferente | not started |
@@ -394,7 +392,7 @@ analyzer si testele relevante.
 4. `Auth 04 - Guest and account UX`
 5. `Backup 01 - Snapshot contract and local export/import`
 6. `Backup 02 - Manual Cloud Storage backup and UI`
-7. `Backup 03 - Restore flows, conflict UI and account lifecycle`
+7. `Backup 03 - Restore flows and conflict UI`
 8. `Backup 04 - Automatic backup, pending UI and hardening`
 9. `Auth 05 - Sign in with Apple`, cand exista prerechizitele externe
 
@@ -445,6 +443,43 @@ La finalul unui task:
    inainte ca un task dependent sa inceapa.
 
 ## Implementation Log
+
+### 2026-09-29 - Handoff Backup 02 -> Backup 03
+
+- Backup 02 este `done` la nivel de implementare si verificari automate.
+  `CloudBackupController.backupNow()` exporta snapshot-ul SQLite si il incarca
+  prin `FirebaseCloudBackupRepository`; metadata-ul si ultima data cunoscuta
+  sunt afisate in `BackupSection`, iar erorile apar in
+  `ProgressProtectionNotice`. Endpoint-ul de download exista in repository,
+  dar nu este inca legat de UI. Commitul de baza pentru etapa urmatoare este
+  `a07cd25` (include si commiturile Backup 02 anterioare).
+- Backup 03 incepe cu flow-ul de restore. `downloadBackup()` descarca,
+  decomprima, decodeaza si valideaza snapshot-ul; `importSnapshot()` il scrie
+  tranzactional in SQLite. Butonul `Restore from cloud backup` din
+  `BackupSection` are momentan `onTap: () {}`. Lipsesc coordonarea operatiilor,
+  confirmarea explicita, gestionarea conflictului date locale/cloud, starile UI
+  si reincarcarea providerilor dupa import.
+- Inainte de implementarea unui restore automat la login, trebuie clarificat
+  ce inseamna `Keep local data`, cum se atribuie datele locale unui Firebase UID
+  dupa schimbarea contului si cand se face primul backup. Planul actual cere
+  alegerea utilizatorului cand exista si date locale, si backup remote; nu
+  autorizeaza inlocuirea tacita a datelor locale.
+- Verificarea offline pe dispozitiv dupa hot restart ramane un smoke test
+  recomandat pentru Backup 02; timeout-ul si notice-ul au test widget. Regulile
+  Storage sunt versionate in `storage.rules`, dar deploy-ul si testarea live a
+  regulilor nu au fost confirmate. Aceste verificari nu schimba faptul ca
+  restore-ul poate fi proiectat si inceput acum.
+- Migrarea SQLite pentru coloanele `automatic_backup_enabled` si
+  `backup_pending` pe instalari existente ramane restanta pentru etapa de
+  backup automat (etapa 9); trebuie rezolvata inainte de verificarea completa
+  a aplicatiei pe instalari vechi si inainte de release. Account deletion si
+  stergerea backup-ului remote sunt in etapa 8, separat de Backup 03.
+- Ultima verificare a codului Backup 02: formatter 5 fisiere Dart (0 schimbari),
+  analyzer `No issues found`, suita Flutter 176/176 trecute. Acest handoff
+  modifica doar documentatia; nu au fost rulate din nou verificari de cod.
+
+**Urmatorul pas:** stabilirea deciziei pentru cazul local + cloud, apoi
+implementarea ghidata a restore-ului in `Backup 03`.
 
 ### 2026-09-29 - Backup 02: notice la blocarea verificarii cloud offline
 
