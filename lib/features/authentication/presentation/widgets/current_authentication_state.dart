@@ -114,10 +114,13 @@ class _SignedInState extends ConsumerWidget {
         return Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Text(
-              title,
-              style: Theme.of(context).textTheme.titleSmall,
-              overflow: TextOverflow.ellipsis,
+            Padding(
+              padding: const EdgeInsetsGeometry.only(right: AppSpacing.s4),
+              child: Text(
+                title,
+                style: Theme.of(context).textTheme.titleSmall,
+                overflow: TextOverflow.ellipsis,
+              ),
             ),
             Row(
               children: [

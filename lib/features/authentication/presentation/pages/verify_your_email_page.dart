@@ -91,6 +91,7 @@ class _VerifyYourEmailPageState extends ConsumerState<VerifyYourEmailPage> {
                             )
                           : Column(
                               children: [
+                                const SizedBox(height: AppSpacing.s20),
                                 VerifyEmailActions(email: widget.email),
                                 const SizedBox(height: AppSpacing.s20),
                                 _UnverifiedSection(

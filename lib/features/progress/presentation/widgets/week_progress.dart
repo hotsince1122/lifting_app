@@ -11,10 +11,6 @@ class WeekProgress extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      ref.read(weeklyWorkoutProgressProvider.notifier).syncCurrentWeek();
-    });
-
     final now = DateTime.now();
     final dayFormatter = DateFormat('EEE', 'en_US');
 
