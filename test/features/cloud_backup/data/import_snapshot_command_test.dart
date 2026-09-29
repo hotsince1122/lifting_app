@@ -29,6 +29,13 @@ void main() {
     try {
       final snapshot = buildBackupSnapshotFixture();
 
+      // Device-local backup settings are not part of the portable snapshot.
+      // Use non-default values to verify that import preserves them.
+      await database.update('app_settings', {
+        'automatic_backup_enabled': 0,
+        'backup_pending': 1,
+      }, where: 'id = 1');
+
       await importSnapshot(snapshot);
 
       final exportedSnapshot = await exportSnapshot();
@@ -91,10 +98,11 @@ Future<void> _expectDatabaseToMatchSnapshot(
   expect(await _readTable(database, 'active_session_sets'), [
     for (final record in data.activeSessionSets) record.toJson(),
   ]);
-  expect(
-    (await _readTable(database, 'app_settings')).single,
-    data.appSettings.toJson(),
-  );
+  expect((await _readTable(database, 'app_settings')).single, {
+    ...data.appSettings.toJson(),
+    'automatic_backup_enabled': 0,
+    'backup_pending': 1,
+  });
 
   expect(await database.rawQuery('PRAGMA foreign_key_check'), isEmpty);
 }

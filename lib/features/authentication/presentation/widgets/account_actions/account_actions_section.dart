@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:lifting_tracker_app/core/theme/app_colors.dart';
 import 'package:lifting_tracker_app/core/theme/app_spacing.dart';
 import 'package:lifting_tracker_app/core/ui/cards/solid_card.dart';
+import 'package:lifting_tracker_app/core/ui/tile/setting_action_tile.dart';
 import 'package:lifting_tracker_app/features/authentication/application/auth_providers.dart';
 import 'package:lifting_tracker_app/features/authentication/domain/auth_provider_type.dart';
 import 'package:lifting_tracker_app/features/authentication/presentation/widgets/account_actions/change_password_modal.dart';
@@ -10,14 +11,20 @@ import 'package:lifting_tracker_app/features/authentication/presentation/widgets
 import 'package:lifting_tracker_app/features/authentication/presentation/widgets/account_actions/sign_out_modal.dart';
 import 'package:phosphor_flutter/phosphor_flutter.dart';
 
-class AccountActionsCard extends ConsumerWidget {
-  const AccountActionsCard({super.key});
+class AccountActionsSection extends ConsumerWidget {
+  const AccountActionsSection({super.key});
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final auhtStateAync = ref.watch(authStateProvider);
+    final auhtStateAsync = ref.watch(authStateProvider);
 
-    return auhtStateAync.when(
+    final carterRightIcon = PhosphorIcon(
+      PhosphorIcons.caretRight(),
+      size: 16,
+      color: AppColors.primary,
+    );
+
+    return auhtStateAsync.when(
       loading: () => const SizedBox.shrink(),
       error: (_, _) => const Center(child: Text('An error has occurred!')),
       data: (authState) {
@@ -55,27 +62,30 @@ class AccountActionsCard extends ConsumerWidget {
                       if (authState.hasProvider(
                         AuthProviderType.emailPassword,
                       )) ...[
-                        _AccountAction(
+                        SettingActionTile(
                           icon: PhosphorIcons.password(),
                           title: 'Change password',
                           subtitle: 'Update your account password',
                           onTap: () => ChangePasswordModal.openSheet(context),
+                          leading: carterRightIcon,
                         ),
-                        const _AccountActionDivider(),
+                        const SettingActionDivider(),
                       ],
-                      _AccountAction(
+                      SettingActionTile(
                         icon: PhosphorIcons.signOut(),
                         title: 'Sign out',
                         subtitle: 'Data stays on this device',
                         onTap: () => SignOutModal.openSheet(context),
+                        leading: carterRightIcon,
                       ),
-                      const _AccountActionDivider(),
-                      _AccountAction(
+                      const SettingActionDivider(),
+                      SettingActionTile(
                         icon: PhosphorIcons.trash(),
                         title: 'Delete account',
                         subtitle: 'Permanently deletes your cloud backup',
-                        tone: _AccountActionTone.destructive,
+                        tone: SettingActionTone.destructive,
                         onTap: () => DeleteAccountModal.openSheet(context),
+                        leading: carterRightIcon,
                       ),
                     ],
                   ),
@@ -85,100 +95,6 @@ class AccountActionsCard extends ConsumerWidget {
           );
         }
       },
-    );
-  }
-}
-
-enum _AccountActionTone { standard, destructive }
-
-class _AccountAction extends StatelessWidget {
-  const _AccountAction({
-    required this.icon,
-    required this.title,
-    required this.subtitle,
-    required this.onTap,
-    this.tone = _AccountActionTone.standard,
-  });
-
-  final IconData icon;
-  final String title;
-  final String subtitle;
-  final VoidCallback onTap;
-  final _AccountActionTone tone;
-
-  @override
-  Widget build(BuildContext context) {
-    final isDestructive = tone == _AccountActionTone.destructive;
-    final accentColor = isDestructive ? Colors.red : AppColors.primary;
-
-    return Semantics(
-      button: true,
-      child: InkWell(
-        onTap: onTap,
-        borderRadius: BorderRadius.circular(16),
-        child: Padding(
-          padding: const EdgeInsets.all(AppSpacing.s12),
-          child: Row(
-            children: [
-              Container(
-                width: 36,
-                height: 36,
-                decoration: BoxDecoration(
-                  color: accentColor.withValues(alpha: 0.08),
-                  borderRadius: BorderRadius.circular(12),
-                  border: Border.all(
-                    color: accentColor.withValues(alpha: 0.20),
-                  ),
-                ),
-                child: PhosphorIcon(icon, color: accentColor, size: 18),
-              ),
-              const SizedBox(width: AppSpacing.s12),
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      title,
-                      style: Theme.of(context).textTheme.titleSmall!.copyWith(
-                        color: isDestructive ? Colors.red : null,
-                      ),
-                    ),
-                    const SizedBox(height: AppSpacing.s4),
-                    Text(
-                      subtitle,
-                      maxLines: 2,
-                      overflow: TextOverflow.ellipsis,
-                      style: Theme.of(
-                        context,
-                      ).textTheme.bodySmall!.copyWith(color: AppColors.primary),
-                    ),
-                  ],
-                ),
-              ),
-              const SizedBox(width: AppSpacing.s8),
-              PhosphorIcon(
-                PhosphorIcons.caretRight(),
-                size: 16,
-                color: AppColors.primary,
-              ),
-            ],
-          ),
-        ),
-      ),
-    );
-  }
-}
-
-class _AccountActionDivider extends StatelessWidget {
-  const _AccountActionDivider();
-
-  @override
-  Widget build(BuildContext context) {
-    return const Divider(
-      height: 1,
-      color: AppColors.cardBorder,
-      endIndent: 12,
-      indent: 12,
     );
   }
 }

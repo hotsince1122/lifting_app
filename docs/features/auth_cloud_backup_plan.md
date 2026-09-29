@@ -18,7 +18,7 @@ sursa persistenta de adevar pentru feature.
 
 **Status general:** in progress
 
-**Ultima actualizare:** 2026-09-22
+**Ultima actualizare:** 2026-09-29
 
 ## Obiectiv
 
@@ -445,6 +445,70 @@ La finalul unui task:
    inainte ca un task dependent sa inceapa.
 
 ## Implementation Log
+
+### 2026-09-29 - Backup 02: checkpoint UI si diagnostic offline
+
+- Backup-ul manual este conectat la `CloudBackupController.backupNow()`, iar
+  sectiunea BACKUP afiseaza metadata, numarul local de workout-uri si preferinta
+  persistenta pentru backup automat. Declansarea automata si restore-ul din UI
+  raman neimplementate.
+- Utilizatorul a raportat ca fara internet request-ul ramane in loading si
+  Android logheaza `network unavailable, sleeping`. SDK-ul continua retry-ul;
+  aceste mesaje nu reprezinta inca un `AsyncError` pentru notice. Provider-ul
+  FirebaseStorage nu configureaza momentan alte durate de retry.
+- S-a recomandat reducerea ferestrelor de retry la nivelul SDK-ului si, separat,
+  un cache persistent al metadata-ului asociat UID-ului pentru afisare offline.
+  Aceste propuneri nu au fost implementate sau confirmate in acest checkpoint.
+  Un cache ar reprezenta ultima stare cunoscuta, nu o verificare live a cloud-ului.
+- Storage Rules exista conform discutiei in consola, dar nu sunt inca versionate
+  local. Pentru versionare: `storage.rules` la radacina si
+  `"storage": {"rules": "storage.rules"}` in `firebase.json`. Publicarea prin CLI
+  este separata de commit; nu s-a executat deploy in acest task.
+- Suita completa a identificat un test SQLite neactualizat pentru coloanele
+  locale `automatic_backup_enabled` si `backup_pending`. Testul verifica acum
+  explicit pastrarea unor valori locale diferite de default in timpul importului,
+  alaturi de round-trip-ul snapshot-ului si rollback-ul integral.
+- Coloanele noi sunt prezente in schema de creare, dar versiunea bazei ramane 2:
+  migrarea pentru instalari existente v2 trebuie implementata inainte de inchiderea
+  etapei. Valoarea implicita actuala pentru automatic backup este 1.
+- Formatter: 17 fisiere Dart din checkpoint verificate, 4 reformate.
+- Analyzer: `No issues found`.
+- Teste: suita completa a trecut, 169/169, dupa actualizarea testului SQLite.
+- Commit-ul de checkpoint include UI-ul backup si dependentele sale; modificarile
+  independente din pagina de verificare email, header-ul contului, week progress
+  si `pubspec.lock` raman in working tree.
+
+**Status:** Backup 02 ramane `in progress`, in special pentru comportamentul
+offline, migrarea SQLite si versionarea/testarea Storage Rules.
+
+### 2026-09-29 - Backup 02: notice-uri pentru erorile cloud
+
+- Utilizatorul a confirmat upload-ul live dupa activarea Storage si configurarea
+  regulilor. In acest task nu a fost repetat upload-ul live.
+- `ProgressProtectionNotice` si selectorul sau au fost mutate din
+  `features/authentication` in `flows/account_and_backup`; pagina foloseste noul
+  import. Notice-ul combina acum autentificarea cu erorile cloud backup.
+- Prioritatea ramane guest, email neverificat, apoi eroare de backup. Codul
+  `emailNotVerified` reutilizeaza notice-ul cu actiunile existente de verificare.
+- Mapper-ul `presentation/backup_error_message.dart` traduce toate codurile
+  `CloudBackupErrorCode` si exceptiile neasteptate in titlu si descriere.
+  Timeout-ul nu este prezentat drept dovada lipsei internetului, iar cota
+  serviciului nu este descrisa ca spatiu personal epuizat.
+- Layout-ul existent este reutilizat, cu descrieri fara trunchiere. Erorile
+  cloud sunt afisate inline, fara SnackBar; dispar in timpul reincercarii si
+  dupa succes. Absenta unui backup nu este tratata ca eroare.
+- La cererea utilizatorului, controller-ul nu separa citirea metadata de
+  upload. Textele sunt generale si notice-ul nu introduce un retry ambiguu.
+  Subtitlurile loading/error din `BackupSection` au fost aliniate acestei alegeri.
+- Testele widget au fost mutate in `test/flows/account_and_backup` si extinse:
+  toate cele 15 teste focalizate au trecut, fara Firebase real.
+- Formatter: 6 fisiere Dart verificate, 3 reformate.
+- Analyzer: `No issues found`.
+- Backup 02 ramane in progress; restore-ul si declansarea automata dupa workout
+  nu au fost implementate in acest task.
+
+**Urmatorul pas recomandat:** verificarea vizuala a notice-urilor in aplicatie
+si continuarea verificarilor necesare inchiderii Backup 02, apoi flow-ul restore.
 
 ### 2026-09-22 - Backup 02: limite gzip confirmate
 

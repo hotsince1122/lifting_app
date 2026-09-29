@@ -110,3 +110,21 @@ Future<LastCompletedWorkoutSummary?> loadLastCompletedWorkoutSummary() async {
     workoutDuration: workoutDuration,
   );
 }
+
+Future<int> loadAllCompletedWorkoutsCount() async {
+  final db = await AppDatabase.getDatabase();
+
+  final countData = await db.rawQuery(
+    '''
+    SELECT COUNT(*) AS count
+    FROM workout_sessions
+    WHERE finished_at IS NOT NULL
+      AND status = ?
+    ''',
+    [WorkoutSessionStatuses.completedStatus],
+  );
+
+  if (countData.isEmpty) return 0;
+
+  return countData.first['count'] as int;
+}

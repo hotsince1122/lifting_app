@@ -1,11 +1,13 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:lifting_tracker_app/features/cloud_backup/application/cloud_backup_controller.dart';
+import 'package:lifting_tracker_app/flows/account_and_backup/presentation/backup_error_message.dart';
 import 'package:lifting_tracker_app/core/theme/app_colors.dart';
 import 'package:lifting_tracker_app/core/theme/app_spacing.dart';
 import 'package:lifting_tracker_app/core/ui/cards/solid_card.dart';
 import 'package:lifting_tracker_app/features/authentication/application/auth_controller.dart';
 import 'package:lifting_tracker_app/features/authentication/application/auth_providers.dart';
-import 'package:lifting_tracker_app/features/authentication/application/progress_protection_notice_provider.dart';
+import 'package:lifting_tracker_app/flows/account_and_backup/application/progress_protection_notice_provider.dart';
 import 'package:lifting_tracker_app/features/authentication/domain/auth_exception.dart';
 import 'package:lifting_tracker_app/features/authentication/domain/auth_provider_type.dart';
 import 'package:lifting_tracker_app/features/authentication/presentation/authentication_flow_result.dart';
@@ -41,6 +43,8 @@ class ProgressProtectionNotice extends ConsumerWidget {
                 _SignInOrCreateAccountNotice(),
               ProgressProtectionNoticeContent.verificationRequired =>
                 _VerifyEmailNotice(),
+              ProgressProtectionNoticeContent.backupError =>
+                const _BackupErrorNotice(),
             },
             const SizedBox(height: AppSpacing.s24),
           ],
@@ -51,6 +55,25 @@ class ProgressProtectionNotice extends ConsumerWidget {
 }
 
 enum _BackupStateTone { standard, alert, error }
+
+class _BackupErrorNotice extends ConsumerWidget {
+  const _BackupErrorNotice();
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final backupState = ref.watch(cloudBackupControllerProvider);
+    if (backupState.isLoading || !backupState.hasError) {
+      return const SizedBox.shrink();
+    }
+    final message = backupErrorMessage(backupState.error);
+    return _NoticeLayout(
+      icon: PhosphorIcons.cloudSlash(),
+      title: message.title,
+      subtitle: message.description,
+      tone: _BackupStateTone.error,
+    );
+  }
+}
 
 class _NoticeLayout extends StatelessWidget {
   const _NoticeLayout({
@@ -118,8 +141,6 @@ class _NoticeLayout extends StatelessWidget {
                       const SizedBox(height: AppSpacing.s4),
                       Text(
                         subtitle,
-                        maxLines: 2,
-                        overflow: TextOverflow.ellipsis,
                         style: Theme.of(context).textTheme.bodySmall!.copyWith(
                           color: AppColors.primary,
                         ),

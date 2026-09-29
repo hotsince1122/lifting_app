@@ -223,7 +223,11 @@ class AppDatabase {
         weekly_gym_attendance TEXT,
         weekly_gym_attendance_week_start TEXT,
         did_user_finish_setup INTEGER NOT NULL DEFAULT 0
-          CHECK (did_user_finish_setup IN (0, 1))
+          CHECK (did_user_finish_setup IN (0, 1)),
+        automatic_backup_enabled INTEGER NOT NULL DEFAULT 1
+          CHECK (automatic_backup_enabled IN (0, 1)),
+        backup_pending INTEGER NOT NULL DEFAULT 0
+          CHECK (backup_pending IN (0, 1))
       )
     ''');
 

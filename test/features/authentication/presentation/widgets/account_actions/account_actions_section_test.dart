@@ -4,7 +4,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:lifting_tracker_app/features/authentication/application/auth_providers.dart';
 import 'package:lifting_tracker_app/features/authentication/domain/auth_provider_type.dart';
 import 'package:lifting_tracker_app/features/authentication/domain/auth_user.dart';
-import 'package:lifting_tracker_app/features/authentication/presentation/widgets/account_actions/account_actions_card.dart';
+import 'package:lifting_tracker_app/features/authentication/presentation/widgets/account_actions/account_actions_section.dart';
 
 import '../../../test_doubles/fake_auth_repository.dart';
 
@@ -20,7 +20,7 @@ void main() {
         overrides: [authRepositoryProvider.overrideWithValue(fakeRepository)],
         child: MaterialApp(
           theme: ThemeData.dark(),
-          home: const Scaffold(body: AccountActionsCard()),
+          home: const Scaffold(body: AccountActionsSection()),
         ),
       ),
     );
