@@ -6,7 +6,10 @@ import 'package:lifting_tracker_app/features/cloud_backup/domain/cloud_backup_re
 import 'package:lifting_tracker_app/features/cloud_backup/domain/local_backup_repository.dart';
 
 final firebaseStorageProvider = Provider<FirebaseStorage>((ref) {
-  return FirebaseStorage.instance;
+  final storage = FirebaseStorage.instance;
+  storage.setMaxOperationRetryTime(const Duration(seconds: 15));
+  storage.setMaxUploadRetryTime(const Duration(seconds: 30));
+  return storage;
 });
 
 final cloudBackupRepositoryProvider = Provider<CloudBackupRepository>((ref) {

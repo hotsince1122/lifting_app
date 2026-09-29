@@ -446,6 +446,35 @@ La finalul unui task:
 
 ## Implementation Log
 
+### 2026-09-29 - Backup 02: retry limitat si Storage Rules versionate
+
+- La cererea utilizatorului, `firebaseStorageProvider` configureaza retry-ul SDK:
+  15 secunde pentru operatii precum metadata si 30 secunde pentru upload. Aceste
+  valori limiteaza retry-ul, nu reprezinta un deadline strict pentru tot request-ul.
+- A fost adaugat `storage.rules`, cu regulile furnizate anterior pentru consola:
+  numai proprietarul cu email verificat poate citi/crea/inlocui
+  `users/{userId}/backups/latest.json.gz`; upload-ul trebuie sa fie nenul, maximum
+  2 MiB si `application/gzip`. Listarea, stergerea si alte cai nu sunt permise.
+- `firebase.json` referentiaza fisierul de reguli, pastrand configuratia Flutter.
+  Nu s-a facut deploy si nici citirea regulilor live din consola in acest task.
+  Pentru publicare ulterioara explicita, comanda din radacina proiectului este
+  `firebase deploy --only storage --project lifting-tracker-dev`.
+- Logout-ul actual inchide sesiunile Firebase/Google, fara sa stearga SQLite sau
+  `app_settings`. Cache-ul metadata trebuie asociat UID-ului Firebase pentru a nu
+  afisa timestamp-ul altui cont. UID nu inseamna un UUID nou generat de aplicatie.
+- Pentru cache se recomanda SharedPreferences, deja dependenta a proiectului:
+  metadata recuperabila, separata de snapshot si fara migrare SQLite. Salvarea in
+  `app_settings` este posibila, dar necesita coloane/migrare si excluderea din
+  snapshot. Alegerea si implementarea cache-ului raman de confirmat.
+- Formatter: un fisier Dart verificat, fara modificari suplimentare.
+- Analyzer: `No issues found`.
+- Teste focalizate cloud backup + flow: 95/95 au trecut. Configuratia JSON si
+  referinta fisierului de reguli au fost verificate. Security Rules nu au fost
+  testate cu Emulator Suite; timeout-ul offline nu a fost masurat pe device.
+
+**Urmatorul pas:** hot restart si verificare offline pe device; alegerea cache-ului
+pentru metadata si implementarea migrarii SQLite ramase. Backup 02 este in progress.
+
 ### 2026-09-29 - Backup 02: checkpoint UI si diagnostic offline
 
 - Backup-ul manual este conectat la `CloudBackupController.backupNow()`, iar

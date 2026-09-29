@@ -1,0 +1,20 @@
+rules_version = '2';
+
+service firebase.storage {
+  match /b/{bucket}/o {
+    function isVerifiedOwner(userId) {
+      return request.auth != null
+          && request.auth.uid == userId
+          && request.auth.token.email_verified == true;
+    }
+
+    match /users/{userId}/backups/latest.json.gz {
+      allow get: if isVerifiedOwner(userId);
+
+      allow create, update: if isVerifiedOwner(userId)
+          && request.resource.size > 0
+          && request.resource.size <= 2 * 1024 * 1024
+          && request.resource.contentType == 'application/gzip';
+    }
+  }
+}
