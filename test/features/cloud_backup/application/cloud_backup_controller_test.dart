@@ -37,6 +37,60 @@ void main() {
       expect(cloudRepository.lastMetadataUserId, user.id);
     });
 
+    test(
+      'updates the date for this UID after reading cloud metadata',
+      () async {
+        final user = _buildUser();
+        final metadata = _buildMetadata();
+        final cache = FakeLastBackupDateRepository();
+        final container = _buildContainer(
+          user: user,
+          cloudRepository: FakeCloudBackupRepository(metadataResult: metadata),
+          cache: cache,
+        );
+
+        await container.read(cloudBackupControllerProvider.future);
+
+        expect(await cache.read(user.id), metadata.uploadedAt);
+        expect(await cache.read('another-user'), isNull);
+      },
+    );
+
+    test('clears stale date when cloud confirms no backup', () async {
+      final user = _buildUser();
+      final cache = FakeLastBackupDateRepository()
+        ..dates[user.id] = _buildMetadata().uploadedAt;
+      final container = _buildContainer(
+        user: user,
+        cloudRepository: FakeCloudBackupRepository(),
+        cache: cache,
+      );
+
+      await container.read(cloudBackupControllerProvider.future);
+
+      expect(await cache.read(user.id), isNull);
+    });
+
+    test('keeps the cached date when reading cloud metadata fails', () async {
+      final user = _buildUser();
+      final date = _buildMetadata().uploadedAt;
+      final cache = FakeLastBackupDateRepository()..dates[user.id] = date;
+      final container = _buildContainer(
+        user: user,
+        cloudRepository: FakeCloudBackupRepository(
+          metadataException: StateError('Offline'),
+        ),
+        cache: cache,
+      );
+
+      await expectLater(
+        container.read(cloudBackupControllerProvider.future),
+        throwsStateError,
+      );
+
+      expect(await cache.read(user.id), date);
+    });
+
     for (final scenario in <({String name, AuthUser? user})>[
       (name: 'guest', user: null),
       (name: 'user with unverified email', user: _buildUser(verified: false)),
@@ -89,6 +143,10 @@ void main() {
       expect(
         container.read(cloudBackupControllerProvider).value,
         same(uploadedMetadata),
+      );
+      expect(
+        await container.read(lastBackupDateRepositoryProvider).read(user.id),
+        uploadedMetadata.uploadedAt,
       );
     });
 
@@ -216,6 +274,29 @@ void main() {
       expect(cloudRepository.uploadCallCount, 0);
     });
 
+    test(
+      'cache failure does not turn a successful upload into an error',
+      () async {
+        final metadata = _buildMetadata();
+        final cache = FakeLastBackupDateRepository()..throwOnWrite = true;
+        final container = _buildContainer(
+          user: _buildUser(),
+          cloudRepository: FakeCloudBackupRepository(uploadResult: metadata),
+          cache: cache,
+        );
+        await container.read(cloudBackupControllerProvider.future);
+
+        await container
+            .read(cloudBackupControllerProvider.notifier)
+            .backupNow();
+
+        expect(
+          container.read(cloudBackupControllerProvider).value,
+          same(metadata),
+        );
+      },
+    );
+
     test('ignores a second backup while the first is loading', () async {
       // Arrange
       final exportCompleter = Completer<void>();
@@ -256,6 +337,7 @@ ProviderContainer _buildContainer({
   required AuthUser? user,
   required FakeCloudBackupRepository cloudRepository,
   FakeLocalBackupRepository? localRepository,
+  FakeLastBackupDateRepository? cache,
 }) {
   final local =
       localRepository ??
@@ -268,6 +350,9 @@ ProviderContainer _buildContainer({
       ),
       localBackupRepositoryProvider.overrideWithValue(local),
       cloudBackupRepositoryProvider.overrideWithValue(cloudRepository),
+      lastBackupDateRepositoryProvider.overrideWithValue(
+        cache ?? FakeLastBackupDateRepository(),
+      ),
     ],
   );
 

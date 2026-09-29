@@ -9,6 +9,7 @@ import 'package:lifting_tracker_app/core/ui/cards/solid_card.dart';
 import 'package:lifting_tracker_app/core/ui/tile/setting_action_tile.dart';
 import 'package:lifting_tracker_app/features/authentication/application/auth_providers.dart';
 import 'package:lifting_tracker_app/features/cloud_backup/application/cloud_backup_controller.dart';
+import 'package:lifting_tracker_app/features/cloud_backup/application/cloud_backup_providers.dart';
 import 'package:lifting_tracker_app/features/cloud_backup/application/is_automatic_backup_enabled_controller.dart';
 import 'package:lifting_tracker_app/features/history/application/completed_workouts_count_provider.dart';
 import 'package:phosphor_flutter/phosphor_flutter.dart';
@@ -29,21 +30,30 @@ class BackupSection extends ConsumerWidget {
         }
 
         final backupStateAsync = ref.watch(cloudBackupControllerProvider);
+        final cachedDateAsync = ref.watch(lastBackupDateProvider(authState.id));
+        final cachedDate = cachedDateAsync.value;
+
+        String lastBackupSubtitle(DateTime uploadedAt, {bool cached = false}) {
+          final formattedDate = DateFormat(
+            'dd MMM yyyy, HH:mm',
+          ).format(uploadedAt.toLocal());
+          return cached
+              ? 'Last known backup: $formattedDate'
+              : 'Last successful backup: $formattedDate';
+        }
 
         final backupSubtitle = backupStateAsync.when(
-          loading: () => 'Working on cloud backup…',
-          error: (_, _) => 'Cloud backup needs attention',
+          loading: () => cachedDate == null
+              ? 'Working on cloud backup…'
+              : lastBackupSubtitle(cachedDate, cached: true),
+          error: (_, _) => cachedDate == null
+              ? 'Cloud backup needs attention'
+              : lastBackupSubtitle(cachedDate, cached: true),
           data: (metadata) {
             if (metadata == null) {
               return 'No cloud backup yet';
             }
-
-            final localDate = metadata.uploadedAt.toLocal();
-            final formattedDate = DateFormat(
-              'dd MMM yyyy, HH:mm',
-            ).format(localDate);
-
-            return 'Last successful backup: $formattedDate';
+            return lastBackupSubtitle(metadata.uploadedAt);
           },
         );
 

@@ -446,6 +446,32 @@ La finalul unui task:
 
 ## Implementation Log
 
+### 2026-09-29 - Backup 02: data ultimului backup pastrata local
+
+- Utilizatorul a ales SharedPreferences pentru data ultimului backup cunoscut.
+  `SharedPreferencesLastBackupDateRepository` foloseste API-ul async deja folosit
+  de rest timer si cate o cheie `cloud_backup.last_uploaded_at.v1.<Firebase UID>`.
+  Nu este generat un UUID nou; cache-ul nu intra in snapshot si nu modifica
+  `app_settings`.
+- `CloudBackupController` actualizeaza cache-ul dupa citirea cu succes a
+  metadata-ului si dupa upload reusit; un raspuns cloud valid fara backup sterge
+  data veche. Eroarea de retea sau de upload lasa cache-ul neschimbat. Un esec la
+  scrierea cache-ului nu transforma un backup cloud reusit intr-un esec.
+- `BackupSection` afiseaza `Last known backup` din cache pentru UID-ul curent
+  cat timp cloud-ul este in loading sau error. Dupa raspunsul cloud, afiseaza
+  `Last successful backup` sau `No cloud backup yet`. Datele nu sunt prezentate
+  ca verificate live in perioada offline.
+- Testele controller-ului acopera actualizarea, stergerea, pastrarea la eroare
+  si independenta succesului cloud fata de esecul cache-ului. Widget tests
+  acopera afisarea pe loading/error si izolarea intre doua UID-uri.
+- Formatter: 8 fisiere Dart modificate verificate, 4 reformate.
+- Analyzer: `No issues found`.
+- Teste focalizate controller + sectiune UI: 15/15 au trecut; suita completa:
+  175/175 au trecut.
+
+**Urmatorul pas:** test offline pe device dupa hot restart, apoi migrarea SQLite
+pentru coloanele noi din `app_settings`. Backup 02 ramane in progress.
+
 ### 2026-09-29 - Backup 02: retry limitat si Storage Rules versionate
 
 - La cererea utilizatorului, `firebaseStorageProvider` configureaza retry-ul SDK:

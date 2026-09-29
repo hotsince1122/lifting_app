@@ -2,6 +2,27 @@ import 'package:lifting_tracker_app/features/cloud_backup/domain/backup_snapshot
 import 'package:lifting_tracker_app/features/cloud_backup/domain/cloud_backup_metadata.dart';
 import 'package:lifting_tracker_app/features/cloud_backup/domain/cloud_backup_repository.dart';
 import 'package:lifting_tracker_app/features/cloud_backup/domain/local_backup_repository.dart';
+import 'package:lifting_tracker_app/features/cloud_backup/domain/last_backup_date_repository.dart';
+
+final class FakeLastBackupDateRepository implements LastBackupDateRepository {
+  final dates = <String, DateTime>{};
+  bool throwOnWrite = false;
+
+  @override
+  Future<DateTime?> read(String userId) async => dates[userId];
+
+  @override
+  Future<void> save(String userId, DateTime uploadedAt) async {
+    if (throwOnWrite) throw StateError('Cache unavailable');
+    dates[userId] = uploadedAt;
+  }
+
+  @override
+  Future<void> clear(String userId) async {
+    if (throwOnWrite) throw StateError('Cache unavailable');
+    dates.remove(userId);
+  }
+}
 
 final class FakeLocalBackupRepository implements LocalBackupRepository {
   FakeLocalBackupRepository({

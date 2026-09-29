@@ -22,7 +22,9 @@ class CloudBackupController extends AsyncNotifier<CloudBackupMetadata?> {
 
     final repository = ref.watch(cloudBackupRepositoryProvider);
 
-    return repository.getBackupMetadata(userId: user.id);
+    final metadata = await repository.getBackupMetadata(userId: user.id);
+    await _updateLocalDate(user.id, metadata?.uploadedAt);
+    return metadata;
   }
 
   Future<void> backupNow() async {
@@ -46,9 +48,28 @@ class CloudBackupController extends AsyncNotifier<CloudBackupMetadata?> {
 
       final snapshot = await localRepository.exportSnapshot();
 
-      return cloudRepository.uploadBackup(userId: user.id, snapshot: snapshot);
+      final metadata = await cloudRepository.uploadBackup(
+        userId: user.id,
+        snapshot: snapshot,
+      );
+      await _updateLocalDate(user.id, metadata.uploadedAt);
+      return metadata;
     });
 
     state = nextState;
+  }
+
+  Future<void> _updateLocalDate(String userId, DateTime? uploadedAt) async {
+    try {
+      final cache = ref.read(lastBackupDateRepositoryProvider);
+      if (uploadedAt == null) {
+        await cache.clear(userId);
+      } else {
+        await cache.save(userId, uploadedAt);
+      }
+      ref.invalidate(lastBackupDateProvider(userId));
+    } catch (_) {
+      // A cache failure must not turn a successful cloud operation into an error.
+    }
   }
 }
