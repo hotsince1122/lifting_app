@@ -67,6 +67,7 @@ final class FakeCloudBackupRepository implements CloudBackupRepository {
   FakeCloudBackupRepository({
     this.metadataResult,
     this.metadataException,
+    this.metadataFuture,
     this.uploadResult,
     this.uploadException,
     this.uploadFuture,
@@ -75,6 +76,7 @@ final class FakeCloudBackupRepository implements CloudBackupRepository {
 
   final CloudBackupMetadata? metadataResult;
   final Object? metadataException;
+  final Future<CloudBackupMetadata?>? metadataFuture;
   final CloudBackupMetadata? uploadResult;
   final Object? uploadException;
   final Future<CloudBackupMetadata>? uploadFuture;
@@ -95,6 +97,8 @@ final class FakeCloudBackupRepository implements CloudBackupRepository {
   }) async {
     metadataCallCount++;
     lastMetadataUserId = userId;
+
+    if (metadataFuture != null) return metadataFuture;
 
     final exception = metadataException;
     if (exception != null) {

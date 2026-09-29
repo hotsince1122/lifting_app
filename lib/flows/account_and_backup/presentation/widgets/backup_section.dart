@@ -45,7 +45,7 @@ class BackupSection extends ConsumerWidget {
         final backupSubtitle = backupStateAsync.when(
           loading: () => cachedDate == null
               ? 'Working on cloud backup…'
-              : lastBackupSubtitle(cachedDate, cached: true),
+              : 'Checking cloud… · ${lastBackupSubtitle(cachedDate, cached: true)}',
           error: (_, _) => cachedDate == null
               ? 'Cloud backup needs attention'
               : lastBackupSubtitle(cachedDate, cached: true),

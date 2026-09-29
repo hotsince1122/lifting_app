@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:convert';
 import 'dart:io';
 import 'dart:typed_data';
@@ -44,9 +45,18 @@ final class FirebaseCloudBackupRepository implements CloudBackupRepository {
     }
 
     try {
-      final result = await _backupReference(userId).putData(
+      final upload = _backupReference(userId).putData(
         compressedBytes,
         SettableMetadata(contentType: 'application/gzip'),
+      );
+      final result = await upload.timeout(
+        const Duration(seconds: 30),
+        onTimeout: () {
+          unawaited(upload.cancel().then((_) {}, onError: (_) {}));
+          throw const CloudBackupException(
+            CloudBackupErrorCode.retryLimitExceeded,
+          );
+        },
       );
 
       final metadata = result.metadata;

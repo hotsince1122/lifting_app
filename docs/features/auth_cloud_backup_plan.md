@@ -446,6 +446,25 @@ La finalul unui task:
 
 ## Implementation Log
 
+### 2026-09-29 - Backup 02: notice la blocarea verificarii cloud offline
+
+- `CloudBackupController.build()` opreste asteptarea metadata-ului dupa 15 secunde
+  cu `retryLimitExceeded`. Retry-ul automat Riverpod este dezactivat pentru acest
+  provider, astfel eroarea ramane vizibila in notice. Data cunoscuta din
+  SharedPreferences ramane afisata ca informatie locala.
+- Upload-ul pornit din `FirebaseCloudBackupRepository` are un deadline de 30 de
+  secunde; la expirare incearca anularea taskului si intoarce aceeasi eroare
+  tipizata. Textul existent recomanda verificarea conexiunii si reincercarea.
+- Subtitlul din `BackupSection` afiseaza explicit `Checking cloud…` cat timp
+  metadata-ul se incarca, inclusiv cand exista o data in cache. Testul widget
+  reproduce apasarea pe `Back up now` in timpul verificarii blocate si confirma
+  ca apare notice-ul dupa timeout.
+- Fisiere: controller-ul cloud, repository-ul Firebase, sectiunea UI, fake-ul
+  repository si testul widget. Restore-ul si backup-ul automat raman in progress.
+
+**Urmatorul pas:** verificare offline pe device dupa hot restart si, separat,
+migrarea SQLite necesara preferintelor automate.
+
 ### 2026-09-29 - Backup 02: data ultimului backup pastrata local
 
 - Utilizatorul a ales SharedPreferences pentru data ultimului backup cunoscut.

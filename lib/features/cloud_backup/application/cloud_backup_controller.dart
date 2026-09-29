@@ -9,6 +9,7 @@ import 'package:lifting_tracker_app/features/cloud_backup/domain/cloud_backup_me
 final cloudBackupControllerProvider =
     AsyncNotifierProvider<CloudBackupController, CloudBackupMetadata?>(
       CloudBackupController.new,
+      retry: (_, _) => null,
     );
 
 class CloudBackupController extends AsyncNotifier<CloudBackupMetadata?> {
@@ -22,7 +23,14 @@ class CloudBackupController extends AsyncNotifier<CloudBackupMetadata?> {
 
     final repository = ref.watch(cloudBackupRepositoryProvider);
 
-    final metadata = await repository.getBackupMetadata(userId: user.id);
+    final metadata = await repository
+        .getBackupMetadata(userId: user.id)
+        .timeout(
+          const Duration(seconds: 15),
+          onTimeout: () => throw const CloudBackupException(
+            CloudBackupErrorCode.retryLimitExceeded,
+          ),
+        );
     await _updateLocalDate(user.id, metadata?.uploadedAt);
     return metadata;
   }
