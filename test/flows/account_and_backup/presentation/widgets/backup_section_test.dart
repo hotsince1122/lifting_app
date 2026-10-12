@@ -16,6 +16,7 @@ import 'package:lifting_tracker_app/flows/account_and_backup/presentation/widget
 
 import '../../../../features/authentication/test_doubles/fake_auth_repository.dart';
 import '../../../../features/cloud_backup/test_doubles/fake_backup_repositories.dart';
+import '../../../../features/cloud_backup/test_fixtures/backup_snapshot_fixture.dart';
 
 class _PendingBackupController extends CloudBackupController {
   final pending = Completer<CloudBackupMetadata?>();
@@ -30,6 +31,75 @@ class _AutomaticBackupSetting extends IsAutomaticBackupEnabledController {
 }
 
 void main() {
+  testWidgets('asks before restore and reports success after confirmation', (
+    tester,
+  ) async {
+    var workoutCount = 1;
+    final snapshot = buildBackupSnapshotFixture();
+    final cloud = FakeCloudBackupRepository(
+      metadataResult: CloudBackupMetadata(
+        uploadedAt: DateTime.utc(2026, 9, 23, 10),
+        sizeBytes: 1024,
+      ),
+      downloadResult: snapshot,
+    );
+    final local = FakeLocalBackupRepository(
+      snapshot: snapshot,
+      ownerUid: 'user-b',
+    );
+
+    await tester.pumpWidget(
+      ProviderScope(
+        overrides: [
+          authRepositoryProvider.overrideWithValue(
+            FakeAuthRepository(authState: Stream.value(_user('user-a'))),
+          ),
+          cloudBackupRepositoryProvider.overrideWithValue(cloud),
+          localBackupRepositoryProvider.overrideWithValue(local),
+          lastBackupDateRepositoryProvider.overrideWithValue(
+            FakeLastBackupDateRepository(),
+          ),
+          isAutomaticBackupEnabledController.overrideWith(
+            _AutomaticBackupSetting.new,
+          ),
+          completedWorkoutCountProvider.overrideWith(
+            (ref) async => workoutCount,
+          ),
+        ],
+        child: const MaterialApp(
+          home: Scaffold(
+            body: Column(
+              children: [ProgressProtectionNotice(), BackupSection()],
+            ),
+          ),
+        ),
+      ),
+    );
+    await tester.pumpAndSettle();
+
+    await tester.tap(find.text('Restore from cloud backup'));
+    await tester.pumpAndSettle();
+    expect(find.text('Replace data on this device ?'), findsOneWidget);
+    expect(cloud.downloadCallCount, 0);
+
+    await tester.tap(find.text('Keep local data'));
+    await tester.pumpAndSettle();
+    expect(local.importCallCount, 0);
+    expect(local.ownerUid, 'user-b');
+    workoutCount = 3;
+
+    await tester.tap(find.text('Restore from cloud backup'));
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('Restore backup'));
+    await tester.pumpAndSettle();
+
+    expect(cloud.lastDownloadUserId, 'user-a');
+    expect(local.importCallCount, 1);
+    expect(local.ownerUid, 'user-a');
+    expect(find.text('Backup restored'), findsOneWidget);
+    expect(find.text('3 workouts'), findsOneWidget);
+  });
+
   testWidgets('shows the UID-scoped cached date while cloud is still loading', (
     tester,
   ) async {

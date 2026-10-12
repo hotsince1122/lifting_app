@@ -29,14 +29,15 @@ void main() {
     try {
       final snapshot = buildBackupSnapshotFixture();
 
-      // Device-local backup settings are not part of the portable snapshot.
-      // Use non-default values to verify that import preserves them.
+      // Device-only backup preferences stay local; restored data gets the
+      // account UID that supplied the snapshot.
       await database.update('app_settings', {
         'automatic_backup_enabled': 0,
         'backup_pending': 1,
+        'local_data_owner_uid': 'owner-a',
       }, where: 'id = 1');
 
-      await importSnapshot(snapshot);
+      await importSnapshot(snapshot, ownerUid: 'owner-b');
 
       final exportedSnapshot = await exportSnapshot();
       final encodedSnapshot = encodeBackupSnapshot(exportedSnapshot);
@@ -51,18 +52,45 @@ void main() {
         snapshot.data.splitPlans.single.id,
       ]);
 
-      await importSnapshot(decodedSnapshot);
+      await importSnapshot(decodedSnapshot, ownerUid: 'owner-b');
 
       await _expectDatabaseToMatchSnapshot(database, decodedSnapshot);
 
+      // Fail at the owner update, after the snapshot tables were rewritten.
+      // The transaction must restore both the old data and the old owner.
+      await database.rawUpdate('UPDATE split_plans SET name = ? WHERE id = ?', [
+        'Must survive a failed import',
+        snapshot.data.splitPlans.single.id,
+      ]);
+      await database.execute('''
+        CREATE TRIGGER reject_owner_c
+        BEFORE UPDATE OF local_data_owner_uid ON app_settings
+        WHEN NEW.local_data_owner_uid = 'owner-c'
+        BEGIN
+          SELECT RAISE(ABORT, 'Test owner update failure');
+        END
+      ''');
       final stateBeforeFailedImport = await _readBackupTables(database);
+
+      await expectLater(
+        importSnapshot(decodedSnapshot, ownerUid: 'owner-c'),
+        throwsA(isA<DatabaseException>()),
+      );
+      expect(await _readBackupTables(database), stateBeforeFailedImport);
+
       final invalidSnapshot = _withDuplicateActiveSet(decodedSnapshot);
 
       await expectLater(
-        importSnapshot(invalidSnapshot),
+        importSnapshot(invalidSnapshot, ownerUid: 'owner-d'),
         throwsA(isA<DatabaseException>()),
       );
 
+      expect(await _readBackupTables(database), stateBeforeFailedImport);
+
+      await expectLater(
+        importSnapshot(decodedSnapshot, ownerUid: '  '),
+        throwsArgumentError,
+      );
       expect(await _readBackupTables(database), stateBeforeFailedImport);
     } finally {
       await database.close();
@@ -102,6 +130,7 @@ Future<void> _expectDatabaseToMatchSnapshot(
     ...data.appSettings.toJson(),
     'automatic_backup_enabled': 0,
     'backup_pending': 1,
+    'local_data_owner_uid': 'owner-b',
   });
 
   expect(await database.rawQuery('PRAGMA foreign_key_check'), isEmpty);

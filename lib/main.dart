@@ -8,6 +8,7 @@ import 'package:lifting_tracker_app/core/theme/compressed_text_scaler.dart';
 import 'package:lifting_tracker_app/flows/onboarding/presentation/pages/onboarding_shell.dart';
 import 'package:lifting_tracker_app/core/theme/app_theme.dart';
 import 'package:lifting_tracker_app/flows/onboarding/application/setup_completion_controller.dart';
+import 'package:lifting_tracker_app/flows/account_and_backup/presentation/sign_in_data_gate.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -41,7 +42,7 @@ class MainApp extends ConsumerWidget {
               maxScaleFactor: 1.15,
             ),
           ),
-          child: child!,
+          child: SignInDataGate(child: child!),
         );
       },
       home: goToMenuAsync.when(

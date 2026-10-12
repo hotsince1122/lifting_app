@@ -5,38 +5,43 @@ import 'package:lifting_tracker_app/features/authentication/presentation/widgets
 import 'package:lifting_tracker_app/features/authentication/presentation/widgets/current_authentication_state.dart';
 import 'package:lifting_tracker_app/flows/account_and_backup/presentation/widgets/progress_protection_notice.dart';
 import 'package:lifting_tracker_app/flows/account_and_backup/presentation/widgets/backup_section.dart';
+import 'package:lifting_tracker_app/flows/account_and_backup/presentation/sign_in_data_gate.dart';
 
 class AccountAndBackupPage extends StatelessWidget {
   const AccountAndBackupPage({super.key});
 
   @override
   Widget build(BuildContext context) {
+    final checkingSignInData = SignInDataGate.isLoading(context);
+
     return Scaffold(
-      appBar: SimpleAppBar('Account & Backup'),
-      body: SafeArea(
-        right: true,
-        left: true,
-        bottom: true,
-        child: Padding(
-          padding: const EdgeInsets.symmetric(horizontal: AppSpacing.s16),
-          child: SizedBox(
-            width: double.infinity,
-            child: SingleChildScrollView(
-              child: Column(
-                children: [
-                  const CurrentAuthenticationState(),
-                  const SizedBox(height: AppSpacing.s24),
-                  const ProgressProtectionNotice(),
-                  const BackupSection(),
-                  const SizedBox(height: AppSpacing.s16),
-                  const AccountActionsSection(),
-                  const SizedBox(height: AppSpacing.s16),
-                ],
+      appBar: checkingSignInData ? null : SimpleAppBar('Account & Backup'),
+      body: checkingSignInData
+          ? const Center(child: CircularProgressIndicator())
+          : SafeArea(
+              right: true,
+              left: true,
+              bottom: true,
+              child: Padding(
+                padding: const EdgeInsets.symmetric(horizontal: AppSpacing.s16),
+                child: SizedBox(
+                  width: double.infinity,
+                  child: SingleChildScrollView(
+                    child: Column(
+                      children: [
+                        const CurrentAuthenticationState(),
+                        const SizedBox(height: AppSpacing.s24),
+                        const ProgressProtectionNotice(),
+                        const BackupSection(),
+                        const SizedBox(height: AppSpacing.s16),
+                        const AccountActionsSection(),
+                        const SizedBox(height: AppSpacing.s16),
+                      ],
+                    ),
+                  ),
+                ),
               ),
             ),
-          ),
-        ),
-      ),
     );
   }
 }

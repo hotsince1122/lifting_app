@@ -10,6 +10,7 @@ import 'package:lifting_tracker_app/core/ui/tile/setting_action_tile.dart';
 import 'package:lifting_tracker_app/features/authentication/application/auth_providers.dart';
 import 'package:lifting_tracker_app/features/cloud_backup/application/cloud_backup_controller.dart';
 import 'package:lifting_tracker_app/features/cloud_backup/application/cloud_backup_providers.dart';
+import 'package:lifting_tracker_app/features/cloud_backup/application/cloud_restore_controller.dart';
 import 'package:lifting_tracker_app/features/cloud_backup/application/is_automatic_backup_enabled_controller.dart';
 import 'package:lifting_tracker_app/features/history/application/completed_workouts_count_provider.dart';
 import 'package:phosphor_flutter/phosphor_flutter.dart';
@@ -30,6 +31,7 @@ class BackupSection extends ConsumerWidget {
         }
 
         final backupStateAsync = ref.watch(cloudBackupControllerProvider);
+        final restoreStateAsync = ref.watch(cloudRestoreControllerProvider);
         final cachedDateAsync = ref.watch(lastBackupDateProvider(authState.id));
         final cachedDate = cachedDateAsync.value;
 
@@ -109,7 +111,10 @@ class BackupSection extends ConsumerWidget {
                       title: 'Back up now',
                       subtitle: backupSubtitle,
                       onTap: () async {
-                        if (backupStateAsync.isLoading) return;
+                        if (backupStateAsync.isLoading ||
+                            restoreStateAsync.isLoading) {
+                          return;
+                        }
 
                         await ref
                             .read(cloudBackupControllerProvider.notifier)
@@ -129,7 +134,10 @@ class BackupSection extends ConsumerWidget {
                       title: 'Restore from cloud backup',
                       subtitle:
                           "Replace this device's data with your latest backup",
-                      onTap: () {},
+                      onTap: () async {
+                        if (restoreStateAsync.isLoading) return;
+                        await _handleBackupDownload(context, ref);
+                      },
                       leading: PhosphorIcon(
                         PhosphorIcons.caretRight(),
                         size: 16,
@@ -177,4 +185,37 @@ class BackupSection extends ConsumerWidget {
       },
     );
   }
+}
+
+Future<void> _handleBackupDownload(BuildContext context, WidgetRef ref) async {
+  final confirmed = await showDialog<bool>(
+    context: context,
+    builder: (dialogContext) {
+      return CupertinoAlertDialog(
+        title: const Text('Replace data on this device ?'),
+        content: const Text(
+          'Your local plans, workouts, and history will be replaced with '
+          'the cloud backup. This cannot be undone.',
+        ),
+        actions: [
+          CupertinoDialogAction(
+            onPressed: () async {
+              Navigator.pop(dialogContext, false);
+            },
+            child: const Text('Keep local data'),
+          ),
+          CupertinoDialogAction(
+            onPressed: () async {
+              Navigator.pop(dialogContext, true);
+            },
+            child: const Text('Restore backup'),
+          ),
+        ],
+      );
+    },
+  );
+
+  if (confirmed != true || !context.mounted) return;
+
+  await ref.read(cloudRestoreControllerProvider.notifier).restoreNow();
 }

@@ -27,17 +27,89 @@ final class FakeLastBackupDateRepository implements LastBackupDateRepository {
 final class FakeLocalBackupRepository implements LocalBackupRepository {
   FakeLocalBackupRepository({
     required this.snapshot,
+    this.ownerUid,
+    this.hasWorkoutProgressValue = false,
     this.exportException,
     this.exportFuture,
+    this.importException,
+    this.importFuture,
   });
 
   final BackupSnapshot snapshot;
+  String? ownerUid;
+  bool hasWorkoutProgressValue;
   final Object? exportException;
   final Future<void>? exportFuture;
+  final Object? importException;
+  final Future<void>? importFuture;
 
   int exportCallCount = 0;
   int importCallCount = 0;
+  int loadOwnerCallCount = 0;
+  int claimCallCount = 0;
+  int hasWorkoutProgressCallCount = 0;
+  int reassignOwnerCallCount = 0;
+  int reassignOwnerIfNoWorkoutsCallCount = 0;
+  String? lastClaimedUid;
+  String? lastExpectedOwnerUid;
+  String? lastReassignedOwnerUid;
   BackupSnapshot? lastImportedSnapshot;
+  String? lastImportedOwnerUid;
+
+  @override
+  Future<String?> loadOwnerUid() async {
+    loadOwnerCallCount++;
+    return ownerUid;
+  }
+
+  @override
+  Future<void> claimForUid(String uid) async {
+    claimCallCount++;
+    lastClaimedUid = uid;
+    if (uid.trim().isEmpty) throw ArgumentError('UID cannot be empty.');
+    if (ownerUid != null && ownerUid != uid) {
+      throw StateError('Local data belongs to another account.');
+    }
+    ownerUid = uid;
+  }
+
+  @override
+  Future<bool> hasWorkoutProgress() async {
+    hasWorkoutProgressCallCount++;
+    return hasWorkoutProgressValue;
+  }
+
+  @override
+  Future<void> reassignOwnerUid({
+    required String expectedOwnerUid,
+    required String newUid,
+  }) async {
+    reassignOwnerCallCount++;
+    lastExpectedOwnerUid = expectedOwnerUid;
+    lastReassignedOwnerUid = newUid;
+    if (expectedOwnerUid.trim().isEmpty || newUid.trim().isEmpty) {
+      throw ArgumentError('UIDs cannot be empty.');
+    }
+    if (expectedOwnerUid.trim() == newUid.trim()) {
+      throw ArgumentError('UIDs cannot be the same.');
+    }
+    if (ownerUid != expectedOwnerUid) {
+      throw StateError('Local data owner does not match the expected UID.');
+    }
+    ownerUid = newUid;
+  }
+
+  @override
+  Future<void> reassignOwnerUidIfNoWorkouts({
+    required String expectedOwnerUid,
+    required String newUid,
+  }) async {
+    reassignOwnerIfNoWorkoutsCallCount++;
+    if (hasWorkoutProgressValue) {
+      throw StateError('Local workout progress exists.');
+    }
+    await reassignOwnerUid(expectedOwnerUid: expectedOwnerUid, newUid: newUid);
+  }
 
   @override
   Future<BackupSnapshot> exportSnapshot() async {
@@ -57,9 +129,25 @@ final class FakeLocalBackupRepository implements LocalBackupRepository {
   }
 
   @override
-  Future<void> importSnapshot(BackupSnapshot snapshot) async {
+  Future<void> importSnapshot(
+    BackupSnapshot snapshot, {
+    required String ownerUid,
+  }) async {
     importCallCount++;
     lastImportedSnapshot = snapshot;
+    lastImportedOwnerUid = ownerUid;
+
+    final pendingFuture = importFuture;
+    if (pendingFuture != null) {
+      await pendingFuture;
+    }
+
+    final exception = importException;
+    if (exception != null) {
+      throw exception;
+    }
+
+    this.ownerUid = ownerUid;
   }
 }
 
@@ -72,6 +160,8 @@ final class FakeCloudBackupRepository implements CloudBackupRepository {
     this.uploadException,
     this.uploadFuture,
     this.downloadResult,
+    this.downloadException,
+    this.downloadFuture,
   });
 
   final CloudBackupMetadata? metadataResult;
@@ -81,6 +171,8 @@ final class FakeCloudBackupRepository implements CloudBackupRepository {
   final Object? uploadException;
   final Future<CloudBackupMetadata>? uploadFuture;
   final BackupSnapshot? downloadResult;
+  final Object? downloadException;
+  final Future<BackupSnapshot?>? downloadFuture;
 
   int metadataCallCount = 0;
   int uploadCallCount = 0;
@@ -139,6 +231,17 @@ final class FakeCloudBackupRepository implements CloudBackupRepository {
   Future<BackupSnapshot?> downloadBackup({required String userId}) async {
     downloadCallCount++;
     lastDownloadUserId = userId;
+
+    final pendingFuture = downloadFuture;
+    if (pendingFuture != null) {
+      return pendingFuture;
+    }
+
+    final exception = downloadException;
+    if (exception != null) {
+      throw exception;
+    }
+
     return downloadResult;
   }
 }

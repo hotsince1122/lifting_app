@@ -6,6 +6,7 @@ import 'package:lifting_tracker_app/features/workouts/application/session_editor
 import 'package:lifting_tracker_app/features/workouts/application/next_session_preview_provider.dart';
 import 'package:lifting_tracker_app/features/workouts/application/workout_name_controller.dart';
 import 'package:lifting_tracker_app/features/history/application/history_months_provider.dart';
+import 'package:lifting_tracker_app/features/history/application/completed_workouts_count_provider.dart';
 import 'package:lifting_tracker_app/features/history/data/workout_history_commands.dart'
     as commands;
 
@@ -43,6 +44,7 @@ class HistoryWorkoutActionsController extends AsyncNotifier<void> {
     final deletionResult = await commands.deleteWorkout(workoutId);
 
     ref.invalidate(historyMonthsProvider);
+    ref.invalidate(completedWorkoutCountProvider);
     ref.invalidate(nextSessionPreviewProvider);
 
     final didHandleProgressRollback = await ref

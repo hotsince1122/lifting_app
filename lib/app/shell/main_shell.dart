@@ -10,6 +10,7 @@ import 'package:lifting_tracker_app/features/history/presentation/widgets/histor
 import 'package:lifting_tracker_app/features/plans/presentation/widgets/plans_app_bar.dart';
 import 'package:lifting_tracker_app/app/shell/main_bottom_navigation.dart';
 import 'package:lifting_tracker_app/flows/home_dashboard/presentation/widgets/home_app_bar.dart';
+import 'package:lifting_tracker_app/flows/account_and_backup/presentation/sign_in_data_gate.dart';
 
 class MainShell extends StatefulWidget {
   const MainShell({super.key});
@@ -46,19 +47,23 @@ class _MainShellState extends State<MainShell> {
 
   @override
   Widget build(BuildContext context) {
+    final checkingSignInData = SignInDataGate.isLoading(context);
+
     return Scaffold(
-      appBar: _appBars[_currentIndex],
+      appBar: checkingSignInData ? null : _appBars[_currentIndex],
       bottomNavigationBar: MainBottomNavigation(
         onTabSelected: _onTabSelected,
         currentIndex: _currentIndex,
       ),
-      body: TabBodyTransition(
-        animationKey: _currentIndex,
-        child: IndexedStack(
-          index: _currentIndex,
-          children: const [HomePage(), HistoryPage(), PlansPage()],
-        ),
-      ),
+      body: checkingSignInData
+          ? const Center(child: CircularProgressIndicator())
+          : TabBodyTransition(
+              animationKey: _currentIndex,
+              child: IndexedStack(
+                index: _currentIndex,
+                children: const [HomePage(), HistoryPage(), PlansPage()],
+              ),
+            ),
     );
   }
 }

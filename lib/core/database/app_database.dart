@@ -227,7 +227,8 @@ class AppDatabase {
         automatic_backup_enabled INTEGER NOT NULL DEFAULT 1
           CHECK (automatic_backup_enabled IN (0, 1)),
         backup_pending INTEGER NOT NULL DEFAULT 0
-          CHECK (backup_pending IN (0, 1))
+          CHECK (backup_pending IN (0, 1)),
+        local_data_owner_uid TEXT
       )
     ''');
 

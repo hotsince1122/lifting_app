@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:lifting_tracker_app/features/cloud_backup/application/cloud_backup_controller.dart';
+import 'package:lifting_tracker_app/features/cloud_backup/application/cloud_restore_controller.dart';
 import 'package:lifting_tracker_app/flows/account_and_backup/presentation/backup_error_message.dart';
 import 'package:lifting_tracker_app/core/theme/app_colors.dart';
 import 'package:lifting_tracker_app/core/theme/app_spacing.dart';
@@ -45,6 +46,12 @@ class ProgressProtectionNotice extends ConsumerWidget {
                 _VerifyEmailNotice(),
               ProgressProtectionNoticeContent.backupError =>
                 const _BackupErrorNotice(),
+              ProgressProtectionNoticeContent.restoreLoading ||
+              ProgressProtectionNoticeContent.restoreNoBackup ||
+              ProgressProtectionNoticeContent.restoreError ||
+              ProgressProtectionNoticeContent.restoreSuccess => _RestoreNotice(
+                content: progressProtectionNotice,
+              ),
             },
             const SizedBox(height: AppSpacing.s24),
           ],
@@ -72,6 +79,54 @@ class _BackupErrorNotice extends ConsumerWidget {
       subtitle: message.description,
       tone: _BackupStateTone.error,
     );
+  }
+}
+
+class _RestoreNotice extends ConsumerWidget {
+  const _RestoreNotice({required this.content});
+
+  final ProgressProtectionNoticeContent content;
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    switch (content) {
+      case ProgressProtectionNoticeContent.restoreLoading:
+        return _NoticeLayout(
+          icon: PhosphorIcons.cloudArrowDown(),
+          title: 'Restoring backup…',
+          subtitle:
+              'Downloading and restoring your data. This may take a moment.',
+          body: const SizedBox(
+            width: double.infinity,
+            height: 4,
+            child: LinearProgressIndicator(),
+          ),
+        );
+      case ProgressProtectionNoticeContent.restoreNoBackup:
+        return _NoticeLayout(
+          icon: PhosphorIcons.cloudSlash(),
+          title: 'No cloud backup found',
+          subtitle: 'There is no backup for this account to restore.',
+          tone: _BackupStateTone.alert,
+        );
+      case ProgressProtectionNoticeContent.restoreError:
+        final restoreState = ref.watch(cloudRestoreControllerProvider);
+        final message = backupErrorMessage(restoreState.error);
+        return _NoticeLayout(
+          icon: PhosphorIcons.cloudSlash(),
+          title: 'Could not restore backup',
+          subtitle: message.description,
+          tone: _BackupStateTone.error,
+        );
+      case ProgressProtectionNoticeContent.restoreSuccess:
+        return _NoticeLayout(
+          icon: PhosphorIcons.cloudCheck(),
+          title: 'Backup restored',
+          subtitle: 'The cloud backup has replaced the data on this device.',
+        );
+      default:
+        return const SizedBox.shrink();
+    }
   }
 }
 

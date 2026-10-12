@@ -18,7 +18,7 @@ sursa persistenta de adevar pentru feature.
 
 **Status general:** in progress
 
-**Ultima actualizare:** 2026-09-29
+**Ultima actualizare:** 2026-10-12
 
 ## Obiectiv
 
@@ -185,6 +185,18 @@ aplicatiei.
   utilizatorul va primi o alegere cu sensul:
   - `Keep local data`;
   - `Replace with cloud backup`.
+- `Keep local data` pastreaza datele de pe dispozitiv si backup-ul cloud
+  existent. Autentificarea si aceasta alegere nu declanseaza un upload care
+  inlocuieste backup-ul remote. Un upload manual ulterior ramane o actiune
+  explicita separata.
+- Baza SQLite pastreaza separat `local_data_owner_uid` in `app_settings`:
+  `NULL` pentru date locale nerevendicate, respectiv UID-ul contului caruia ii
+  apartin dupa revendicare. Logout-ul nu sterge datele locale si nu reseteaza
+  acest marker. Un UID diferit poate prelua datele cu antrenamente doar dupa o
+  alegere explicita in flow-ul de conflict; datele fara antrenamente pot fi
+  reatribuite automat printr-un UPDATE conditionat.
+  Coloana este adaugata fara migrare deoarece aplicatia este in dezvoltare;
+  instalatiile existente necesita resetarea bazei locale in aceasta etapa.
 - Detectarea backup-ului si alegerea de restore trebuie sa functioneze atat
   cand autentificarea are loc in onboarding, cat si cand are loc ulterior din
   aplicatie.
@@ -347,19 +359,17 @@ keystore-urile si alte credentiale secrete nu se salveaza in repository.
 Aceste puncte nu trebuie tratate drept decizii pana cand utilizatorul nu le
 confirma:
 
-1. Ce inseamna exact `Keep local data` pentru backup-ul remote existent?
-2. Se face automat un prim backup dupa autentificare sau numai la apasarea
+1. Se face automat un prim backup dupa autentificare, cand nu exista backup
+   remote, sau numai la apasarea
    explicita a butonului?
-3. Care este regiunea europeana exacta a bucket-ului?
-4. Cum marcam local ownership-ul bazei pentru a preveni asocierea ei cu un UID
-    diferit dupa logout/login?
-5. Ce se intampla cu datele locale cand utilizatorul isi sterge contul?
-6. Cum tratam un telefon vechi care incearca sa faca backup dupa ce datele au
+2. Care este regiunea europeana exacta a bucket-ului?
+3. Ce se intampla cu datele locale cand utilizatorul isi sterge contul?
+4. Cum tratam un telefon vechi care incearca sa faca backup dupa ce datele au
     fost restaurate pe un telefon nou?
-7. Care sunt momentele exacte de retry pentru un backup pending?
-8. Care sunt textele finale si prioritatea vizuala pentru `last successful
+5. Care sunt momentele exacte de retry pentru un backup pending?
+6. Care sunt textele finale si prioritatea vizuala pentru `last successful
     backup`, backup pending, backup esuat si restore in progres?
-9. Cand introducem Sign in with Apple in raport cu publicarea pe iOS?
+7. Cand introducem Sign in with Apple in raport cu publicarea pe iOS?
 
 ## Roadmap si status
 
@@ -375,7 +385,7 @@ Statusurile permise sunt `not started`, `in progress`, `blocked`, `deferred` si
 | 4 | UX guest/account in onboarding si Account & Backup | done |
 | 5 | Contractul snapshot-ului, export/import local tranzactional si teste; fara UI | done |
 | 6 | Upload/download manual, controller/status si UI pentru backup manual | done |
-| 7 | Detectare backup, conflicte, restore si UI-ul aferent | not started |
+| 7 | Detectare backup, conflicte, restore si UI-ul aferent | in progress |
 | 8 | Account lifecycle ramas: account deletion si stergerea datelor remote | not started |
 | 9 | Backup automat, pending/retry si starile UI aferente | not started |
 | 10 | Storage Rules, App Check, bugete si hardening | not started |
@@ -443,6 +453,424 @@ La finalul unui task:
    inainte ca un task dependent sa inceapa.
 
 ## Implementation Log
+
+### 2026-10-12 - Backup 03: loading in continutul paginii
+
+- S-a eliminat ecranul de loading care copia bara de navigare cu index fix.
+  `SignInDataGate` transmite starea de verificare catre paginile existente si
+  pastreaza bariera care blocheaza interactiunile in timpul verificarii.
+- `MainShell` pastreaza propria bara de navigare si inlocuieste app bar-ul si
+  continutul paginii cu un `CircularProgressIndicator` centrat. Pe ruta
+  `Account & Backup`, care nu are bara de jos, se afiseaza doar indicatorul.
+- Verificarea porneste la initializarea starii auth si la schimbarea contului.
+  Cand UID-ul este deja proprietarul datelor locale, citirea markerului SQLite
+  incheie evaluarea fara cerere de metadata catre cloud.
+- Fisiere modificate: gate-ul, `MainShell`, pagina `Account & Backup`, testele
+  gate-ului si acest plan.
+- Formatter: 4 fisiere Dart verificate, 2 reformate; testul actualizat a fost
+  verificat din nou fara reformatare.
+- Analyzer: `No issues found`.
+- Teste: 17/17 pentru gate; suita completa nu a fost rulata.
+
+**Urmatorul pas:** verificare vizuala pe telefon la hot restart si dupa sign in
+din pagina `Account & Backup`.
+
+### 2026-10-12 - Backup 03: verificarea de la pornire nu mai deschide alert
+
+- La hot restart providerii se recalculeaza. Pentru un UID deja proprietar,
+  evaluarea citeste doar markerul SQLite si nu cere metadata din cloud.
+- `SignInDataGate` nu mai arata dialogul generic `Checking local and cloud
+  data...` in timpul verificarii initiale. Actiunile din spate raman blocate;
+  daca verificarea dureaza peste 400 ms, apare o bara subtire sub status bar.
+  Alerturile Cupertino raman pentru conflict, erori si aplicarea alegerii.
+- Testele widget acopera pornirea cu sesiune existenta si o verificare cloud
+  intarziata, inclusiv blocarea actiunilor locale.
+- Fisiere modificate: gate-ul, testul lui si acest plan.
+- Formatter: 2 fisiere Dart verificate, fara reformatare.
+- Analyzer: `No issues found`.
+- Teste: 15/15 pentru gate; suita completa nu a fost rulata.
+
+**Urmatorul pas:** verificarea vizuala pe telefon la hot restart si la un
+conflict real intre conturi.
+
+### 2026-10-08 - Backup 03: dialogurile de conflict folosesc Cupertino
+
+- `SignInDataGate` foloseste `CupertinoAlertDialog` si `CupertinoDialogAction`
+  pentru alegeri, erori si loading, conform dialogului de restore manual.
+  Loading-ul pastreaza bara liniara. Bariera modala are acum opacitatea
+  `black54`, iar textele au fost scurtate pentru latimea unui alert Cupertino.
+- Blocarea actiunilor din spatele dialogului, deciziile si retry-ul raman
+  aceleasi. Testele widget verifica tipul dialogului, actiunile si bara de
+  progres.
+- Fisiere modificate: `sign_in_data_gate.dart`, testul widget al gate-ului si
+  acest plan.
+- Formatter: 2 fisiere Dart verificate, 1 reformat la prima trecere.
+- Analyzer: `No issues found`.
+- Teste: 18/18 pentru gate si sectiunea de backup.
+- Aspectul pe telefon trebuie confirmat dupa aceasta modificare.
+
+**Urmatorul pas:** verificarea pe telefon a alerturilor pentru backup gasit,
+conflict cu alt cont, eroare si loading.
+
+### 2026-10-08 - Backup 03: upload conditionat de ownership si sesiunea curenta
+
+- `backupNow()` nu mai revendica datele cu `ownerUid == null`. Exportul si
+  upload-ul sunt permise numai daca markerul SQLite este deja UID-ul curent,
+  dupa rezolvarea flow-ului de autentificare. Un apel direct nu poate sari
+  peste alegerea utilizatorului si nu poate suprascrie backup-ul existent cu
+  date locale nerevendicate.
+- Controllerul verifica sesiunea dupa asteptarile async si reciteste ownership-ul
+  dupa export, imediat inainte de upload. Logout-ul, schimbarea contului,
+  pierderea verificarii emailului sau schimbarea proprietarului opresc upload-ul
+  daca acesta nu a inceput inca.
+- Fiecare build are o generatie in memorie, invalidata prin `onDispose`.
+  Operatiile din generatii vechi nu pot publica succesul sau eroarea peste
+  starea sesiunii curente. Mecanismul acopera si iesirea din contul A urmata de
+  revenirea in A inainte de finalizarea operatiei vechi.
+- Aceeasi protectie se aplica citirii metadata din `build()` si actualizarii
+  cache-ului pentru ultimul backup. Rezultatele cloud devenite vechi sunt
+  ignorate inaintea actualizarii cache-ului; scrierile de cache deja incepute
+  raman limitate la UID-ul initial.
+- Limita explicita: un upload deja trimis catre repository poate termina
+  pentru UID-ul initial; acest pas nu introduce anularea transferului Firebase.
+  Rezultatul vechi nu actualizeaza starea noii sesiuni.
+- Fisiere modificate in acest pas: `cloud_backup_controller.dart`, testele
+  controllerului si acest plan.
+- Formatter: 2 fisiere Dart verificate, 1 reformat.
+- Analyzer: `No issues found`.
+- Teste: 27/27 pentru controller si 54/54 pentru decizie, coordonator, gate,
+  `BackupSection` si notice-uri. Suita completa nu a fost rulata.
+- Backup 03 ramane `in progress` pana la verificarea manuala pe dispozitiv.
+
+**Urmatorul pas:** smoke test pe dispozitiv cu doua conturi: `Keep local data`
+nu schimba backup-ul cloud, transferul schimba proprietarul numai dupa alegere,
+restore-ul actualizeaza istoricul si split-ul, logout-ul pastreaza datele, iar
+repornirea aplicatiei cu un conflict nerezolvat afiseaza din nou dialogul.
+
+### 2026-10-04 - Backup 03: verificare globala dupa autentificare si dialoguri
+
+- `SignInDataGate` sta in `MaterialApp.builder`, deasupra navigatorului. Astfel,
+  verifica atat sesiunea pastrata la pornirea aplicatiei, cat si autentificarea
+  facuta pe o pagina deja deschisa din onboarding sau `Account & Backup`.
+- Gate-ul urmareste sesiunea Firebase si evaluarea datelor pentru acelasi UID.
+  Cand evaluarea este in curs, a esuat sau cere o alegere, o bariera modala
+  blocheaza actiunile asupra bazei locale. Guest si conturile cu email
+  neverificat continua fara evaluarea backup-ului.
+- Evaluarea expune acum si UID-ul pentru care a fost calculata decizia; UI-ul
+  ignora un raspuns vechi daca intre timp contul s-a schimbat. Atasarea sigura
+  `attachLocal` porneste automat o singura data per UID; celelalte decizii au
+  dialoguri in engleza pentru pastrarea datelor locale, transfer explicit,
+  restore sau logout. Un backup disparut si erorile nu deblocheaza conflictul;
+  utilizatorul poate reincerca sau alege actiunea locala permisa.
+- Invalidarea dupa claim, transfer sau restore recalculeaza evaluarea, astfel
+  incat bariera dispare numai cand datele locale sunt asociate UID-ului curent.
+- Fisiere modificate in acest pas: `main.dart`, providerul evaluarii,
+  controllerul rezolvarii, noul `sign_in_data_gate.dart`, testele widget ale
+  gate-ului si acest plan.
+- Formatter: 5 fisiere Dart verificate, 0 reformate.
+- Analyzer: `No issues found`.
+- Teste: 62/62 focalizate pentru decizie, coordonator, SQLite, restore, UI-ul
+  manual si gate; verificarea vizuala pe dispozitiv ramane de facut.
+- Backup 03 ramane `in progress`.
+
+**Urmatorul pas:** intarirea lui `backupNow()` la schimbarea contului in timpul
+operatiei si verificarea ca un apel direct nu poate revendica sau incarca date
+cat timp alegerea de conflict este inca nerezolvata.
+
+### 2026-10-04 - Backup 03: coordonarea rezolvarii conflictului
+
+- `PostSignInDataResolutionController` aplica numai actiuni compatibile cu
+  decizia afisata. Recalculeaza decizia din SQLite si metadata cloud, verifica
+  UID-ul curent dupa asteptari si imediat inainte de modificarea proprietarului.
+  Transferul datelor cu antrenamente cere actiunea explicita `transferLocal`;
+  `signOut` nu consulta cloud-ul si nu schimba datele locale.
+- Atasarea automata a unei baze atribuite altui UID foloseste un singur `UPDATE`
+  SQLite conditionat de UID-ul asteptat si `NOT EXISTS(workout_sessions)`.
+  Repository-ul local expune separat acest transfer sigur si transferul explicit.
+- Coordonatorul refoloseste controllerul de restore. Invalidarea providerilor
+  locali dupa un import reusit are loc acum in controllerul de restore, astfel
+  incat orice intrare in restore primeste acelasi refresh.
+- Fisiere modificate: controllerul de rezolvare si testele lui, contractul si
+  adapterul repository-ului local, comenzile SQLite si testul lor, controllerul
+  de restore, helperul de invalidare si testul lui, `BackupSection` si planul.
+- Formatter: doar fisierele Dart modificate, fara erori.
+- Analyzer: `No issues found`.
+- Teste: 38/38 focalizate pentru rezolvare, decizie, restore, SQLite, invalidare
+  si UI-ul manual; suita completa nu a fost rulata in acest pas.
+- Coordonatorul nu este inca apelat din UI. Backup 03 ramane `in progress`.
+
+**Urmatorul pas:** pornirea flow-ului la o sesiune autentificata, inclusiv la
+deschiderea aplicatiei cu sesiune pastrata, si blocarea operatiilor locale pana
+la rezolvarea unui conflict cu alt proprietar.
+
+### 2026-10-01 - Backup 03: providerul deciziei urmareste schimbarea contului
+
+- Providerul urmareste `authStateProvider` cu `watch` si verifica UID-ul curent
+  dupa citirea metadata din cloud. Daca sesiunea s-a schimbat, opreste decizia
+  veche cu `CloudBackupErrorCode.canceled`.
+- Copia accidentala a providerului din `test/` a fost eliminata; sursa folosita
+  de aplicatie ramane in `lib/features/cloud_backup/application/`.
+- Fisiere modificate: providerul deciziei, testul lui si acest plan.
+- Formatter: providerul Dart verificat, fara schimbari.
+- Analyzer: `No issues found`.
+- Teste: 7/7 focalizate; suita completa nu a fost rulata pentru aceasta corectie.
+
+**Urmatorul pas:** aplicarea explicita a rezultatului `attachLocal` cu verificarea
+UID-ului curent inainte de schimbarea markerului local. Apoi se pot lega
+alegerile utilizatorului pentru cazurile cu date locale si backup cloud.
+
+### 2026-10-01 - Backup 03: teste pentru providerul deciziei dupa sign in
+
+- Providerul read-only scris de utilizator a fost mutat din `test/` in
+  `lib/features/cloud_backup/application/`, cu importul functiei pure corectat.
+- Testele acopera guest/unverified, UID local identic, backup prezent sau
+  absent, eroare cloud si schimbarea contului in timpul citirii metadata.
+- 6 din 7 teste trec. Testul de schimbare a contului ramane rosu: providerul
+  citeste auth state fara dependenta reactiva si compara din nou UID-ul local
+  cu UID-ul initial in loc sa citeasca UID-ul autentificat curent.
+- Fisiere modificate: providerul, testul lui si acest plan.
+- Formatter: 2 fisiere Dart verificate, 1 reformat la prima trecere.
+- Analyzer: `No issues found`.
+- Teste: 6/7 focalizate; suita completa nu a fost rulata cat timp testul nou
+  ramane rosu.
+
+**Urmatorul pas:** legarea providerului de `authStateProvider` prin `watch` si
+verificarea UID-ului curent dupa asteptarea metadata, apoi rerularea testelor.
+
+### 2026-10-01 - Backup 03: decizia pura dupa sign in
+
+- `decideSignInData()` a fost mutata din `test/` in layer-ul application, astfel
+  incat aplicatia sa o poata importa. Functia primeste UID-ul autentificat,
+  proprietarul local, prezenta antrenamentelor si prezenta backup-ului remote;
+  returneaza un `SignInDataDecision` fara acces la SQLite, Firebase sau UI.
+- Opt teste acopera toate rezultatele si prioritatea UID-ului deja potrivit.
+- Fisiere modificate: functia de decizie, testul ei si acest plan.
+- Formatter: 2 fisiere Dart verificate, 1 reformat.
+- Analyzer: `No issues found`.
+- Teste: 8/8 focalizate; suita completa nu a fost rulata pentru functia pura.
+
+**Urmatorul pas:** un coordonator care obtine cele patru valori din
+repository-uri, aplica decizia si asteapta alegerea utilizatorului in cazurile
+cu dialog. Integrarea UI trebuie sa acopere onboarding si `Account & Backup`.
+
+### 2026-10-01 - Backup 03: repository pentru progres si transfer
+
+- `LocalBackupRepository` si adapterul SQLite expun `hasWorkoutProgress()` si
+  `reassignOwnerUid()` prin providerul local existent; nu a fost creat un
+  provider nou.
+- Fake-ul repository-ului simuleaza progresul local si transferul conditionat
+  de UID-ul asteptat. Testul SQLite trece prin adapter si confirma citirea
+  progresului, transferul si propagarea erorii pentru un UID invechit.
+- Fisiere modificate in acest pas: interfata si adapterul utilizatorului,
+  fake-ul de backup, testul SQLite si acest plan.
+- Formatter: 4 fisiere Dart verificate, 0 reformate.
+- Analyzer: `No issues found`.
+- Teste: 1/1 focalizat; suita completa 196/196.
+
+**Urmatorul pas:** definirea deciziei dupa autentificare din UID-ul local,
+existenta antrenamentelor locale si existenta backup-ului cloud, apoi
+coordonarea alegerii utilizatorului fara upload implicit.
+
+### 2026-10-01 - Backup 03: transfer explicit al markerului local
+
+- Utilizatorul a adaugat `reassignLocalDataOwnerUid()` ca update SQLite
+  conditionat de UID-ul proprietarului observat anterior. `claimForUid()`
+  pastreaza regula separata `NULL -> UID` si continua sa respinga alt cont.
+- Testul SQLite verifica lipsa proprietarului, UID-ul asteptat gresit,
+  transferul reusit, confirmarea invechita si argumentele invalide. Un update
+  care nu afecteaza exact un rand lasa markerul neschimbat.
+- Review-ul a identificat un mesaj intern `StateError` neclar; comportamentul
+  este corect, iar textul poate fi simplificat inainte de folosirea in UI.
+- Fisiere modificate in acest pas: comanda utilizatorului, testul SQLite nou
+  si acest plan.
+- Formatter: 1 fisier Dart de test verificat si reformatat; comanda
+  utilizatorului nu a fost reformatata in timpul review-ului.
+- Analyzer: `No issues found`.
+- Teste: 1/1 focalizat; suita completa nu a fost rulata pentru acest pas local.
+
+**Urmatorul pas:** expunerea query-ului de progres si a transferului prin
+`LocalBackupRepository`, apoi coordonatorul de decizie dupa autentificare.
+
+### 2026-10-01 - Backup 03: detectarea progresului local
+
+- Query-ul `hasLocalWorkoutProgress()` verifica daca exista macar o sesiune in
+  `workout_sessions`. Preseturile initiale nu sunt considerate progres local;
+  un antrenament inceput este considerat progres care merita protejat.
+- Testul SQLite verifica baza proaspata (`false`) si o sesiune activa (`true`).
+  `EXISTS` intoarce 0/1, citit de `sqflite` ca `int`.
+- Fisiere modificate in acest pas: query-ul utilizatorului, testul SQLite nou
+  si acest plan.
+- Formatter: 1 fisier Dart de test verificat, 0 reformat; query-ul utilizatorului
+  nu a fost reformat in timpul review-ului.
+- Analyzer: `No issues found`.
+- Teste: 1/1 focalizat; suita completa nu a fost rulata pentru acest pas local.
+
+**Urmatorul pas:** comanda explicita de transfer al `local_data_owner_uid`
+pentru cazul in care utilizatorul decide sa foloseasca antrenamentele locale
+cu un alt cont. `claimForUid()` continua sa respinga schimbarea tacita.
+
+### 2026-09-30 - Backup 03: UID atomic la restore manual
+
+- `LocalBackupRepository.importSnapshot()` primeste explicit `ownerUid`.
+  Controllerul de restore transmite UID-ul verificat din sesiunea curenta dupa
+  download si inainte de import.
+- Comanda SQLite valideaza UID-ul si il scrie in `app_settings` in aceeasi
+  tranzactie care inlocuieste planurile, exercitiile si istoricul. Preferintele
+  locale de backup raman neatinse; UID-ul nu este citit din snapshot.
+- Dialogul existent pastreaza alegerea explicita: `Keep local data` nu importa,
+  iar `Restore backup` importa si atribuie datele UID-ului autentificat.
+- Testele verifica transmiterea UID-ului, schimbarea proprietarului numai dupa
+  succes si rollback-ul tuturor datelor cand scrierea UID-ului esueaza.
+- Fisiere modificate: contractul si adapterul local, controllerul de restore,
+  comanda de import, fake-ul, cele trei teste relevante si acest plan.
+- Formatter: 8 fisiere Dart verificate, 0 reformate.
+- Analyzer: `No issues found`.
+- Teste: 16/16 focalizate; suita completa 194/194.
+
+**Urmatorul pas:** detectarea conflictului local/cloud dupa sign in, atat in
+onboarding, cat si in `Account & Backup`. Acest dialog automat nu este inca
+implementat; restore-ul manual are confirmarea sa explicita.
+
+### 2026-09-30 - Backup 03: ownership verificat in backupNow
+
+- `backupNow()` citeste proprietarul local dupa validarea sesiunii. Datele cu
+  acelasi UID pot fi exportate; datele nerevendicate sunt revendicate de UID-ul
+  curent la actiunea manuala; un UID diferit blocheaza exportul si upload-ul.
+- Adapterul SQLite asteapta comanda de revendicare si propaga erorile ei.
+  Testul SQLite trece acum prin adapter, nu doar prin functiile SQL directe.
+- Fisiere modificate in acest pas: controllerul de backup, adapterul SQLite,
+  formatarea interfetei `LocalBackupRepository`, testul SQLite si acest plan.
+- Formatter: 4 fisiere Dart verificate, 1 reformat.
+- Analyzer: `No issues found`.
+- Teste: 15/15 pentru controller, 1/1 pentru adapterul SQLite; suita completa
+  194/194 inainte de ajustarea testului SQLite, care a trecut separat dupa.
+
+**Urmatorul pas:** protejarea restore-ului la schimbarea contului si stabilirea
+UID-ului local in aceeasi tranzactie cu importul snapshot-ului. Flow-ul de
+conflict dupa sign in trebuie sa faca alegerea utilizatorului inainte de a
+inlocui datele locale.
+
+### 2026-09-30 - Backup 03: teste pentru ownership in backupNow
+
+- Fake-ul pentru `LocalBackupRepository` poate citi si revendica UID-ul local,
+  pastrand aceleasi reguli de revendicare ca implementarea SQLite.
+- Au fost adaugate trei scenarii in testul controllerului: acelasi UID poate
+  incarca backup-ul fara revendicare, UID-ul `NULL` este revendicat inainte de
+  upload, iar un UID diferit blocheaza exportul si upload-ul.
+- Testele noi sunt intentionat rosii pana la conectarea verificarii in
+  `backupNow()`: 12 trecute si 3 esuate in fisierul focalizat.
+- Review-ul adapterului SQLite a gasit ca `claimForUid()` nu returneaza inca
+  `Future`-ul comenzii, deci apelantul nu ii asteapta finalizarea sau eroarea.
+- Fisiere modificate in acest pas: testul controllerului, fake-ul de backup si
+  acest plan.
+- Formatter: 2 fisiere Dart verificate, 0 reformate.
+- Analyzer: `No issues found`.
+- Teste: 12/15 focalizate; suita completa nu a fost rulata, deoarece testele
+  noi asteapta implementarea.
+
+**Urmatorul pas:** returnarea `Future`-ului din adapterul SQLite si verificarea
+ownership-ului in `backupNow()` inainte de `exportSnapshot()`.
+
+### 2026-09-30 - Backup 03: test pentru local data ownership
+
+- `local_data_owner_uid` este stocat in `app_settings`; query-ul citeste UID-ul
+  local, iar comanda revendica o singura data datele nerevendicate. Repetarea
+  cu acelasi UID este permisa; un UID diferit este respins fara schimbarea
+  proprietarului. Aceste operatii nu sunt inca legate de sign in sau backup.
+- Testul SQLite acopera UID gol, prima revendicare, repetarea si refuzul unui
+  al doilea cont. Testul de import verifica faptul ca restore-ul pastreaza
+  markerul local existent, in loc sa il ia din snapshot.
+- Fisiere modificate in acest pas: cele doua teste din
+  `test/features/cloud_backup/data/` si acest plan.
+- Formatter: 2 fisiere Dart verificate, 0 reformate.
+- Analyzer: `No issues found`.
+- Teste: 2/2 focalizate; suita completa 192/192.
+
+**Urmatorul pas:** conectarea verificarii ownership-ului la operatiile care
+pot suprascrie backup-ul sau datele locale, incepand cu `backupNow()`.
+
+### 2026-09-30 - Backup 03: notice temporar si refresh dupa restore
+
+- Toate rezultatele terminale ale restore-ului (`restored`, `noBackup`, eroare)
+  sunt sterse automat din controller dupa 8 secunde; un nou restore anuleaza
+  timerul anterior. Loading-ul din notice foloseste o bara de progres
+  nedeterminata pana la finalul operatiei.
+- Dupa import reusit, flow-ul `Account & Backup` invalideaza providerii care
+  citesc datele SQLite restaurate: istoric, planuri, exercitii, sesiune activa,
+  progres, streak si setup. Providerii derivati se recalculeaza prin dependente.
+- `completedWorkoutCountProvider` este invalidat si dupa finalizarea sau
+  stergerea unui workout, astfel count-ul din `Back up now` se actualizeaza fara
+  a astepta un restore.
+- Testele acopera disparitia tuturor rezultatelor terminale, refresh-ul
+  count-ului dupa import si recitirea istoricului si planului dupa invalidare.
+- Formatter: 10 fisiere Dart verificate, 2 reformate.
+- Analyzer: `No issues found`.
+- Teste: 33/33 focalizate, suita completa 191/191.
+
+**Urmatorul pas:** verificarea vizuala pe dispozitiv a finalizarii/stergerii
+unui workout si a restore-ului pentru istoric, plan si sesiune activa. Apoi
+detectarea conflictului dupa sign in. Backup 03 ramane `in progress`.
+
+### 2026-09-30 - Backup 03: feedback pentru restore in Account & Backup
+
+- `ProgressProtectionNotice` afiseaza starile restore-ului: loading cu spinner,
+  backup absent, eroare si succes. Guest si emailul neverificat raman prioritare,
+  iar feedback-ul restore-ului are prioritate fata de o eroare veche de backup.
+- In `BackupSection`, apasarile suplimentare pe restore si pornirea upload-ului
+  sunt ignorate cat timp restore-ul ruleaza. Dialogul existent cere confirmare
+  inainte de apelul controllerului.
+- Testele widget acopera tranzitiile notice-ului si verificarea ca alegerea
+  `Keep local data` nu porneste download-ul, iar confirmarea produce importul.
+- Formatter: 5 fisiere Dart verificate, 2 reformate.
+- Analyzer: `No issues found`.
+- Teste: 21/21 focalizate pentru notice si sectiunea backup; suita completa
+  188/188.
+
+**Urmatorul pas:** invalidarea sau reincarcarea providerilor locali dupa import,
+apoi flow-ul de detectare a conflictului dupa sign in. Backup 03 ramane
+`in progress`.
+
+### 2026-09-29 - Backup 03: teste pentru controllerul de restore
+
+- Testele `CloudRestoreController` acopera starea initiala fara download,
+  restore-ul reusit, lipsa backup-ului, accesul guest si emailul neverificat,
+  erorile de download/import, blocarea unui al doilea restore si schimbarea
+  UID-ului in timpul download-ului. Fake-urile existente au fost extinse numai
+  pentru a controla download-ul si importul in aceste scenarii.
+- Nu a fost schimbat controllerul si nu a fost conectat UI-ul de restore.
+- Formatter: cele doua fisiere Dart de test verificate, unul reformatat.
+- Analyzer: `No issues found`.
+- Teste: 9/9 pentru controllerul de restore; suita completa 185/185.
+
+**Urmatorul pas:** dialog de confirmare in `BackupSection` inainte de apelul
+`restoreNow()`, apoi feedback-ul UI si reincarcarea providerilor dupa import.
+
+### 2026-09-29 - Backup 03: primul test al controllerului de restore
+
+- A fost adaugat un test pentru `CloudRestoreController.restoreNow()` cu
+  repository-uri fake: un utilizator verificat descarca backup-ul propriului UID,
+  apoi importa exact snapshot-ul primit si ajunge in starea `restored`.
+- Testul nu foloseste Firebase sau SQLite real. Cazurile fara backup, erorile,
+  schimbarea contului in timpul download-ului si UI-ul raman pasi urmatori.
+- Formatter: fisierul Dart de test a fost formatat.
+- Analyzer: `No issues found`.
+- Testul focalizat: 1/1 trecut.
+
+**Urmatorul pas:** testeaza `noBackup`, unde repository-ul remote intoarce null
+si importul local nu este apelat.
+
+### 2026-09-29 - Backup 03: decizia pentru Keep local data
+
+- Utilizatorul a confirmat ca alegerea `Keep local data` dupa sign in pastreaza
+  atat datele locale, cat si backup-ul cloud existent. Sign in si alegerea nu
+  sterg backup-ul si nu declanseaza un upload implicit care l-ar inlocui.
+- Backup 03 a inceput cu stabilirea acestui comportament. Urmeaza restore-ul
+  manual cu confirmare explicita, apoi detectarea conflictului dupa sign in.
+- In acest pas s-a modificat numai planul; formatter-ul nu a fost necesar,
+  analyzer-ul si testele nu au fost rulate.
+
+**Urmatorul pas:** implementarea ghidata a restore-ului manual, incepand cu
+coordonarea `downloadBackup()` -> `importSnapshot()` si starile operatiei.
 
 ### 2026-09-29 - Handoff Backup 02 -> Backup 03
 

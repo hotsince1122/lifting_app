@@ -121,7 +121,10 @@ void main() {
       final user = _buildUser();
       final snapshot = buildBackupSnapshotFixture();
       final uploadedMetadata = _buildMetadata(sizeBytes: 2048);
-      final localRepository = FakeLocalBackupRepository(snapshot: snapshot);
+      final localRepository = FakeLocalBackupRepository(
+        snapshot: snapshot,
+        ownerUid: user.id,
+      );
       final cloudRepository = FakeCloudBackupRepository(
         uploadResult: uploadedMetadata,
       );
@@ -137,6 +140,8 @@ void main() {
 
       // Assert
       expect(localRepository.exportCallCount, 1);
+      expect(localRepository.loadOwnerCallCount, 2);
+      expect(localRepository.claimCallCount, 0);
       expect(cloudRepository.uploadCallCount, 1);
       expect(cloudRepository.lastUploadUserId, user.id);
       expect(cloudRepository.lastUploadedSnapshot, same(snapshot));
@@ -148,6 +153,66 @@ void main() {
         await container.read(lastBackupDateRepositoryProvider).read(user.id),
         uploadedMetadata.uploadedAt,
       );
+    });
+
+    test(
+      'does not claim or upload unowned data over an existing backup',
+      () async {
+        final user = _buildUser();
+        final localRepository = FakeLocalBackupRepository(
+          snapshot: buildBackupSnapshotFixture(),
+        );
+        final cloudRepository = FakeCloudBackupRepository(
+          metadataResult: _buildMetadata(),
+          uploadResult: _buildMetadata(),
+        );
+        final container = _buildContainer(
+          user: user,
+          localRepository: localRepository,
+          cloudRepository: cloudRepository,
+        );
+        await container.read(cloudBackupControllerProvider.future);
+
+        await container
+            .read(cloudBackupControllerProvider.notifier)
+            .backupNow();
+
+        expect(localRepository.loadOwnerCallCount, 1);
+        expect(
+          container.read(cloudBackupControllerProvider).error,
+          isA<StateError>(),
+        );
+        expect(localRepository.claimCallCount, 0);
+        expect(localRepository.ownerUid, isNull);
+        expect(localRepository.exportCallCount, 0);
+        expect(cloudRepository.uploadCallCount, 0);
+      },
+    );
+
+    test('does not export or upload data owned by another UID', () async {
+      final localRepository = FakeLocalBackupRepository(
+        snapshot: buildBackupSnapshotFixture(),
+        ownerUid: 'another-user',
+      );
+      final cloudRepository = FakeCloudBackupRepository(
+        uploadResult: _buildMetadata(),
+      );
+      final container = _buildContainer(
+        user: _buildUser(),
+        localRepository: localRepository,
+        cloudRepository: cloudRepository,
+      );
+      await container.read(cloudBackupControllerProvider.future);
+
+      await container.read(cloudBackupControllerProvider.notifier).backupNow();
+
+      final state = container.read(cloudBackupControllerProvider);
+      expect(state.hasError, isTrue);
+      expect(localRepository.loadOwnerCallCount, 1);
+      expect(localRepository.claimCallCount, 0);
+      expect(localRepository.ownerUid, 'another-user');
+      expect(localRepository.exportCallCount, 0);
+      expect(cloudRepository.uploadCallCount, 0);
     });
 
     test('returns a typed error for a guest without exporting', () async {
@@ -224,6 +289,7 @@ void main() {
         user: _buildUser(),
         localRepository: FakeLocalBackupRepository(
           snapshot: buildBackupSnapshotFixture(),
+          ownerUid: 'user-123',
         ),
         cloudRepository: cloudRepository,
       );
@@ -252,6 +318,7 @@ void main() {
       final expectedException = StateError('Export failed.');
       final localRepository = FakeLocalBackupRepository(
         snapshot: buildBackupSnapshotFixture(),
+        ownerUid: 'user-123',
         exportException: expectedException,
       );
       final cloudRepository = FakeCloudBackupRepository();
@@ -302,6 +369,7 @@ void main() {
       final exportCompleter = Completer<void>();
       final localRepository = FakeLocalBackupRepository(
         snapshot: buildBackupSnapshotFixture(),
+        ownerUid: 'user-123',
         exportFuture: exportCompleter.future,
       );
       final cloudRepository = FakeCloudBackupRepository(
@@ -330,23 +398,256 @@ void main() {
       expect(cloudRepository.uploadCallCount, 1);
       expect(container.read(cloudBackupControllerProvider).hasValue, isTrue);
     });
+
+    test('cancels when local ownership changes during export', () async {
+      final exported = Completer<void>();
+      final local = FakeLocalBackupRepository(
+        snapshot: buildBackupSnapshotFixture(),
+        ownerUid: 'user-123',
+        exportFuture: exported.future,
+      );
+      final cloud = FakeCloudBackupRepository(uploadResult: _buildMetadata());
+      final container = _buildContainer(
+        user: _buildUser(),
+        localRepository: local,
+        cloudRepository: cloud,
+      );
+      await container.read(cloudBackupControllerProvider.future);
+
+      final operation = container
+          .read(cloudBackupControllerProvider.notifier)
+          .backupNow();
+      await Future<void>.delayed(Duration.zero);
+      expect(local.exportCallCount, 1);
+      local.ownerUid = 'another-user';
+      exported.complete();
+      await operation;
+
+      final error = container.read(cloudBackupControllerProvider).error;
+      expect(error, isA<CloudBackupException>());
+      expect(
+        (error! as CloudBackupException).code,
+        CloudBackupErrorCode.canceled,
+      );
+      expect(cloud.uploadCallCount, 0);
+    });
+
+    test('does not upload after disposal during export', () async {
+      final exported = Completer<void>();
+      final local = FakeLocalBackupRepository(
+        snapshot: buildBackupSnapshotFixture(),
+        ownerUid: 'user-123',
+        exportFuture: exported.future,
+      );
+      final cloud = FakeCloudBackupRepository(uploadResult: _buildMetadata());
+      final container = _buildContainer(
+        user: _buildUser(),
+        localRepository: local,
+        cloudRepository: cloud,
+      );
+      await container.read(cloudBackupControllerProvider.future);
+      final operation = container
+          .read(cloudBackupControllerProvider.notifier)
+          .backupNow();
+      await Future<void>.delayed(Duration.zero);
+      expect(local.exportCallCount, 1);
+
+      container.dispose();
+      exported.complete();
+      await operation;
+
+      expect(cloud.uploadCallCount, 0);
+    });
   });
+
+  group('CloudBackupController session changes', () {
+    for (final scenario in <({String name, List<AuthUser?> users})>[
+      (name: 'sign out', users: [null]),
+      (name: 'another account', users: [_buildUser(id: 'user-b')]),
+      (
+        name: 'email verification is lost',
+        users: [_buildUser(verified: false)],
+      ),
+      (
+        name: 'sign out and back into the same account',
+        users: [null, _buildUser()],
+      ),
+    ]) {
+      test('does not upload after ${scenario.name} during export', () async {
+        final auth = StreamController<AuthUser?>();
+        addTearDown(auth.close);
+        final exported = Completer<void>();
+        final local = FakeLocalBackupRepository(
+          snapshot: buildBackupSnapshotFixture(),
+          ownerUid: 'user-123',
+          exportFuture: exported.future,
+        );
+        final cloud = FakeCloudBackupRepository(
+          metadataResult: _buildMetadata(),
+          uploadResult: _buildMetadata(sizeBytes: 2048),
+        );
+        final container = _buildContainer(
+          user: _buildUser(),
+          authState: auth.stream,
+          localRepository: local,
+          cloudRepository: cloud,
+        );
+        await _changeUser(container, auth, _buildUser());
+
+        final operation = container
+            .read(cloudBackupControllerProvider.notifier)
+            .backupNow();
+        await Future<void>.delayed(Duration.zero);
+        expect(local.exportCallCount, 1);
+        for (final user in scenario.users) {
+          await _changeUser(container, auth, user);
+        }
+        final currentState = container.read(cloudBackupControllerProvider);
+
+        exported.complete();
+        await operation;
+
+        expect(cloud.uploadCallCount, 0);
+        expect(local.claimCallCount, 0);
+        expect(
+          container.read(cloudBackupControllerProvider),
+          same(currentState),
+        );
+      });
+    }
+
+    for (final fails in [false, true]) {
+      for (final returnsToSameAccount in [false, true]) {
+        test(
+          'ignores old upload ${fails ? 'failure' : 'success'} after '
+          '${returnsToSameAccount ? 'signing back into the same account' : 'switching accounts'}',
+          () async {
+            final auth = StreamController<AuthUser?>();
+            addTearDown(auth.close);
+            final uploaded = Completer<CloudBackupMetadata>();
+            final cloud = FakeCloudBackupRepository(
+              metadataResult: _buildMetadata(),
+              uploadFuture: uploaded.future,
+            );
+            final cache = FakeLastBackupDateRepository();
+            final container = _buildContainer(
+              user: _buildUser(),
+              authState: auth.stream,
+              cloudRepository: cloud,
+              cache: cache,
+            );
+            await _changeUser(container, auth, _buildUser());
+
+            final operation = container
+                .read(cloudBackupControllerProvider.notifier)
+                .backupNow();
+            await Future<void>.delayed(Duration.zero);
+            expect(cloud.uploadCallCount, 1);
+            expect(cloud.lastUploadUserId, 'user-123');
+            await _changeUser(container, auth, _buildUser(id: 'user-b'));
+            if (returnsToSameAccount) {
+              await _changeUser(container, auth, _buildUser());
+            }
+            final currentState = container.read(cloudBackupControllerProvider);
+            final currentDates = Map<String, DateTime>.of(cache.dates);
+
+            if (fails) {
+              uploaded.completeError(
+                const CloudBackupException(
+                  CloudBackupErrorCode.permissionDenied,
+                ),
+              );
+            } else {
+              uploaded.complete(
+                CloudBackupMetadata(
+                  uploadedAt: DateTime.utc(2026, 10, 8),
+                  sizeBytes: 2048,
+                ),
+              );
+            }
+            await operation;
+
+            expect(
+              container.read(cloudBackupControllerProvider),
+              same(currentState),
+            );
+            expect(cache.dates, currentDates);
+          },
+        );
+      }
+    }
+
+    for (final backupExists in [false, true]) {
+      test(
+        'ignores old metadata after logout (backup exists: $backupExists)',
+        () async {
+          final auth = StreamController<AuthUser?>();
+          addTearDown(auth.close);
+          final metadata = Completer<CloudBackupMetadata?>();
+          final oldDate = DateTime.utc(2026, 9, 1);
+          final cache = FakeLastBackupDateRepository()
+            ..dates['user-123'] = oldDate;
+          final cloud = FakeCloudBackupRepository(
+            metadataFuture: metadata.future,
+          );
+          final container = _buildContainer(
+            user: _buildUser(),
+            authState: auth.stream,
+            cloudRepository: cloud,
+            cache: cache,
+          );
+          auth.add(_buildUser());
+          await container.read(authStateProvider.future);
+          container.listen(cloudBackupControllerProvider, (_, _) {});
+          await Future<void>.delayed(Duration.zero);
+          expect(cloud.metadataCallCount, 1);
+
+          await _changeUser(container, auth, null);
+          metadata.complete(backupExists ? _buildMetadata() : null);
+          await Future<void>.delayed(Duration.zero);
+
+          expect(container.read(cloudBackupControllerProvider).value, isNull);
+          expect(
+            container.read(cloudBackupControllerProvider).hasError,
+            isFalse,
+          );
+          expect(cache.dates['user-123'], oldDate);
+        },
+      );
+    }
+  });
+}
+
+Future<void> _changeUser(
+  ProviderContainer container,
+  StreamController<AuthUser?> auth,
+  AuthUser? user,
+) async {
+  auth.add(user);
+  await Future<void>.delayed(Duration.zero);
+  await container.read(cloudBackupControllerProvider.future);
 }
 
 ProviderContainer _buildContainer({
   required AuthUser? user,
+  Stream<AuthUser?>? authState,
   required FakeCloudBackupRepository cloudRepository,
   FakeLocalBackupRepository? localRepository,
   FakeLastBackupDateRepository? cache,
 }) {
   final local =
       localRepository ??
-      FakeLocalBackupRepository(snapshot: buildBackupSnapshotFixture());
+      FakeLocalBackupRepository(
+        snapshot: buildBackupSnapshotFixture(),
+        ownerUid: user?.id,
+      );
 
   final container = ProviderContainer.test(
     overrides: [
       authRepositoryProvider.overrideWithValue(
-        FakeAuthRepository(authState: Stream<AuthUser?>.value(user)),
+        FakeAuthRepository(
+          authState: authState ?? Stream<AuthUser?>.value(user),
+        ),
       ),
       localBackupRepositoryProvider.overrideWithValue(local),
       cloudBackupRepositoryProvider.overrideWithValue(cloudRepository),
@@ -361,9 +662,9 @@ ProviderContainer _buildContainer({
   return container;
 }
 
-AuthUser _buildUser({bool verified = true}) {
+AuthUser _buildUser({bool verified = true, String id = 'user-123'}) {
   return AuthUser(
-    id: 'user-123',
+    id: id,
     email: 'user@example.com',
     isEmailVerified: verified,
     providers: const {AuthProviderType.emailPassword},

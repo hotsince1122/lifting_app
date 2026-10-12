@@ -5,7 +5,14 @@ import 'package:lifting_tracker_app/features/cloud_backup/domain/backup_snapshot
 import 'package:lifting_tracker_app/features/cloud_backup/domain/table_records/app_settings_backup_record.dart';
 import 'package:sqflite/sqflite.dart';
 
-Future<void> importSnapshot(BackupSnapshot snapshot) async {
+Future<void> importSnapshot(
+  BackupSnapshot snapshot, {
+  required String ownerUid,
+}) async {
+  if (ownerUid.trim().isEmpty) {
+    throw ArgumentError.value(ownerUid, 'ownerUid', 'Cannot be empty.');
+  }
+
   validateBackupSnapshot(snapshot);
 
   final db = await AppDatabase.getDatabase();
@@ -15,7 +22,7 @@ Future<void> importSnapshot(BackupSnapshot snapshot) async {
 
     await _writeDatabase(txn, snapshot.data);
 
-    await _updateAppSettingsTable(txn, snapshot.data.appSettings);
+    await _updateAppSettingsTable(txn, snapshot.data.appSettings, ownerUid);
   });
 }
 
@@ -104,11 +111,12 @@ void _writeTableInBatch<T>(
 Future<void> _updateAppSettingsTable(
   DatabaseExecutor txn,
   AppSettingsBackupRecord settings,
+  String ownerUid,
 ) async {
   final rowsAffected = await txn.rawUpdate(
     '''
     UPDATE app_settings
-    SET week_streak = ?, workouts_per_week_target = ?, weekly_gym_attendance = ?, weekly_gym_attendance_week_start = ?, did_user_finish_setup = ?
+    SET week_streak = ?, workouts_per_week_target = ?, weekly_gym_attendance = ?, weekly_gym_attendance_week_start = ?, did_user_finish_setup = ?, local_data_owner_uid = ?
     WHERE id = 1
     ''',
     [
@@ -117,6 +125,7 @@ Future<void> _updateAppSettingsTable(
       settings.weeklyGymAttendance,
       settings.weeklyGymAttendanceWeekStart,
       settings.didUserFinishSetup,
+      ownerUid,
     ],
   );
 
