@@ -72,7 +72,7 @@ class _ExerciseSetTileState extends ConsumerState<ExerciseSetTile> {
 
     return actualWeight == actualWeight.toInt()
         ? actualWeight.toInt().toString()
-        : actualWeight.toString();
+        : actualWeight.toString().replaceAll('.', ',');
   }
 
   void _syncControllerText(TextEditingController controller, String text) {
@@ -135,7 +135,7 @@ class _ExerciseSetTileState extends ConsumerState<ExerciseSetTile> {
     try {
       await _exercisesAndSetsNotifier.saveSetCell(
         setId,
-        double.tryParse(_weightController.text),
+        double.tryParse(_weightController.text.replaceAll(',', '.')),
         int.tryParse(_repsController.text),
         _notesController.text.trim().isEmpty ? null : _notesController.text,
         widget.exerciseId,
@@ -156,7 +156,7 @@ class _ExerciseSetTileState extends ConsumerState<ExerciseSetTile> {
 
     await saveSetCellToDb(
       setId,
-      double.tryParse(_weightController.text),
+      double.tryParse(_weightController.text.replaceAll(',', '.')),
       int.tryParse(_repsController.text),
       _notesController.text.trim().isEmpty ? null : _notesController.text,
     );
@@ -213,9 +213,11 @@ class _ExerciseSetTileState extends ConsumerState<ExerciseSetTile> {
         inputFormater = [
           TextInputFormatter.withFunction((oldValue, newValue) {
             final text = newValue.text;
-            final isValid = RegExp(r'^\d*\.?\d*$').hasMatch(text);
+            final isValid = RegExp(r'^\d*([.,]\d*)?$').hasMatch(text);
 
-            return isValid ? newValue : oldValue;
+            return isValid
+                ? newValue.copyWith(text: text.replaceAll('.', ','))
+                : oldValue;
           }),
         ];
       }
@@ -264,9 +266,7 @@ class _ExerciseSetTileState extends ConsumerState<ExerciseSetTile> {
       );
     }
 
-    final weightLabel = widget.set.hintWeight == widget.set.hintWeight.toInt()
-        ? widget.set.hintWeight.toInt().toString()
-        : widget.set.hintWeight.toString();
+    final weightLabel = _weightText(widget.set.hintWeight);
 
     return AnimatedSize(
       duration: Duration(milliseconds: 180),

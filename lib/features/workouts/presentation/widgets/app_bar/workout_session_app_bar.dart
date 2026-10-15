@@ -5,6 +5,7 @@ import 'package:lifting_tracker_app/core/theme/app_colors.dart';
 import 'package:lifting_tracker_app/core/theme/app_spacing.dart';
 import 'package:lifting_tracker_app/core/ui/app_bars/app_bar_settings.dart';
 import 'package:lifting_tracker_app/features/rest_timer/presentation/widgets/rest_timer_app_bar_control.dart';
+import 'package:lifting_tracker_app/features/workouts/application/session_editor/workout_started_at_time_provider.dart';
 import 'package:lifting_tracker_app/features/workouts/presentation/editor/workout_editor_flow.dart';
 import 'package:lifting_tracker_app/core/ui/buttons/solid_button.dart';
 import 'package:lifting_tracker_app/core/ui/cards/solid_card.dart';
@@ -21,10 +22,8 @@ class WorkoutSessionAppBar extends ConsumerWidget
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final now = DateTime.now();
+    final startedAt = ref.watch(workoutStartedAtProvider(workoutSessionId));
 
-    final dayLabel = now.day.toString();
-    final monthLabel = DateFormat('MMM', 'en_US').format(now);
     final double buttonHeight = 46;
     final double iconSize = 26;
 
@@ -111,13 +110,28 @@ class WorkoutSessionAppBar extends ConsumerWidget
                       padding: const EdgeInsets.symmetric(
                         horizontal: AppSpacing.s8,
                       ),
-                      child: Text(
-                        '$dayLabel $monthLabel',
-                        maxLines: 1,
-                        softWrap: false,
-                        overflow: TextOverflow.fade,
-                        textAlign: TextAlign.center,
-                        style: Theme.of(context).textTheme.titleLarge,
+                      child: startedAt.when(
+                        skipError: true,
+                        skipLoadingOnRefresh: true,
+                        skipLoadingOnReload: true,
+                        loading: () => const SizedBox.shrink(),
+                        error: (_, _) => const SizedBox.shrink(),
+                        data: (startedAt) {
+                          final dayLabel = startedAt.day.toString();
+                          final monthLabel = DateFormat(
+                            'MMM',
+                            'en_US',
+                          ).format(startedAt);
+
+                          return Text(
+                            '$dayLabel $monthLabel',
+                            maxLines: 1,
+                            softWrap: false,
+                            overflow: TextOverflow.fade,
+                            textAlign: TextAlign.center,
+                            style: Theme.of(context).textTheme.titleLarge,
+                          );
+                        },
                       ),
                     ),
                   ),

@@ -200,3 +200,24 @@ Future<int?> loadExerciseOccurrenceIndex(
 
   return data.first['exercise_occurrence_index'] as int;
 }
+
+Future<DateTime> loadWorkoutStartedAt(int workoutSessionId) async {
+  final db = await AppDatabase.getDatabase();
+
+  final data = await db.rawQuery(
+    '''
+    SELECT started_at
+    FROM workout_sessions
+    WHERE id = ?
+    ''',
+    [workoutSessionId],
+  );
+
+  if (data.isEmpty) {
+    throw StateError('There is no workout with such id.');
+  }
+
+  final startedAtSeconds = data.single['started_at'] as int;
+
+  return DateTime.fromMillisecondsSinceEpoch(startedAtSeconds * 1000);
+}
