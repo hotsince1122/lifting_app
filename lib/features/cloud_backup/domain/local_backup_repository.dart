@@ -19,9 +19,12 @@ abstract interface class LocalBackupRepository {
     required String newUid,
   });
 
-  /// Changes the owner only while the database has no workout sessions.
   Future<void> reassignOwnerUidIfNoWorkouts({
     required String expectedOwnerUid,
     required String newUid,
   });
+
+  Future<bool> loadBackupPending();
+
+  Future<void> setBackupPending(bool pending);
 }

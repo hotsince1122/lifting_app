@@ -38,6 +38,7 @@ final class FakeLocalBackupRepository implements LocalBackupRepository {
   final BackupSnapshot snapshot;
   String? ownerUid;
   bool hasWorkoutProgressValue;
+  bool backupPending = false;
   final Object? exportException;
   final Future<void>? exportFuture;
   final Object? importException;
@@ -55,6 +56,14 @@ final class FakeLocalBackupRepository implements LocalBackupRepository {
   String? lastReassignedOwnerUid;
   BackupSnapshot? lastImportedSnapshot;
   String? lastImportedOwnerUid;
+
+  @override
+  Future<bool> loadBackupPending() async => backupPending;
+
+  @override
+  Future<void> setBackupPending(bool pending) async {
+    backupPending = pending;
+  }
 
   @override
   Future<String?> loadOwnerUid() async {

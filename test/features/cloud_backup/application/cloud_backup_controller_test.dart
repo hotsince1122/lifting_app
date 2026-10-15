@@ -7,6 +7,7 @@ import 'package:lifting_tracker_app/features/authentication/domain/auth_provider
 import 'package:lifting_tracker_app/features/authentication/domain/auth_user.dart';
 import 'package:lifting_tracker_app/features/cloud_backup/application/cloud_backup_controller.dart';
 import 'package:lifting_tracker_app/features/cloud_backup/application/cloud_backup_providers.dart';
+import 'package:lifting_tracker_app/features/cloud_backup/application/is_automatic_backup_enabled_controller.dart';
 import 'package:lifting_tracker_app/features/cloud_backup/domain/cloud_backup_exception.dart';
 import 'package:lifting_tracker_app/features/cloud_backup/domain/cloud_backup_metadata.dart';
 
@@ -15,6 +16,136 @@ import '../test_doubles/fake_backup_repositories.dart';
 import '../test_fixtures/backup_snapshot_fixture.dart';
 
 void main() {
+  group('CloudBackupController backupAutomatically', () {
+    test(
+      'uploads for an eligible account with automatic backup enabled',
+      () async {
+        final cloud = FakeCloudBackupRepository(uploadResult: _buildMetadata());
+        final container = _buildContainer(
+          user: _buildUser(),
+          cloudRepository: cloud,
+        );
+        await container.read(cloudBackupControllerProvider.future);
+
+        await container
+            .read(cloudBackupControllerProvider.notifier)
+            .backupAutomatically();
+
+        expect(cloud.uploadCallCount, 1);
+        expect(container.read(cloudBackupControllerProvider).hasError, isFalse);
+        expect(
+          await container
+              .read(localBackupRepositoryProvider)
+              .loadBackupPending(),
+          isFalse,
+        );
+      },
+    );
+
+    for (final scenario in <({String name, AuthUser? user, bool enabled})>[
+      (name: 'disabled setting', user: _buildUser(), enabled: false),
+      (name: 'guest', user: null, enabled: true),
+      (
+        name: 'unverified account',
+        user: _buildUser(verified: false),
+        enabled: true,
+      ),
+    ]) {
+      test('skips upload for ${scenario.name}', () async {
+        final cloud = FakeCloudBackupRepository(uploadResult: _buildMetadata());
+        final container = _buildContainer(
+          user: scenario.user,
+          cloudRepository: cloud,
+          automaticBackupEnabled: scenario.enabled,
+        );
+        await container.read(cloudBackupControllerProvider.future);
+
+        await container
+            .read(cloudBackupControllerProvider.notifier)
+            .backupAutomatically();
+
+        expect(cloud.uploadCallCount, 0);
+        expect(container.read(cloudBackupControllerProvider).hasError, isFalse);
+      });
+    }
+
+    test('waits for initial metadata before starting the upload', () async {
+      final metadata = Completer<CloudBackupMetadata?>();
+      final cloud = FakeCloudBackupRepository(
+        metadataFuture: metadata.future,
+        uploadResult: _buildMetadata(),
+      );
+      final container = _buildContainer(
+        user: _buildUser(),
+        cloudRepository: cloud,
+      );
+      await container.read(authStateProvider.future);
+      final controller = container.read(cloudBackupControllerProvider.notifier);
+
+      final operation = controller.backupAutomatically();
+      await Future<void>.delayed(Duration.zero);
+      expect(cloud.metadataCallCount, 1);
+      expect(cloud.uploadCallCount, 0);
+
+      metadata.complete(null);
+      await operation;
+      expect(cloud.uploadCallCount, 1);
+    });
+
+    test('attempts upload even when metadata lookup failed', () async {
+      final cloud = FakeCloudBackupRepository(
+        metadataException: StateError('Metadata unavailable'),
+        uploadResult: _buildMetadata(),
+      );
+      final container = _buildContainer(
+        user: _buildUser(),
+        cloudRepository: cloud,
+      );
+      await expectLater(
+        container.read(cloudBackupControllerProvider.future),
+        throwsStateError,
+      );
+
+      await container
+          .read(cloudBackupControllerProvider.notifier)
+          .backupAutomatically();
+
+      expect(cloud.uploadCallCount, 1);
+      expect(container.read(cloudBackupControllerProvider).hasError, isFalse);
+    });
+
+    test(
+      'keeps pending without throwing when automatic upload fails',
+      () async {
+        const failure = CloudBackupException(
+          CloudBackupErrorCode.retryLimitExceeded,
+        );
+        final cloud = FakeCloudBackupRepository(uploadException: failure);
+        final container = _buildContainer(
+          user: _buildUser(),
+          cloudRepository: cloud,
+        );
+        await container.read(cloudBackupControllerProvider.future);
+
+        await container
+            .read(cloudBackupControllerProvider.notifier)
+            .backupAutomatically();
+
+        expect(cloud.uploadCallCount, 1);
+        expect(
+          await container
+              .read(localBackupRepositoryProvider)
+              .loadBackupPending(),
+          isTrue,
+        );
+        expect(
+          container.read(cloudBackupControllerProvider).error,
+          same(failure),
+        );
+      },
+    );
+  });
+
   group('CloudBackupController build', () {
     test('loads backup metadata for the authenticated verified user', () async {
       // Arrange
@@ -116,6 +247,44 @@ void main() {
   });
 
   group('CloudBackupController backupNow', () {
+    test(
+      'keeps pending through export and upload, then clears it on success',
+      () async {
+        final exported = Completer<void>();
+        final uploaded = Completer<CloudBackupMetadata>();
+        final local = FakeLocalBackupRepository(
+          snapshot: buildBackupSnapshotFixture(),
+          ownerUid: 'user-123',
+          exportFuture: exported.future,
+        );
+        final cloud = FakeCloudBackupRepository(uploadFuture: uploaded.future);
+        final container = _buildContainer(
+          user: _buildUser(),
+          localRepository: local,
+          cloudRepository: cloud,
+        );
+        await container.read(cloudBackupControllerProvider.future);
+
+        final operation = container
+            .read(cloudBackupControllerProvider.notifier)
+            .backupNow();
+        await Future<void>.delayed(Duration.zero);
+        expect(local.exportCallCount, 1);
+        expect(await local.loadBackupPending(), isTrue);
+        expect(cloud.uploadCallCount, 0);
+
+        exported.complete();
+        await Future<void>.delayed(Duration.zero);
+        expect(cloud.uploadCallCount, 1);
+        expect(await local.loadBackupPending(), isTrue);
+
+        uploaded.complete(_buildMetadata());
+        await operation;
+        expect(container.read(cloudBackupControllerProvider).hasError, isFalse);
+        expect(await local.loadBackupPending(), isFalse);
+      },
+    );
+
     test('exports and uploads the snapshot for the current user', () async {
       // Arrange
       final user = _buildUser();
@@ -311,6 +480,10 @@ void main() {
       final errorState = container.read(cloudBackupControllerProvider);
       expect(errorState.error, same(expectedException));
       expect(errorState.value, same(previousMetadata));
+      expect(
+        await container.read(localBackupRepositoryProvider).loadBackupPending(),
+        isTrue,
+      );
     });
 
     test('does not upload when exporting the local snapshot fails', () async {
@@ -339,6 +512,7 @@ void main() {
       );
       expect(localRepository.exportCallCount, 1);
       expect(cloudRepository.uploadCallCount, 0);
+      expect(await localRepository.loadBackupPending(), isTrue);
     });
 
     test(
@@ -572,6 +746,12 @@ void main() {
               same(currentState),
             );
             expect(cache.dates, currentDates);
+            expect(
+              await container
+                  .read(localBackupRepositoryProvider)
+                  .loadBackupPending(),
+              isTrue,
+            );
           },
         );
       }
@@ -634,6 +814,7 @@ ProviderContainer _buildContainer({
   required FakeCloudBackupRepository cloudRepository,
   FakeLocalBackupRepository? localRepository,
   FakeLastBackupDateRepository? cache,
+  bool automaticBackupEnabled = true,
 }) {
   final local =
       localRepository ??
@@ -644,6 +825,9 @@ ProviderContainer _buildContainer({
 
   final container = ProviderContainer.test(
     overrides: [
+      isAutomaticBackupEnabledController.overrideWith(
+        () => _AutomaticBackupSetting(automaticBackupEnabled),
+      ),
       authRepositoryProvider.overrideWithValue(
         FakeAuthRepository(
           authState: authState ?? Stream<AuthUser?>.value(user),
@@ -660,6 +844,15 @@ ProviderContainer _buildContainer({
   container.listen(authStateProvider, (_, _) {});
 
   return container;
+}
+
+class _AutomaticBackupSetting extends IsAutomaticBackupEnabledController {
+  _AutomaticBackupSetting(this.enabled);
+
+  final bool enabled;
+
+  @override
+  FutureOr<bool> build() => enabled;
 }
 
 AuthUser _buildUser({bool verified = true, String id = 'user-123'}) {

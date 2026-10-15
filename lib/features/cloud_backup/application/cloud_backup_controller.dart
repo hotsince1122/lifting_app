@@ -3,6 +3,7 @@ import 'dart:async';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:lifting_tracker_app/features/authentication/application/auth_providers.dart';
 import 'package:lifting_tracker_app/features/cloud_backup/application/cloud_backup_providers.dart';
+import 'package:lifting_tracker_app/features/cloud_backup/application/is_automatic_backup_enabled_controller.dart';
 import 'package:lifting_tracker_app/features/cloud_backup/domain/cloud_backup_exception.dart';
 import 'package:lifting_tracker_app/features/cloud_backup/domain/cloud_backup_metadata.dart';
 
@@ -74,6 +75,9 @@ class CloudBackupController extends AsyncNotifier<CloudBackupMetadata?> {
         throw StateError('Resolve local data ownership before backing up.');
       }
 
+      await localRepository.setBackupPending(true);
+      _requireCurrentUser(generation, user.id);
+
       final snapshot = await localRepository.exportSnapshot();
       _requireCurrentUser(generation, user.id);
 
@@ -89,6 +93,10 @@ class CloudBackupController extends AsyncNotifier<CloudBackupMetadata?> {
         snapshot: snapshot,
       );
       _requireCurrentUser(generation, user.id);
+
+      await localRepository.setBackupPending(false);
+      _requireCurrentUser(generation, user.id);
+
       await _updateLocalDate(generation, user.id, metadata.uploadedAt);
       _requireCurrentUser(generation, user.id);
       return metadata;
@@ -127,6 +135,42 @@ class CloudBackupController extends AsyncNotifier<CloudBackupMetadata?> {
       }
     } catch (_) {
       // A cache failure must not turn a successful cloud operation into an error.
+    }
+  }
+
+  Future<void> backupAutomatically() async {
+    final generation = _generation;
+
+    try {
+      final enabled = await ref.read(isAutomaticBackupEnabledController.future);
+
+      if (!_isCurrent(generation) || !enabled) return;
+
+      final user = ref.read(authStateProvider).asData?.value;
+      if (user == null || !user.isEmailVerified) return;
+
+      final localRepository = ref.read(localBackupRepositoryProvider);
+      final ownerUid = await localRepository.loadOwnerUid();
+
+      if (!_isCurrent(generation) || ownerUid != user.id) return;
+
+      await localRepository.setBackupPending(true);
+
+      if (!_isCurrent(generation)) return;
+
+      try {
+        await future;
+      } catch (_) {
+        //Contiune with the upload even if the previous operation failed.
+      }
+
+      if (!_isCurrent(generation)) return;
+
+      await backupNow();
+    } catch (error, stackTrace) {
+      if (_isCurrent(generation)) {
+        state = AsyncError(error, stackTrace);
+      }
     }
   }
 }

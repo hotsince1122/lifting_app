@@ -3,11 +3,15 @@ import 'package:lifting_tracker_app/features/cloud_backup/data/export_snapshot_q
 import 'package:lifting_tracker_app/features/cloud_backup/data/import_snapshot_command.dart'
     as import_command;
 import 'package:lifting_tracker_app/features/cloud_backup/data/local_data_owner_commands.dart'
-    as commands;
+    as data_owner_commands;
 import 'package:lifting_tracker_app/features/cloud_backup/data/local_data_owner_queries.dart'
-    as queries;
+    as data_owner_queries;
 import 'package:lifting_tracker_app/features/cloud_backup/domain/backup_snapshot.dart';
 import 'package:lifting_tracker_app/features/cloud_backup/domain/local_backup_repository.dart';
+import 'package:lifting_tracker_app/features/cloud_backup/data/backup_pending_commands.dart'
+    as pending_commands;
+import 'package:lifting_tracker_app/features/cloud_backup/data/backup_pending_queries.dart'
+    as pending_queries;
 
 final class SqliteLocalBackupRepository implements LocalBackupRepository {
   const SqliteLocalBackupRepository();
@@ -27,17 +31,17 @@ final class SqliteLocalBackupRepository implements LocalBackupRepository {
 
   @override
   Future<String?> loadOwnerUid() async {
-    return queries.loadLocalDataOwnerUid();
+    return data_owner_queries.loadLocalDataOwnerUid();
   }
 
   @override
   Future<void> claimForUid(String uid) async {
-    return await commands.claimLocalDataForUid(uid);
+    return await data_owner_commands.claimLocalDataForUid(uid);
   }
 
   @override
   Future<bool> hasWorkoutProgress() async {
-    return await queries.hasLocalWorkoutProgress();
+    return await data_owner_queries.hasLocalWorkoutProgress();
   }
 
   @override
@@ -45,7 +49,7 @@ final class SqliteLocalBackupRepository implements LocalBackupRepository {
     required String expectedOwnerUid,
     required String newUid,
   }) async {
-    return await commands.reassignLocalDataOwnerUid(
+    return await data_owner_commands.reassignLocalDataOwnerUid(
       expectedOwnerUid: expectedOwnerUid,
       newUid: newUid,
     );
@@ -56,9 +60,19 @@ final class SqliteLocalBackupRepository implements LocalBackupRepository {
     required String expectedOwnerUid,
     required String newUid,
   }) {
-    return commands.reassignLocalDataOwnerUidIfNoWorkouts(
+    return data_owner_commands.reassignLocalDataOwnerUidIfNoWorkouts(
       expectedOwnerUid: expectedOwnerUid,
       newUid: newUid,
     );
+  }
+
+  @override
+  Future<bool> loadBackupPending() {
+    return pending_queries.loadBackupPending();
+  }
+
+  @override
+  Future<void> setBackupPending(bool pending) {
+    return pending_commands.setBackupPending(pending);
   }
 }

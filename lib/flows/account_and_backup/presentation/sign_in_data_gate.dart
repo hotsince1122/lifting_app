@@ -6,6 +6,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:lifting_tracker_app/features/authentication/application/auth_controller.dart';
 import 'package:lifting_tracker_app/features/authentication/application/auth_providers.dart';
 import 'package:lifting_tracker_app/features/cloud_backup/application/cloud_backup_controller.dart';
+import 'package:lifting_tracker_app/features/cloud_backup/application/cloud_backup_providers.dart';
 import 'package:lifting_tracker_app/features/cloud_backup/application/post_sign_in_data_decision.dart';
 import 'package:lifting_tracker_app/features/cloud_backup/application/post_sign_in_data_decision_provider.dart';
 import 'package:lifting_tracker_app/features/cloud_backup/application/post_sign_in_data_resolution_controller.dart';
@@ -29,6 +30,36 @@ class _SignInDataGateState extends ConsumerState<SignInDataGate> {
   String? _observedUid;
   String? _automaticAttemptUid;
   String? _operationUid;
+  String? _pendingRetryUid;
+
+  void _retryPendingBackup(String uid) {
+    if (_pendingRetryUid == uid) return;
+    _pendingRetryUid = uid;
+
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (!mounted) return;
+      unawaited(_runPendingRetry(uid));
+    });
+  }
+
+  Future<void> _runPendingRetry(String uid) async {
+    try {
+      final pending = await ref
+          .read(localBackupRepositoryProvider)
+          .loadBackupPending();
+
+      if (!mounted || !pending) return;
+
+      final user = ref.read(authStateProvider).asData?.value;
+      if (user?.id != uid || user?.isEmailVerified != true) return;
+
+      await ref
+          .read(cloudBackupControllerProvider.notifier)
+          .backupAutomatically();
+    } catch (_) {
+      // Pending persists in SQLite for a future try
+    }
+  }
 
   void _resolve(
     String uid,
@@ -102,6 +133,7 @@ class _SignInDataGateState extends ConsumerState<SignInDataGate> {
       ),
       data: (user) {
         if (_observedUid != user?.id) {
+          _pendingRetryUid = null;
           _observedUid = user?.id;
           _automaticAttemptUid = null;
           _operationUid = null;
@@ -130,6 +162,7 @@ class _SignInDataGateState extends ConsumerState<SignInDataGate> {
               return null;
             }
             if (assessment.decision == SignInDataDecision.continueLocal) {
+              _retryPendingBackup(user.id);
               return null;
             }
 

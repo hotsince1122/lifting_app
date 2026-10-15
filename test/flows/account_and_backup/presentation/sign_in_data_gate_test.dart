@@ -11,6 +11,7 @@ import 'package:lifting_tracker_app/features/authentication/application/auth_pro
 import 'package:lifting_tracker_app/features/authentication/domain/auth_provider_type.dart';
 import 'package:lifting_tracker_app/features/authentication/domain/auth_user.dart';
 import 'package:lifting_tracker_app/features/cloud_backup/application/cloud_backup_providers.dart';
+import 'package:lifting_tracker_app/features/cloud_backup/application/is_automatic_backup_enabled_controller.dart';
 import 'package:lifting_tracker_app/features/cloud_backup/domain/cloud_backup_metadata.dart';
 import 'package:lifting_tracker_app/flows/account_and_backup/presentation/sign_in_data_gate.dart';
 import 'package:lifting_tracker_app/flows/account_and_backup/presentation/page/account_and_backup_page.dart';
@@ -73,6 +74,50 @@ void main() {
     expect(_gateBarrier, findsNothing);
     expect(local.loadOwnerCallCount, 1);
     expect(cloud.metadataCallCount, 0);
+  });
+
+  testWidgets('retries one pending backup after confirming the local owner', (
+    tester,
+  ) async {
+    final local = _local(ownerUid: 'user-a', hasWorkouts: true)
+      ..backupPending = true;
+    final cloud = FakeCloudBackupRepository(uploadResult: _metadata());
+
+    await _pumpGate(
+      tester,
+      auth: FakeAuthRepository(authState: Stream.value(_user('user-a'))),
+      local: local,
+      cloud: cloud,
+    );
+
+    expect(_gateBarrier, findsNothing);
+    expect(cloud.uploadCallCount, 1);
+    expect(cloud.lastUploadUserId, 'user-a');
+    expect(cloud.lastUploadedSnapshot, same(local.snapshot));
+    expect(local.backupPending, isFalse);
+
+    await tester.pump();
+    expect(cloud.uploadCallCount, 1);
+  });
+
+  testWidgets('keeps pending when automatic backup is disabled', (
+    tester,
+  ) async {
+    final local = _local(ownerUid: 'user-a', hasWorkouts: true)
+      ..backupPending = true;
+    final cloud = FakeCloudBackupRepository(uploadResult: _metadata());
+
+    await _pumpGate(
+      tester,
+      auth: FakeAuthRepository(authState: Stream.value(_user('user-a'))),
+      local: local,
+      cloud: cloud,
+      automaticBackupEnabled: false,
+    );
+
+    expect(_gateBarrier, findsNothing);
+    expect(local.backupPending, isTrue);
+    expect(cloud.uploadCallCount, 0);
   });
 
   testWidgets('main shell keeps its real navigation during startup check', (
@@ -460,10 +505,14 @@ Future<void> _pumpGate(
   Widget? home,
   bool wrapHomeForLoading = true,
   bool settle = true,
+  bool automaticBackupEnabled = true,
 }) async {
   await tester.pumpWidget(
     ProviderScope(
       overrides: [
+        isAutomaticBackupEnabledController.overrideWith(
+          () => _AutomaticBackupSetting(automaticBackupEnabled),
+        ),
         authRepositoryProvider.overrideWithValue(auth),
         localBackupRepositoryProvider.overrideWithValue(local),
         cloudBackupRepositoryProvider.overrideWithValue(cloud),
@@ -490,6 +539,15 @@ Future<void> _pumpGate(
   } else {
     await tester.pump();
   }
+}
+
+class _AutomaticBackupSetting extends IsAutomaticBackupEnabledController {
+  _AutomaticBackupSetting(this.enabled);
+
+  final bool enabled;
+
+  @override
+  FutureOr<bool> build() => enabled;
 }
 
 final Finder _gateBarrier = find.byWidgetPredicate(

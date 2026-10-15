@@ -1,6 +1,7 @@
 import 'dart:async';
 
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:lifting_tracker_app/features/cloud_backup/application/cloud_backup_controller.dart';
 import 'package:lifting_tracker_app/features/plans/data/split_day_queries.dart'
     as day_queries;
 import 'package:lifting_tracker_app/features/plans/domain/split_day.dart';
@@ -100,5 +101,9 @@ class ActiveSessionLifecycleController extends AsyncNotifier<bool> {
         .updateProgress(finishedWeekday);
 
     state = AsyncData(false);
+
+    unawaited(
+      ref.read(cloudBackupControllerProvider.notifier).backupAutomatically(),
+    );
   }
 }

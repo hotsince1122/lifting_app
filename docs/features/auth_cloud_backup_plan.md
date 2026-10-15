@@ -18,7 +18,7 @@ sursa persistenta de adevar pentru feature.
 
 **Status general:** in progress
 
-**Ultima actualizare:** 2026-10-12
+**Ultima actualizare:** 2026-10-15
 
 ## Obiectiv
 
@@ -213,6 +213,15 @@ aplicatiei.
   potrivita si conexiune la internet.
 - Esecul unui backup nu anuleaza si nu marcheaza drept esuata salvarea locala a
   workout-ului.
+- Pentru Backup 04 s-a ales varianta simpla: un singur flag `backup_pending`,
+  fara revizii, coada de workout-uri sau snapshot-uri esuate pastrate local.
+  Fiecare incercare exporta baza SQLite curenta si inlocuieste acelasi backup
+  remote. Pending se seteaza inainte de incercare si ramane setat la esec.
+- Upload-ul automat nu asteapta confirmare si nu afiseaza feedback UI nou de
+  succes. Ruleaza fara sa blocheze utilizatorul cat timp aplicatia ruleaza;
+  pending ramane persistent daca aplicatia este inchisa. Retry-ul la
+  deschidere/revenire se implementeaza ulterior, cu verificarile existente
+  de autentificare, preferinta si ownership.
 
 ## Flow functional tinta
 
@@ -387,8 +396,8 @@ Statusurile permise sunt `not started`, `in progress`, `blocked`, `deferred` si
 | 6 | Upload/download manual, controller/status si UI pentru backup manual | done |
 | 7 | Detectare backup, conflicte, restore si UI-ul aferent | in progress |
 | 8 | Account lifecycle ramas: account deletion si stergerea datelor remote | not started |
-| 9 | Backup automat, pending/retry si starile UI aferente | not started |
-| 10 | Storage Rules, App Check, bugete si hardening | not started |
+| 9 | Backup automat si pending/retry, fara UI suplimentar pentru automatizare | done |
+| 10 | Storage Rules, App Check, bugete, migrare SQLite pentru instalari vechi si hardening | not started |
 | 11 | Sign in with Apple si linking | deferred |
 
 Statusul unei etape se schimba in `done` numai dupa implementare, formatter,
@@ -453,6 +462,184 @@ La finalul unui task:
    inainte ca un task dependent sa inceapa.
 
 ## Implementation Log
+
+### 2026-10-15 - Backup 04 basic: verificare finala
+
+- Utilizatorul a confirmat smoke test-ul pe emulator: backup-ul automat
+  functioneaza dupa finalizarea unui workout.
+- Doua widget tests noi verifica retry-ul la redeschidere pentru un UID care
+  detine datele locale: pending true porneste un singur upload si il sterge la
+  succes; toggle OFF pastreaza pending fara upload. Testele existente confirma
+  ca pending false nu declanseaza cerere de metadata in gate.
+- Fisierele Dart modificate au fost formatate; in aceasta verificare 12 fisiere
+  au fost verificate si 2 reformate.
+- Analyzer: `No issues found`.
+- Teste: 19/19 pentru gate; suita completa 266/266, toate trecute.
+- `git diff --check` nu raporteaza erori; avertismentele Git privesc doar
+  conversia LF/CRLF la o scriere viitoare.
+- Etapa 9 este incheiata pentru comportamentul basic agreat. Limita acceptata
+  pentru workout-uri suprapuse ramane documentata mai jos.
+- Migrarea coloanelor `automatic_backup_enabled` si `backup_pending` pentru
+  baze SQLite deja create la versiunea 2 ramane necesara inainte de release.
+  Va fi tratata impreuna cu etapa 10 de hardening; acest test pe emulator nu
+  verifica o instalare veche.
+
+**Urmatorul pas:** utilizatorul face commit, apoi incepe etapa 10 cu migrarea
+SQLite, verificarea Storage Rules si Firebase App Check.
+
+### 2026-10-15 - Backup 04: retry pending la intrarea in aplicatie
+
+- Utilizatorul a adaugat in `SignInDataGate` o incercare unica per UID cand
+  evaluarea ajunge la `continueLocal`. Citeste intai `backup_pending`; daca
+  este false, nu initializeaza controllerul cloud si nu cere metadata.
+- Daca pending este true, reverifica sesiunea si apeleaza metoda automata,
+  care aplica toggle-ul si regulile de ownership. Eroarea nu blocheaza gate-ul.
+- Review-ul codului este read-only. Formatter, analyzer si teste: nerulate la
+  cererea utilizatorului; scenariile de retry raman pe lista finala.
+- Utilizatorul a decis sa nu adauge coordonare suplimentara pentru cazul rar
+  in care un al doilea workout se incheie in timpul upload-ului celui dintai.
+  In aceasta situatie, upload-ul vechi poate sterge pending-ul pentru datele
+  mai noi; o salvare/backup manual ulterior le poate include. Costul unui
+  guard in memorie ar fi aproximativ 10-20 de linii plus teste, fara garantie
+  completa daca procesul se inchide intre operatii. Aceasta limita este
+  acceptata pentru Backup 04, fara revizii sau coada de snapshot-uri.
+
+**Urmatorul pas:** verificarea vizuala a flow-ului pe dispozitiv si
+verificarile automate amanate cand utilizatorul le solicita.
+
+### 2026-10-15 - Backup 04: pending setat inainte de cloud
+
+- Utilizatorul a adaugat in `backupAutomatically()` citirea UID-ului local si
+  setarea `backup_pending = true` inainte de asteptarea metadata-ului.
+  Controllerul existent ramane responsabil de upload si stergerea pending-ului
+  la succes.
+- Review-ul a confirmat ordinea operatiilor din cod. Retry-ul la redeschidere
+  inca nu este implementat.
+- La cererea utilizatorului, formatter, analyzer si teste nu au fost rulate in
+  acest pas; verificarea automata ramane pentru finalul flow-ului Backup 04.
+
+**Urmatorul pas:** reincearca un pending la pornire numai dupa ce gate-ul
+confirma `continueLocal` pentru acelasi UID. Daca flag-ul este false, nu
+initializa controllerul cloud si nu cere metadata.
+
+### 2026-10-15 - Backup 04: verificari amanate la cererea utilizatorului
+
+- Utilizatorul a cerut ca, de acum pana la finalizarea flow-ului Backup 04,
+  testele si verificarea automata sa fie rulate impreuna numai cand solicita el.
+  Ultima verificare efectuata ramane 36/36 teste focalizate si analyzer fara
+  probleme, inainte de urmatoarele schimbari.
+- Verificarile de facut la final: pending este persistat inaintea asteptarii
+  metadata/cloud; upload-ul reusit il sterge, iar exportul sau upload-ul esuat
+  il pastreaza; toggle OFF, guest si email neverificat nu trimit date;
+  finalizarea workout-ului nu asteapta upload-ul; retry-ul la redeschidere
+  exporta baza curenta; ownership-ul diferit blocheaza upload-ul. Se ruleaza
+  formatter pe fisierele
+  Dart modificate, analyzer, testele relevante si apoi suita completa.
+- In acest pas a fost actualizat numai planul. Formatter, analyzer si teste:
+  nerulate la cererea utilizatorului.
+
+**Urmatorul pas:** utilizatorul muta setarea pending inainte de asteptarea
+metadata-ului din metoda automata; apoi implementam retry-ul la redeschidere.
+
+### 2026-10-15 - Backup 04: backup pornit dupa workout
+
+- Utilizatorul a apelat `backupAutomatically()` cu `unawaited` dupa salvarea
+  sesiunii si a progresului saptamanal in `endSession()`.
+- Un test SQLite cu backup controlat prin `Completer` confirma ca workout-ul
+  devine `completed` si `endSession()` se incheie cat timp upload-ul asteapta.
+- Formatter: 2 fisiere Dart verificate, testul nou reformatat.
+- Analyzer: `No issues found`.
+- Teste: 36/36 pentru lifecycle-ul workout-ului si controllerul cloud.
+  Suita completa nu a fost rulata.
+- Limita actuala: `backup_pending` este setat in `backupNow()`, dupa asteptarea
+  metadata-ului din `backupAutomatically()`. O inchidere a aplicatiei in acel
+  interval poate pierde cererea de backup; retry-ul la redeschidere inca lipseste.
+
+**Urmatorul pas:** setarea pending imediat dupa salvarea workout-ului, inaintea
+oricarui request cloud, apoi retry-ul pending la redeschiderea aplicatiei.
+
+### 2026-10-15 - Backup 04: conditia metodei automate corectata
+
+- Utilizatorul a corectat negatia din verificarea generatiei dupa `await future`.
+  Metoda automata poate acum continua catre upload pentru sesiunea valida.
+- Formatter: controllerul verificat, fara reformatare.
+- Analyzer: `No issues found`.
+- Teste controller: 35/35 trecute, inclusiv cele sapte cazuri automate.
+  Suita completa nu a fost rulata.
+
+**Urmatorul pas:** utilizatorul adauga apelul `unawaited(backupAutomatically())`
+la sfarsitul `endSession()`, dupa finalizarea salvarilor locale. Legatura si
+independenta finalizarii workout-ului fata de upload urmeaza sa fie testate.
+
+### 2026-10-15 - Backup 04: review si teste pentru backupAutomatically
+
+- Utilizatorul a adaugat metoda automata in controllerul existent. Review-ul
+  a identificat o negatie lipsa dupa `await future`: conditia curenta iese
+  cand generatia este valida. Corectia ramane de facut de utilizator.
+- Sapte teste noi acopera toggle OFF, guest, email neverificat, upload permis,
+  asteptarea initializarii, metadata esuata si eroarea upload-ului automat.
+- Formatter: 2 fisiere Dart verificate, testul reformatat; logica utilizatorului
+  nu a fost modificata.
+- Analyzer: `No issues found`.
+- Teste controller: 31 trecute, 4 esuate deoarece upload-ul automat nu porneste.
+  Suita completa nu a fost rulata.
+
+**Urmatorul pas:** utilizatorul corecteaza conditia la
+`if (!_isCurrent(generation)) return;`, apoi rerulam testele inainte de a lega
+metoda la finalizarea workout-ului.
+
+### 2026-10-15 - Backup 04: pending in backupNow
+
+- Utilizatorul a conectat flag-ul la metoda de upload existenta: pending se
+  seteaza dupa verificarea ownership-ului, inainte de export, si se sterge
+  dupa upload reusit si verificarea sesiunii curente.
+- Testul nou controleaza exportul si upload-ul cu Completer si verifica
+  pending in ambele faze, apoi stergerea la succes. Testele existente verifica
+  acum pastrarea flag-ului la eroare de export/upload si la rezultate vechi
+  dupa schimbarea sesiunii.
+- Formatter: 2 fisiere Dart verificate, testul controllerului reformatat.
+- Analyzer: `No issues found`.
+- Teste: 29/29 pentru controller si pending SQLite. Suita completa nerulata.
+- Declansarea automata dupa workout nu este inca implementata.
+
+**Urmatorul pas:** metoda pentru incercarea automata, care respecta toggle-ul
+si asteapta initializarea controllerului, apoi apelul fara asteptarea cloud-ului
+la finalizarea workout-ului.
+
+### 2026-10-15 - Backup 04: pending expus prin repository-ul local
+
+- Utilizatorul a adaugat `loadBackupPending()` si `setBackupPending(bool)`
+  in `LocalBackupRepository` si delegarea lor in adapterul SQLite existent.
+- Fake-ul repository-ului pastreaza acum flag-ul in memorie. Testul SQLite
+  existent trece prin adapter si verifica inclusiv propagarea erorilor cand
+  lipseste randul singleton; nu au fost introduse layere sau provideri noi.
+- Formatter: 4 fisiere Dart verificate, testul SQLite reformatat.
+- Analyzer: `No issues found`.
+- Teste: 28/28 pentru pending SQLite si controllerul de backup existent.
+  Suita completa nu a fost rulata.
+
+**Urmatorul pas:** utilizatorul conecteaza pending la incercarea de upload in
+`backupNow()`, apoi legam declansarea de finalizarea workout-ului.
+
+### 2026-10-15 - Backup 04: citirea si scrierea flag-ului pending
+
+- Utilizatorul a implementat `loadBackupPending()` si `setBackupPending(bool)`
+  in doua fisiere din `features/cloud_backup/data`. Review-ul confirma
+  conversia SQLite 0/1 si erorile explicite cand lipseste randul singleton.
+- A fost adaugat `backup_pending_test.dart`, cu SQLite real temporar, pentru
+  valoarea initiala false, setarea true repetata, revenirea la false si erorile
+  de citire/scriere cand lipseste randul `app_settings`.
+- Varianta confirmata foloseste un singur pending si exporta baza curenta la
+  fiecare incercare, fara versiuni sau UI nou pentru upload-ul automat.
+- Functiile nu sunt inca legate de finalizarea workout-ului, upload sau retry.
+  Gate-ul si regula fara metadata cloud pentru acelasi proprietar raman intacte.
+- Formatter: 3 fisiere Dart verificate, comanda pending reformata.
+- Analyzer: `No issues found`.
+- Teste: 1/1 test SQLite focalizat trecut, cu toate scenariile de mai sus.
+  Suita completa nu a fost rulata.
+
+**Urmatorul pas:** conectarea flag-ului si a incercarii de backup la finalizarea
+workout-ului, dupa salvarea locala completa si fara asteptarea cloud-ului in UI.
 
 ### 2026-10-12 - Backup 03: loading in continutul paginii
 
