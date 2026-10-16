@@ -195,8 +195,9 @@ aplicatiei.
   acest marker. Un UID diferit poate prelua datele cu antrenamente doar dupa o
   alegere explicita in flow-ul de conflict; datele fara antrenamente pot fi
   reatribuite automat printr-un UPDATE conditionat.
-  Coloana este adaugata fara migrare deoarece aplicatia este in dezvoltare;
-  instalatiile existente necesita resetarea bazei locale in aceasta etapa.
+  Coloana este inclusa in schema SQLite v1 actuala, fara migrare deoarece
+  aplicatia este in dezvoltare. Instalarile cu o baza locala anterioara
+  necesita resetarea datelor aplicatiei si restore din backup-ul cloud.
 - Detectarea backup-ului si alegerea de restore trebuie sa functioneze atat
   cand autentificarea are loc in onboarding, cat si cand are loc ulterior din
   aplicatie.
@@ -397,7 +398,7 @@ Statusurile permise sunt `not started`, `in progress`, `blocked`, `deferred` si
 | 7 | Detectare backup, conflicte, restore si UI-ul aferent | in progress |
 | 8 | Account lifecycle ramas: account deletion si stergerea datelor remote | not started |
 | 9 | Backup automat si pending/retry, fara UI suplimentar pentru automatizare | done |
-| 10 | Storage Rules, App Check, bugete, migrare SQLite pentru instalari vechi si hardening | not started |
+| 10 | Storage Rules, App Check, bugete si hardening | in progress |
 | 11 | Sign in with Apple si linking | deferred |
 
 Statusul unei etape se schimba in `done` numai dupa implementare, formatter,
@@ -462,6 +463,26 @@ La finalul unui task:
    inainte ca un task dependent sa inceapa.
 
 ## Implementation Log
+
+### 2026-10-16 - Schema SQLite v1 ca punct de plecare nou
+
+- Utilizatorul a confirmat ca progresul de pe instalarea mai veche este deja
+  salvat in cloud si a ales sa renunte la migrarea SQLite pentru acea instalare.
+- Baza noua foloseste versiunea 1 cu schema actuala completa, inclusiv
+  `automatic_backup_enabled`, `backup_pending` si `local_data_owner_uid`.
+  Codul pentru upgrade-ul 1 -> 2 si reconstruirea tabelului `exercises` a fost
+  eliminat; cheile straine sunt activate direct la deschidere.
+- O baza locala deja creata la versiunea 2 nu poate fi deschisa de aceasta
+  versiune a aplicatiei. Pe dispozitivul respectiv trebuie sterse datele
+  aplicatiei, apoi utilizatorul se autentifica si restaureaza backup-ul cloud.
+- Fisiere: `lib/core/database/app_database.dart`, testul SQLite pentru pending
+  si acest plan.
+- Formatter: 2 fisiere Dart verificate, 1 reformatat.
+- Analyzer: `No issues found`.
+- Teste: 2/2 focalizate pentru schema/pending si importul snapshot-ului;
+  suita completa 266/266, toate trecute.
+
+**Urmatorul pas:** verificarea Storage Rules si configurarea Firebase App Check.
 
 ### 2026-10-15 - Backup 04 basic: verificare finala
 

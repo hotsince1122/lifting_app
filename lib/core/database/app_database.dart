@@ -2,7 +2,7 @@ import 'package:path/path.dart' as path;
 import 'package:sqflite/sqflite.dart' as sql;
 
 class AppDatabase {
-  static const _databaseVersion = 2;
+  static const _databaseVersion = 1;
 
   static sql.Database? _db;
 
@@ -157,61 +157,15 @@ class AppDatabase {
     },
   ];
 
-  static Future<void> _createExercisesTable(
-    sql.DatabaseExecutor db, {
-    String tableName = 'exercises',
-  }) async {
+  static Future<void> _createExercisesTable(sql.DatabaseExecutor db) async {
     await db.execute('''
-      CREATE TABLE $tableName(
+      CREATE TABLE exercises(
         id TEXT PRIMARY KEY NOT NULL,
         name TEXT NOT NULL CHECK (length(trim(name)) > 0),
         muscle_group TEXT NOT NULL
           CHECK (length(trim(muscle_group)) > 0)
       )
     ''');
-  }
-
-  static Future<void> _rebuildExercisesTable(sql.DatabaseExecutor db) async {
-    final invalidRows = await db.rawQuery('''
-      SELECT id
-      FROM exercises
-      WHERE id IS NULL
-        OR name IS NULL
-        OR length(trim(name)) = 0
-        OR muscle_group IS NULL
-        OR length(trim(muscle_group)) = 0
-      LIMIT 1
-    ''');
-
-    if (invalidRows.isNotEmpty) {
-      throw StateError('Cannot migrate exercises because invalid rows exist.');
-    }
-
-    await _createExercisesTable(db, tableName: 'new_exercises');
-
-    await db.execute('''
-      INSERT INTO new_exercises (
-        id,
-        name,
-        muscle_group
-      )
-      SELECT
-        id,
-        name,
-        muscle_group
-      FROM exercises
-    ''');
-
-    await db.execute('DROP TABLE exercises');
-    await db.execute('ALTER TABLE new_exercises RENAME TO exercises');
-
-    final foreignKeyViolations = await db.rawQuery('PRAGMA foreign_key_check');
-
-    if (foreignKeyViolations.isNotEmpty) {
-      throw StateError(
-        'The exercises migration broke foreign key relationships.',
-      );
-    }
   }
 
   static Future<void> _createAppSettingsTable(sql.DatabaseExecutor db) async {
@@ -242,19 +196,11 @@ class AppDatabase {
 
     final dbPath = await sql.getDatabasesPath();
 
-    // final fullPath = path.join(dbPath, 'lifting.db');
-    // await sql.deleteDatabase(fullPath);
-
     _db = await sql.openDatabase(
       path.join(dbPath, 'lifting.db'),
       version: _databaseVersion,
       onConfigure: (db) async {
-        final versionData = await db.rawQuery('PRAGMA user_version');
-        final existingVersion = versionData.single['user_version'] as int;
-        final willUpgrade =
-            existingVersion > 0 && existingVersion < _databaseVersion;
-
-        await db.execute('PRAGMA foreign_keys = ${willUpgrade ? 'OFF' : 'ON'}');
+        await db.execute('PRAGMA foreign_keys = ON');
       },
       onCreate: (db, version) async {
         await db.execute('''
@@ -354,15 +300,6 @@ class AppDatabase {
           batch.insert('exercises', ex);
         }
         await batch.commit(noResult: true);
-      },
-      onUpgrade: (db, oldVersion, newVersion) async {
-        if (oldVersion < 2) {
-          await _rebuildExercisesTable(db);
-          await _createAppSettingsTable(db);
-        }
-      },
-      onOpen: (db) async {
-        await db.execute('PRAGMA foreign_keys = ON');
       },
     );
 

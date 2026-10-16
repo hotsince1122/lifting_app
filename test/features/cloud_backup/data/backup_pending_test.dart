@@ -20,6 +20,31 @@ void main() {
       const repository = SqliteLocalBackupRepository();
 
       try {
+        expect(
+          (await database.rawQuery(
+            'PRAGMA user_version',
+          )).single['user_version'],
+          1,
+        );
+        expect(
+          (await database.rawQuery(
+            'PRAGMA foreign_keys',
+          )).single['foreign_keys'],
+          1,
+        );
+
+        final settingsColumns = (await database.rawQuery(
+          'PRAGMA table_info(app_settings)',
+        )).map((column) => column['name']).toSet();
+        expect(
+          settingsColumns,
+          containsAll([
+            'automatic_backup_enabled',
+            'backup_pending',
+            'local_data_owner_uid',
+          ]),
+        );
+
         expect(await repository.loadBackupPending(), isFalse);
 
         await repository.setBackupPending(true);
