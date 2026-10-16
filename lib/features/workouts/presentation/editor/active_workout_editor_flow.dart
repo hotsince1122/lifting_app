@@ -5,6 +5,7 @@ import 'package:lifting_tracker_app/core/errors/snack_bar_error.dart';
 import 'package:lifting_tracker_app/features/workouts/application/active_session_lifecycle_controller.dart';
 import 'package:lifting_tracker_app/features/workouts/application/workout_name_controller.dart';
 import 'package:lifting_tracker_app/features/workouts/application/workout_editor_clean_up_actions_controller.dart';
+import 'package:lifting_tracker_app/features/workouts/presentation/editor/delete_workout_menu_action.dart';
 import 'package:lifting_tracker_app/features/workouts/presentation/editor/workout_editor_flow.dart';
 import 'package:lifting_tracker_app/features/workouts/presentation/widgets/reorder_exercises_sheet.dart';
 
@@ -179,6 +180,13 @@ class ActiveWorkoutEditorFlow extends WorkoutEditorFlow {
         icon: Icons.swap_vert_rounded,
         onPressed: (context, ref, id) =>
             ReorderExercisesSheet.openSheet(context, workoutSessionId),
+      ),
+      buildDeleteWorkoutMenuAction(
+        confirmationMessage: 'This workout will be discarded permanently.',
+        errorMessage: 'Could not abandon workout. Please try again.',
+        onDelete: (ref, id) => ref
+            .read(activeSessionLifecycleProvider.notifier)
+            .abandonSession(id),
       ),
     ];
   }

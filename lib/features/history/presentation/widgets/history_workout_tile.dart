@@ -130,7 +130,12 @@ class _HistoryWorkoutTileState extends ConsumerState<HistoryWorkoutTile> {
             onPressed: () {
               Navigator.of(context).pop(true);
             },
-            child: Text('Confirm'),
+            child: Text(
+              'Delete',
+              style: Theme.of(
+                context,
+              ).textTheme.titleMedium!.copyWith(color: Colors.red),
+            ),
           ),
           CupertinoDialogAction(
             onPressed: () {

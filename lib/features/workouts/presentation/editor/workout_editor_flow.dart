@@ -1,11 +1,15 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:lifting_tracker_app/core/theme/app_colors.dart';
+
+enum ActionTone { standard, destructive }
 
 class WorkoutEditorMenuAction {
   const WorkoutEditorMenuAction({
     required this.label,
     required this.icon,
     required this.onPressed,
+    this.tone = ActionTone.standard,
   });
 
   final String label;
@@ -16,6 +20,8 @@ class WorkoutEditorMenuAction {
     int workoutSessionId,
   )
   onPressed;
+  final ActionTone tone;
+  Color get color => tone == ActionTone.standard ? AppColors.onSurface : Colors.red;
 }
 
 abstract class WorkoutEditorFlow {

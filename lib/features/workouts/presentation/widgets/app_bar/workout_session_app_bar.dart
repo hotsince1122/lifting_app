@@ -176,13 +176,19 @@ class WorkoutSessionAppBar extends ConsumerWidget
                                       mainAxisAlignment:
                                           MainAxisAlignment.center,
                                       children: [
-                                        Icon(actions[i].icon),
+                                        Icon(
+                                          actions[i].icon,
+                                          color: actions[i].color,
+                                        ),
                                         const SizedBox(width: AppSpacing.s8),
                                         Text(
                                           actions[i].label,
-                                          style: Theme.of(
-                                            context,
-                                          ).textTheme.titleMedium,
+                                          style: Theme.of(context)
+                                              .textTheme
+                                              .titleMedium!
+                                              .copyWith(
+                                                color: actions[i].color,
+                                              ),
                                         ),
                                       ],
                                     ),

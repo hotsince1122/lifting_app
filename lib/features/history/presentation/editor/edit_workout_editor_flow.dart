@@ -5,6 +5,7 @@ import 'package:lifting_tracker_app/core/errors/snack_bar_error.dart';
 import 'package:lifting_tracker_app/features/workouts/application/active_session_lifecycle_controller.dart';
 import 'package:lifting_tracker_app/features/history/application/history_workout_actions_controller.dart';
 import 'package:lifting_tracker_app/features/workouts/application/workout_name_controller.dart';
+import 'package:lifting_tracker_app/features/workouts/presentation/editor/delete_workout_menu_action.dart';
 import 'package:lifting_tracker_app/features/workouts/presentation/pages/workout_editor_page.dart';
 import 'package:lifting_tracker_app/features/workouts/presentation/editor/workout_editor_flow.dart';
 import 'package:lifting_tracker_app/features/workouts/presentation/widgets/reorder_exercises_sheet.dart';
@@ -130,6 +131,14 @@ class EditWorkoutEditorFlow extends WorkoutEditorFlow {
             );
           }
         },
+      ),
+      buildDeleteWorkoutMenuAction(
+        confirmationMessage:
+            'Deletion cannot be undone and may affect your weekly progress.',
+        errorMessage:
+            'Could not complete deletion. Check your history and weekly progress.',
+        onDelete: (ref, id) =>
+            ref.read(historyWorkoutActionsProvider.notifier).deleteWorkout(id),
       ),
     ];
   }

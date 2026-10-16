@@ -106,4 +106,9 @@ class ActiveSessionLifecycleController extends AsyncNotifier<bool> {
       ref.read(cloudBackupControllerProvider.notifier).backupAutomatically(),
     );
   }
+
+  Future<void> abandonSession(int workoutId) async {
+    await commands.abandonSession(workoutId);
+    state = const AsyncData(false);
+  }
 }

@@ -222,3 +222,19 @@ Future<void> completeWorkoutSession(int workoutSessionId) async {
     }
   });
 }
+
+Future<void> abandonSession(int workoutId) async {
+  final db = await AppDatabase.getDatabase();
+
+  final rowsDeleted = await db.rawDelete(
+    '''
+    DELETE FROM workout_sessions
+    WHERE id = ? AND status = ?
+    ''',
+    [workoutId, WorkoutSessionStatuses.activeStatus],
+  );
+
+  if (rowsDeleted != 1) {
+    throw StateError('The workout was not deleted properly.');
+  }
+}
