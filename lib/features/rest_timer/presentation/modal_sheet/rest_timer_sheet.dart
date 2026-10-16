@@ -13,6 +13,8 @@ class RestTimerSheet extends ConsumerStatefulWidget {
   const RestTimerSheet({super.key});
 
   static Future<void> show(BuildContext context) {
+    FocusManager.instance.primaryFocus?.unfocus();
+
     return showModalBottomSheet<void>(
       context: context,
       useSafeArea: true,
