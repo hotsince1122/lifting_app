@@ -18,7 +18,9 @@ sursa persistenta de adevar pentru feature.
 
 **Status general:** in progress
 
-**Ultima actualizare:** 2026-10-15
+**Backup 04 (scope-ul basic agreat):** done
+
+**Ultima actualizare:** 2026-10-17
 
 ## Obiectiv
 
@@ -53,8 +55,9 @@ aplicatiei.
 - Preferintele necesare restore-ului sunt pastrate in randul singleton
   `app_settings`: streak-ul saptamanal, targetul saptamanal, prezenta din
   saptamana curenta, inceputul acelei saptamani si finalizarea onboarding-ului.
-- Securitatea si controlul costurilor fac parte din feature, nu sunt pasi
-  optionali de final.
+- Regulile Storage protejeaza backup-urile; verificarea regulilor publicate,
+  App Check si alertele de buget sunt checkpoint-uri inainte de distribuirea
+  aplicatiei, separate de Backup 04 basic.
 
 ## In afara scopului
 
@@ -206,12 +209,12 @@ aplicatiei.
   necesara UI-ului, plus integrarea corespunzatoare in `Account & Backup`.
   Contractele, repository-urile, controllerele si testele se stabilizeaza inainte
   de construirea UI-ului acelei etape.
-- Intr-o etapa ulterioara, backup-ul va fi declansat automat dupa terminarea
-  fiecarui workout.
+- Backup-ul automat este declansat dupa terminarea fiecarui workout.
 - Daca backup-ul automat nu poate fi efectuat, aplicatia va pastra local un flag
   care indica existenta unui backup pending.
-- Un backup pending va fi reincercat cand exista din nou o oportunitate
-  potrivita si conexiune la internet.
+- Un backup pending este reincercat la urmatorul workout sau la deschiderea
+  aplicatiei pentru UID-ul care detine datele locale, daca backup-ul automat
+  este activat.
 - Esecul unui backup nu anuleaza si nu marcheaza drept esuata salvarea locala a
   workout-ului.
 - Pentru Backup 04 s-a ales varianta simpla: un singur flag `backup_pending`,
@@ -220,9 +223,9 @@ aplicatiei.
   remote. Pending se seteaza inainte de incercare si ramane setat la esec.
 - Upload-ul automat nu asteapta confirmare si nu afiseaza feedback UI nou de
   succes. Ruleaza fara sa blocheze utilizatorul cat timp aplicatia ruleaza;
-  pending ramane persistent daca aplicatia este inchisa. Retry-ul la
-  deschidere/revenire se implementeaza ulterior, cu verificarile existente
-  de autentificare, preferinta si ownership.
+  pending ramane persistent daca aplicatia este inchisa. La deschidere, gate-ul
+  verifica pending pe ramura `continueLocal`; cand este false, nu cere metadata
+  din cloud pentru un UID care detine deja datele locale.
 
 ## Flow functional tinta
 
@@ -253,13 +256,14 @@ aplicatiei.
 5. Importul este executat intr-o singura tranzactie SQLite.
 6. Dupa succes, providerii Riverpod relevanti sunt invalidati sau reincarcati.
 
-### Backup automat, etapa ulterioara
+### Backup automat
 
 1. Workout-ul este finalizat si salvat complet in SQLite.
 2. Salvarea locala este considerata reusita independent de cloud.
 3. Aplicatia incearca sa genereze si sa incarce un snapshot.
 4. La succes, actualizeaza momentul ultimului backup si sterge flag-ul pending.
 5. La esec, pastreaza datele locale si seteaza flag-ul pending.
+6. La urmatoarea oportunitate, incearca din nou cu baza SQLite curenta.
 
 ## Directia tehnica actuala
 
@@ -376,10 +380,9 @@ confirma:
 3. Ce se intampla cu datele locale cand utilizatorul isi sterge contul?
 4. Cum tratam un telefon vechi care incearca sa faca backup dupa ce datele au
     fost restaurate pe un telefon nou?
-5. Care sunt momentele exacte de retry pentru un backup pending?
-6. Care sunt textele finale si prioritatea vizuala pentru `last successful
-    backup`, backup pending, backup esuat si restore in progres?
-7. Cand introducem Sign in with Apple in raport cu publicarea pe iOS?
+5. Care sunt textele finale si prioritatea vizuala pentru `last successful
+   backup`, backup esuat si restore in progres?
+6. Cand introducem Sign in with Apple in raport cu publicarea pe iOS?
 
 ## Roadmap si status
 
@@ -398,7 +401,7 @@ Statusurile permise sunt `not started`, `in progress`, `blocked`, `deferred` si
 | 7 | Detectare backup, conflicte, restore si UI-ul aferent | in progress |
 | 8 | Account lifecycle ramas: account deletion si stergerea datelor remote | not started |
 | 9 | Backup automat si pending/retry, fara UI suplimentar pentru automatizare | done |
-| 10 | Storage Rules, App Check, bugete si hardening | in progress |
+| 10 | Verificarea regulilor Storage publicate, App Check si alerte de buget inainte de lansare | deferred |
 | 11 | Sign in with Apple si linking | deferred |
 
 Statusul unei etape se schimba in `done` numai dupa implementare, formatter,
@@ -413,7 +416,7 @@ analyzer si testele relevante.
 5. `Backup 01 - Snapshot contract and local export/import`
 6. `Backup 02 - Manual Cloud Storage backup and UI`
 7. `Backup 03 - Restore flows and conflict UI`
-8. `Backup 04 - Automatic backup, pending UI and hardening`
+8. `Backup 04 - Automatic backup and pending retry` - done pentru scope-ul basic agreat
 9. `Auth 05 - Sign in with Apple`, cand exista prerechizitele externe
 
 Task-urile dependente se executa secvential. Daca sunt folosite worktree-uri
@@ -463,6 +466,23 @@ La finalul unui task:
    inainte ca un task dependent sa inceapa.
 
 ## Implementation Log
+
+### 2026-10-17 - Backup 04 basic incheiat
+
+- Utilizatorul considera incheiat flow-ul de backup automat: incercare dupa
+  workout, un singur flag pending si retry cu baza SQLite curenta, fara UI nou
+  sau istoric de snapshot-uri. Schema SQLite v1 a fost verificata separat.
+- Testele automate pentru Storage Rules nu sunt introduse acum. Verificarea
+  regulilor publicate, App Check si alerta de buget sunt amanate pana inainte
+  de distribuirea aplicatiei; nu sunt marcate drept implementate.
+- Statusul general al planului ramane `in progress` deoarece restore-ul si
+  account lifecycle au etape separate ramase deschise.
+- Fisier modificat: doar acest plan. Formatter: nu este necesar. Analyzer si
+  teste: nu au fost rulate pentru schimbarea de documentatie; ultima suita
+  completa rulata a trecut 266/266 la 2026-10-16.
+
+**Urmatorul pas:** commit pentru inchiderea Backup 04; checkpoint-ul de
+securitate si costuri ramane inainte de distribuire.
 
 ### 2026-10-16 - Schema SQLite v1 ca punct de plecare nou
 

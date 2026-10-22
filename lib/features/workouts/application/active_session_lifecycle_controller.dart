@@ -6,6 +6,7 @@ import 'package:lifting_tracker_app/features/plans/data/split_day_queries.dart'
     as day_queries;
 import 'package:lifting_tracker_app/features/plans/domain/split_day.dart';
 import 'package:lifting_tracker_app/features/history/application/completed_workouts_count_provider.dart';
+import 'package:lifting_tracker_app/features/progress/application/exercise_progress_sets_provider.dart';
 import 'package:lifting_tracker_app/features/progress/application/weekly_workout_progress_controller.dart';
 import 'package:lifting_tracker_app/features/workouts/application/picked_next_session_controller.dart';
 import 'package:lifting_tracker_app/features/workouts/data/workout_cycle_queries.dart';
@@ -95,6 +96,7 @@ class ActiveSessionLifecycleController extends AsyncNotifier<bool> {
 
     await commands.completeWorkoutSession(workoutSessionId);
     ref.invalidate(completedWorkoutCountProvider);
+    ref.invalidate(exerciseProgressSetsProvider);
 
     await ref
         .read(weeklyWorkoutProgressProvider.notifier)

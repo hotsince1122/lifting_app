@@ -1,6 +1,7 @@
 import 'dart:async';
 
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:lifting_tracker_app/features/progress/application/exercise_progress_sets_provider.dart';
 import 'package:lifting_tracker_app/features/progress/application/weekly_workout_progress_controller.dart';
 import 'package:lifting_tracker_app/features/workouts/application/session_editor/workout_session_exercises_controller.dart';
 import 'package:lifting_tracker_app/features/workouts/application/next_session_preview_provider.dart';
@@ -38,6 +39,7 @@ class HistoryWorkoutActionsController extends AsyncNotifier<void> {
     ref.invalidate(historyMonthsProvider);
     ref.invalidate(workoutNameProvider(workoutSessionId));
     ref.invalidate(workoutSessionExercisesProvider(workoutSessionId));
+    ref.invalidate(exerciseProgressSetsProvider);
   }
 
   Future<void> deleteWorkout(int workoutId) async {
@@ -46,6 +48,7 @@ class HistoryWorkoutActionsController extends AsyncNotifier<void> {
     ref.invalidate(historyMonthsProvider);
     ref.invalidate(completedWorkoutCountProvider);
     ref.invalidate(nextSessionPreviewProvider);
+    ref.invalidate(exerciseProgressSetsProvider);
 
     final didHandleProgressRollback = await ref
         .read(weeklyWorkoutProgressProvider.notifier)
