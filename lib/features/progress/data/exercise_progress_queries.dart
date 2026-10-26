@@ -43,3 +43,18 @@ Future<List<ExerciseProgressSet>> loadExerciseProgressSets(
       )
       .toList();
 }
+
+Future<bool> loadIfExerciseHasHistory(String exerciseId) async {
+  final db = await AppDatabase.getDatabase();
+
+  final setData = await db.rawQuery(
+    '''
+    SELECT id
+    FROM logged_sets
+    WHERE ex_id = ?
+    ''',
+    [exerciseId],
+  );
+
+  return setData.isNotEmpty;
+}

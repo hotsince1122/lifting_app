@@ -8,10 +8,11 @@ import 'package:lifting_tracker_app/features/workouts/presentation/editor/workou
 WorkoutEditorMenuAction buildDeleteWorkoutMenuAction({
   required String confirmationMessage,
   required String errorMessage,
+  required String label,
   required Future<void> Function(WidgetRef ref, int id) onDelete,
 }) {
   return WorkoutEditorMenuAction(
-    label: 'Delete',
+    label: label,
     icon: Icons.delete,
     tone: ActionTone.destructive,
     onPressed: (context, ref, id) async {

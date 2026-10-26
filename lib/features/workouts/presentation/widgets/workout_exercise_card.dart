@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:lifting_tracker_app/core/errors/snack_bar_error.dart';
 import 'package:lifting_tracker_app/core/theme/app_spacing.dart';
+import 'package:lifting_tracker_app/features/progress/presentation/pages/exercise_chart_page.dart';
 import 'package:lifting_tracker_app/features/workouts/application/session_editor/workout_session_exercises_controller.dart';
 import 'package:lifting_tracker_app/core/theme/app_colors.dart';
 import 'package:lifting_tracker_app/features/workouts/domain/workout_exercise.dart';
@@ -367,7 +368,8 @@ class _WorkoutExerciseCardState extends ConsumerState<WorkoutExerciseCard> {
           color: Colors.transparent,
           child: InkWell(
             borderRadius: BorderRadius.circular(_iconTouchTarget / 2),
-            onTap: () {},
+            onTap: () =>
+                ExerciseChartPage.openPage(context, exercise.catalogExercise),
           ),
         ),
       ),

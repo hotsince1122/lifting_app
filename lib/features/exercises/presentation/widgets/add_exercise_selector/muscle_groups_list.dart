@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:lifting_tracker_app/core/theme/app_spacing.dart';
+import 'package:lifting_tracker_app/core/utils/to_upper_first.dart';
 import 'package:lifting_tracker_app/features/exercises/domain/muscle_groups.dart';
 import 'package:lifting_tracker_app/core/theme/app_colors.dart';
 
@@ -28,8 +29,7 @@ class MuscleGroupList extends StatelessWidget {
               const Divider(height: 1, color: AppColors.cardBorder),
           itemBuilder: (context, i) {
             final muscleGroup = MuscleGroups.names[i];
-            final label =
-                muscleGroup[0].toUpperCase() + muscleGroup.substring(1);
+            final label = toUpperFirst(muscleGroup);
 
             return Theme(
               data: Theme.of(context).copyWith(

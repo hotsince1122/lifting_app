@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:lifting_tracker_app/core/theme/app_spacing.dart';
+import 'package:lifting_tracker_app/core/utils/to_upper_first.dart';
 import 'package:lifting_tracker_app/features/exercises/domain/catalog_exercise.dart';
 import 'package:lifting_tracker_app/features/exercises/application/exercises_by_muscle_group_controller.dart';
 import 'package:lifting_tracker_app/core/theme/app_colors.dart';
@@ -38,8 +39,7 @@ class ExercisesForGroupPage extends ConsumerWidget {
             itemBuilder: (context, i) {
               final exercise = exercises[i];
 
-              final label =
-                  exercise.name[0].toUpperCase() + exercise.name.substring(1);
+              final label = toUpperFirst(exercise.name);
 
               return ListTile(
                 dense: true,

@@ -1,4 +1,5 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:lifting_tracker_app/core/utils/to_upper_first.dart';
 import 'package:lifting_tracker_app/features/plans/application/planned_exercises_controller.dart';
 import 'package:lifting_tracker_app/features/plans/domain/split_day_summary.dart';
 
@@ -11,7 +12,7 @@ final splitDaySummaryProvider = FutureProvider.family<SplitDaySummary, String>((
 
   for (final exercise in exercises) {
     final label = exercise.catalogExercise.muscleGroup;
-    muscleGroups.add(label[0].toUpperCase() + label.substring(1));
+    muscleGroups.add(toUpperFirst(label));
   }
 
   return SplitDaySummary(

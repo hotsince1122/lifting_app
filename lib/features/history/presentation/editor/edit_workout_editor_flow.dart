@@ -133,6 +133,7 @@ class EditWorkoutEditorFlow extends WorkoutEditorFlow {
         },
       ),
       buildDeleteWorkoutMenuAction(
+        label: "Delete",
         confirmationMessage:
             'Deletion cannot be undone and may affect your weekly progress.',
         errorMessage:

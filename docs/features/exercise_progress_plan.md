@@ -37,6 +37,9 @@ pentru implementarea modificarilor de navigare, modele sau provideri.
   iar chevron-ul este aliniat cu textul la capatul cardului.
 - Pentru chart-urile Flutter folosim Syncfusion Charts. Best set este modul
   implicit din mock-up-ul acceptat.
+- Axa X pastreaza distante egale intre puncte in toate cele trei moduri,
+  pe baza ordinii lor, nu a distantei calendaristice. Utilizatorul a confirmat
+  explicit pastrarea acestui comportament la 2026-10-26.
 - Favoritele si mini-chart-urile din Home / Progress Spotlight sunt o extensie
   propusa de utilizator, aflata in discutie; persistenta si UX-ul nu sunt alese.
 - Feature-ul este planificat ca ultimul feature mare inainte de polish.

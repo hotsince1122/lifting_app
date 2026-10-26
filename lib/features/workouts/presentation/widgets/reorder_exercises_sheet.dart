@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:lifting_tracker_app/core/errors/snack_bar_error.dart';
 import 'package:lifting_tracker_app/core/theme/app_spacing.dart';
+import 'package:lifting_tracker_app/core/utils/to_upper_first.dart';
 import 'package:lifting_tracker_app/features/workouts/application/session_editor/workout_session_exercises_controller.dart';
 import 'package:lifting_tracker_app/core/theme/app_colors.dart';
 import 'package:lifting_tracker_app/features/workouts/domain/workout_exercise.dart';
@@ -122,8 +123,7 @@ class _ReorderExercisesSheetState extends ConsumerState<ReorderExercisesSheet> {
 
                               final exerciseName =
                                   exercise.catalogExercise.name;
-                              final label =
-                                  exerciseName[0] + exerciseName.substring(1);
+                              final label = toUpperFirst(exerciseName);
 
                               return Dismissible(
                                 key: ValueKey(_exerciseKey(exercise)),

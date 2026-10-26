@@ -2,6 +2,7 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:lifting_tracker_app/core/theme/app_colors.dart';
 import 'package:lifting_tracker_app/core/theme/app_spacing.dart';
+import 'package:lifting_tracker_app/core/utils/to_upper_first.dart';
 import 'package:phosphor_flutter/phosphor_flutter.dart';
 
 class ExerciseForm extends StatelessWidget {
@@ -67,7 +68,7 @@ class ExerciseForm extends StatelessWidget {
                       builder: (context, muscleGroup, _) {
                         final muscleGroupLabel = muscleGroup == null
                             ? 'Muscle Group'
-                            : '${muscleGroup[0].toUpperCase()}${muscleGroup.substring(1)}';
+                            : toUpperFirst(muscleGroup);
 
                         return Row(
                           children: [
@@ -104,7 +105,9 @@ class ExerciseForm extends StatelessWidget {
                 onTap: onDelete,
                 child: Container(
                   height: 52,
-                  padding: const EdgeInsets.symmetric(horizontal: AppSpacing.s16),
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: AppSpacing.s16,
+                  ),
                   decoration: BoxDecoration(
                     color: Color.alphaBlend(
                       Colors.red.withValues(alpha: 0.12),

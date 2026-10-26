@@ -3,7 +3,6 @@ class MuscleGroups {
     'abs',
     'back',
     'biceps',
-    'cardio',
     'chest',
     'legs',
     'shoulders',

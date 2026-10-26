@@ -31,6 +31,8 @@ dependencies:
   firebase_auth: ^6.5.7
   google_sign_in: ^7.2.0
   firebase_storage: ^13.6.0
+  collection: ^1.19.1
+  syncfusion_flutter_charts: ^35.1.41
 
 dev_dependencies:
   flutter_test:

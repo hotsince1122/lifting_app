@@ -182,6 +182,7 @@ class ActiveWorkoutEditorFlow extends WorkoutEditorFlow {
             ReorderExercisesSheet.openSheet(context, workoutSessionId),
       ),
       buildDeleteWorkoutMenuAction(
+        label: "Abandon",
         confirmationMessage: 'This workout will be discarded permanently.',
         errorMessage: 'Could not abandon workout. Please try again.',
         onDelete: (ref, id) => ref

@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:lifting_tracker_app/core/errors/snack_bar_error.dart';
 import 'package:lifting_tracker_app/core/theme/app_colors.dart';
 import 'package:lifting_tracker_app/core/theme/app_spacing.dart';
+import 'package:lifting_tracker_app/core/utils/to_upper_first.dart';
 import 'package:lifting_tracker_app/features/plans/application/planned_exercises_controller.dart';
 
 class PlannedExercisesListView extends ConsumerWidget {
@@ -52,8 +53,7 @@ class PlannedExercisesListView extends ConsumerWidget {
               final plannedExercise = plannedExercises[i];
               final catalogExercise = plannedExercise.catalogExercise;
 
-              final label =
-                  catalogExercise.name[0] + catalogExercise.name.substring(1);
+              final label = toUpperFirst(catalogExercise.name);
 
               return Dismissible(
                 key: ValueKey(plannedExercise.relationId),
