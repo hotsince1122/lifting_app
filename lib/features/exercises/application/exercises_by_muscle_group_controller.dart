@@ -6,6 +6,7 @@ import 'package:lifting_tracker_app/features/exercises/data/exercise_catalog_com
 import 'package:lifting_tracker_app/features/exercises/data/exercise_catalog_queries.dart'
     as queries;
 import 'package:lifting_tracker_app/features/exercises/domain/catalog_exercise.dart';
+import 'package:lifting_tracker_app/features/progress/application/favorite_exercise_ids_controller.dart';
 
 final exerciseByMuscleGroupProvider =
     AsyncNotifierProvider.family<
@@ -58,6 +59,7 @@ class ExerciseByMuscleGroupController
 
   Future<void> deleteExercise(String exerciseId) async {
     await commands.deleteExercise(exerciseId);
+    ref.invalidate(favoriteExerciseIdsProvider);
 
     state = AsyncData(await queries.loadExercisesByMuscleGroup(muscleGroup));
   }

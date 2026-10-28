@@ -2,7 +2,7 @@ import 'package:path/path.dart' as path;
 import 'package:sqflite/sqflite.dart' as sql;
 
 class AppDatabase {
-  static const _databaseVersion = 1;
+  static const _databaseVersion = 2;
 
   static sql.Database? _db;
 
@@ -168,6 +168,17 @@ class AppDatabase {
     ''');
   }
 
+  static Future<void> _createFavoriteExercisesTable(
+    sql.DatabaseExecutor db,
+  ) async {
+    await db.execute('''
+      CREATE TABLE favorite_exercises (
+        exercise_id TEXT PRIMARY KEY NOT NULL,
+        FOREIGN KEY (exercise_id) REFERENCES exercises(id) ON DELETE CASCADE
+      )
+    ''');
+  }
+
   static Future<void> _createAppSettingsTable(sql.DatabaseExecutor db) async {
     await db.execute('''
         CREATE TABLE app_settings (
@@ -222,6 +233,7 @@ class AppDatabase {
           )
           ''');
         await _createExercisesTable(db);
+        await _createFavoriteExercisesTable(db);
         await db.execute('''
           CREATE TABLE day_exercises(
             id INTEGER PRIMARY KEY,
@@ -300,6 +312,11 @@ class AppDatabase {
           batch.insert('exercises', ex);
         }
         await batch.commit(noResult: true);
+      },
+      onUpgrade: (db, oldVersion, newVersion) async {
+        if (oldVersion < 2) {
+          await _createFavoriteExercisesTable(db);
+        }
       },
     );
 

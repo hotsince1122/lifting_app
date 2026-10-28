@@ -124,6 +124,7 @@ Map<String, Object?> buildBackupSnapshotJsonFixture() {
       'exercises': [
         {'id': 'bicep_curls', 'name': 'Bicep Curls', 'muscle_group': 'biceps'},
       ],
+      'favorite_exercises': <Object?>[],
       'day_exercises': [
         {
           'id': 15,

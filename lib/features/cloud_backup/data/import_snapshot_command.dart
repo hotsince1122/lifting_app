@@ -27,6 +27,7 @@ Future<void> importSnapshot(
 }
 
 Future<void> _deleteBackupTables(DatabaseExecutor txn) async {
+  await _deleteTable(txn, 'favorite_exercises');
   await _deleteTable(txn, 'active_session_sets');
   await _deleteTable(txn, 'logged_sets');
   await _deleteTable(txn, 'day_exercises');
@@ -63,6 +64,13 @@ Future<void> _writeDatabase(DatabaseExecutor txn, BackupData data) async {
     batch,
     'exercises',
     data.exercises,
+    (record) => record.toJson(),
+  );
+
+  _writeTableInBatch(
+    batch,
+    'favorite_exercises',
+    data.favoriteExercises,
     (record) => record.toJson(),
   );
 

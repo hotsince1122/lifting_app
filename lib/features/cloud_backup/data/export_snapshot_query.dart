@@ -6,6 +6,7 @@ import 'package:lifting_tracker_app/features/cloud_backup/domain/table_records/a
 import 'package:lifting_tracker_app/features/cloud_backup/domain/table_records/app_settings_backup_record.dart';
 import 'package:lifting_tracker_app/features/cloud_backup/domain/table_records/day_exercises_backup_record.dart';
 import 'package:lifting_tracker_app/features/cloud_backup/domain/table_records/exercises_backup_record.dart';
+import 'package:lifting_tracker_app/features/cloud_backup/domain/table_records/favorite_exercises_backup_record.dart';
 import 'package:lifting_tracker_app/features/cloud_backup/domain/table_records/logged_sets_backup_record.dart';
 import 'package:lifting_tracker_app/features/cloud_backup/domain/table_records/split_days_backup_record.dart';
 import 'package:lifting_tracker_app/features/cloud_backup/domain/table_records/split_plans_backup_record.dart';
@@ -49,6 +50,18 @@ Future<BackupSnapshot> exportSnapshot() async {
       exercisesRows,
       tableName: 'exercises',
       fromDatabaseRow: ExercisesBackupRecord.fromDatabaseRow,
+    );
+
+    final favoriteExercisesRows = await txn.rawQuery('''
+      SELECT exercise_id
+      FROM favorite_exercises
+      ORDER BY exercise_id
+    ''');
+
+    final favoriteExercises = _readRecords(
+      favoriteExercisesRows,
+      tableName: 'favorite_exercises',
+      fromDatabaseRow: FavoriteExercisesBackupRecord.fromDatabaseRow,
     );
 
     final dayExercisesRows = await txn.rawQuery('''
@@ -178,6 +191,7 @@ Future<BackupSnapshot> exportSnapshot() async {
         splitPlans: splitPlans,
         splitDays: splitDays,
         exercises: exercises,
+        favoriteExercises: favoriteExercises,
         dayExercises: dayExercises,
         workoutSessions: workoutSessions,
         loggedSets: loggedSets,

@@ -10,6 +10,7 @@ import 'package:lifting_tracker_app/features/plans/application/split_name_contro
 import 'package:lifting_tracker_app/features/plans/application/split_plan_provider.dart';
 import 'package:lifting_tracker_app/features/plans/application/split_plans_ids_controller.dart';
 import 'package:lifting_tracker_app/features/progress/application/exercise_progress_sets_provider.dart';
+import 'package:lifting_tracker_app/features/progress/application/favorite_exercise_ids_controller.dart';
 import 'package:lifting_tracker_app/features/progress/application/week_streak_controller.dart';
 import 'package:lifting_tracker_app/features/progress/application/weekly_workout_progress_controller.dart';
 import 'package:lifting_tracker_app/features/workouts/application/active_session_lifecycle_controller.dart';
@@ -24,6 +25,7 @@ void invalidateRestoredData(Ref ref) {
   ref.invalidate(completedWorkoutCountProvider);
   ref.invalidate(historyMonthsProvider);
   ref.invalidate(exerciseProgressSetsProvider);
+  ref.invalidate(favoriteExerciseIdsProvider);
 
   ref.invalidate(activeSplitIdProvider);
   ref.invalidate(splitPlansIdsProvider);

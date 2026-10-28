@@ -24,7 +24,7 @@ class MainBottomNavigation extends ConsumerWidget {
     Widget navBarButton(String text, IconData icon, int tabIndex) {
       return AnimatedScale(
         scale: currentIndex == tabIndex ? 1 : 0.90,
-        duration: Duration(milliseconds: 220),
+        duration: Duration(milliseconds: 160),
         curve: Curves.bounceIn,
         child: AspectRatio(
           aspectRatio: 1,

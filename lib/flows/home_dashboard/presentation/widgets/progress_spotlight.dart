@@ -11,7 +11,7 @@ class ProgressSpotlight extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     return GradientCard(
-      gradientVariant: AppGradients.card,
+      gradientVariant: AppGradients.softCard,
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
         mainAxisSize: MainAxisSize.min,

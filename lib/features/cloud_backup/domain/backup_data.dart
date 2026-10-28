@@ -4,6 +4,7 @@ import 'package:lifting_tracker_app/features/cloud_backup/domain/table_records/a
 import 'package:lifting_tracker_app/features/cloud_backup/domain/table_records/app_settings_backup_record.dart';
 import 'package:lifting_tracker_app/features/cloud_backup/domain/table_records/day_exercises_backup_record.dart';
 import 'package:lifting_tracker_app/features/cloud_backup/domain/table_records/exercises_backup_record.dart';
+import 'package:lifting_tracker_app/features/cloud_backup/domain/table_records/favorite_exercises_backup_record.dart';
 import 'package:lifting_tracker_app/features/cloud_backup/domain/table_records/logged_sets_backup_record.dart';
 import 'package:lifting_tracker_app/features/cloud_backup/domain/table_records/split_days_backup_record.dart';
 import 'package:lifting_tracker_app/features/cloud_backup/domain/table_records/split_plans_backup_record.dart';
@@ -14,6 +15,7 @@ final class BackupData {
     required this.splitPlans,
     required this.splitDays,
     required this.exercises,
+    this.favoriteExercises = const [],
     required this.dayExercises,
     required this.workoutSessions,
     required this.loggedSets,
@@ -24,6 +26,7 @@ final class BackupData {
   final List<SplitPlansBackupRecord> splitPlans;
   final List<SplitDaysBackupRecord> splitDays;
   final List<ExercisesBackupRecord> exercises;
+  final List<FavoriteExercisesBackupRecord> favoriteExercises;
   final List<DayExercisesBackupRecord> dayExercises;
   final List<WorkoutSessionsBackupRecord> workoutSessions;
   final List<LoggedSetsBackupRecord> loggedSets;
@@ -35,6 +38,9 @@ final class BackupData {
       'split_plans': [for (final record in splitPlans) record.toJson()],
       'split_days': [for (final record in splitDays) record.toJson()],
       'exercises': [for (final record in exercises) record.toJson()],
+      'favorite_exercises': [
+        for (final record in favoriteExercises) record.toJson(),
+      ],
       'day_exercises': [for (final record in dayExercises) record.toJson()],
       'workout_sessions': [
         for (final record in workoutSessions) record.toJson(),
@@ -65,6 +71,14 @@ final class BackupData {
         reader.requiredList('exercises'),
         path: '$path.exercises',
         decodeRecord: ExercisesBackupRecord.fromJson,
+      ),
+      favoriteExercises: _decodedRecordList<FavoriteExercisesBackupRecord>(
+        // Backups created before favorites were added have no such section.
+        json.containsKey('favorite_exercises')
+            ? reader.requiredList('favorite_exercises')
+            : const [],
+        path: '$path.favorite_exercises',
+        decodeRecord: FavoriteExercisesBackupRecord.fromJson,
       ),
       dayExercises: _decodedRecordList<DayExercisesBackupRecord>(
         reader.requiredList('day_exercises'),

@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:lifting_tracker_app/core/theme/app_colors.dart';
+import 'package:lifting_tracker_app/core/theme/app_gradients.dart';
 import 'package:lifting_tracker_app/features/workouts/application/active_session_lifecycle_controller.dart';
 import 'package:lifting_tracker_app/flows/home_dashboard/presentation/card_flow/home_summary_card_flow.dart';
 import 'package:lifting_tracker_app/flows/home_dashboard/presentation/state/workout_focus_provider.dart';
@@ -10,6 +11,9 @@ import 'package:phosphor_flutter/phosphor_flutter.dart';
 
 class WorkoutFocusCardFlow extends HomeSummaryCardFlow {
   const WorkoutFocusCardFlow();
+
+  @override
+  final gradient = AppGradients.card;
 
   @override
   Widget buildHeader(BuildContext context, WidgetRef ref) {

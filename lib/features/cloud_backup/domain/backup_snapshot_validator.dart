@@ -3,6 +3,7 @@ import 'package:lifting_tracker_app/features/cloud_backup/domain/backup_snapshot
 import 'package:lifting_tracker_app/features/cloud_backup/domain/table_records/active_session_sets_backup_record.dart';
 import 'package:lifting_tracker_app/features/cloud_backup/domain/table_records/day_exercises_backup_record.dart';
 import 'package:lifting_tracker_app/features/cloud_backup/domain/table_records/exercises_backup_record.dart';
+import 'package:lifting_tracker_app/features/cloud_backup/domain/table_records/favorite_exercises_backup_record.dart';
 import 'package:lifting_tracker_app/features/cloud_backup/domain/table_records/logged_sets_backup_record.dart';
 import 'package:lifting_tracker_app/features/cloud_backup/domain/table_records/split_days_backup_record.dart';
 import 'package:lifting_tracker_app/features/cloud_backup/domain/table_records/split_plans_backup_record.dart';
@@ -37,6 +38,23 @@ void validateBackupSnapshot(BackupSnapshot snapshot) {
         (record) => record.id,
         path: r'$.data.exercises',
       );
+
+  _returnAndCheckIdsForDuplicates<String, FavoriteExercisesBackupRecord>(
+    snapshot.data.favoriteExercises,
+    (record) => record.exerciseId,
+    path: r'$.data.favorite_exercises',
+    idField: 'exercise_id',
+  );
+
+  _validateReferences(
+    referencedIds: _returnAColumn<String, FavoriteExercisesBackupRecord>(
+      snapshot.data.favoriteExercises,
+      (record) => record.exerciseId,
+    ),
+    validIds: exerciseIds,
+    path: r'$.data.favorite_exercises',
+    referenceField: 'exercise_id',
+  );
 
   _returnAndCheckIdsForDuplicates<int, DayExercisesBackupRecord>(
     snapshot.data.dayExercises,
@@ -177,6 +195,7 @@ Set<Tout> _returnAndCheckIdsForDuplicates<Tout, Tin>(
   List<Tin> records,
   Tout Function(Tin) getId, {
   required String path,
+  String idField = 'id',
 }) {
   final ids = <Tout>{};
 
@@ -184,7 +203,7 @@ Set<Tout> _returnAndCheckIdsForDuplicates<Tout, Tin>(
     if (!(ids.add(getId(records[index])))) {
       throw BackupFormatException(
         code: BackupFormatErrorCode.duplicateId,
-        path: '$path[$index].id',
+        path: '$path[$index].$idField',
         message: 'Duplicate id.',
       );
     }

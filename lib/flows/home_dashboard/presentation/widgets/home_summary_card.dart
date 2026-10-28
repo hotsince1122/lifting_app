@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:lifting_tracker_app/core/theme/app_colors.dart';
-import 'package:lifting_tracker_app/core/theme/app_gradients.dart';
 import 'package:lifting_tracker_app/core/theme/app_spacing.dart';
 import 'package:lifting_tracker_app/core/ui/cards/gradient_card.dart';
 import 'package:lifting_tracker_app/flows/home_dashboard/presentation/card_flow/home_summary_card_flow.dart';
@@ -17,7 +16,7 @@ class HomeSummaryCard extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     return GradientCard(
-      gradientVariant: AppGradients.card,
+      gradientVariant: flow.gradient,
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [

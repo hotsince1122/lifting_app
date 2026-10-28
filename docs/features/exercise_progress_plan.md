@@ -7,7 +7,7 @@ Se citeste impreuna cu `AGENTS.md`, codul ariei modificate si, pentru teste,
 `docs/testing/testing_guide.md`.
 
 **Status general:** planning; scope-ul detaliat nu este inca agreat.
-**Ultima actualizare:** 2026-10-22.
+**Ultima actualizare:** 2026-10-28.
 
 Doar sectiunea `Cerinte confirmate` reprezinta decizii ale utilizatorului.
 Restul documentului este o propunere initiala pentru discutie, nu autorizatie
@@ -40,8 +40,15 @@ pentru implementarea modificarilor de navigare, modele sau provideri.
 - Axa X pastreaza distante egale intre puncte in toate cele trei moduri,
   pe baza ordinii lor, nu a distantei calendaristice. Utilizatorul a confirmat
   explicit pastrarea acestui comportament la 2026-10-26.
-- Favoritele si mini-chart-urile din Home / Progress Spotlight sunt o extensie
-  propusa de utilizator, aflata in discutie; persistenta si UX-ul nu sunt alese.
+- Favoritele se salveaza in SQLite, in tabela `favorite_exercises`, cu
+  `exercise_id` ca primary key si foreign key spre `exercises(id)`, cu
+  `ON DELETE CASCADE`. Favoritele vor fi incluse si in cloud backup.
+- Modificarea favoritelor nu declanseaza backup automat si nu modifica flag-ul
+  `backup_pending`. Favoritele sunt incluse la urmatorul backup manual sau
+  automat declansat prin mecanismul deja existent (decizie 2026-10-28).
+- Pentru actualizarea telefonului de dezvoltare folosim acum DB v2 cu migrare
+  din v1. Utilizatorul doreste consolidarea ulterioara in v1, dupa actualizarea
+  telefonului; acel pas necesita tratarea explicita a bazei deja migrate la v2.
 - Feature-ul este planificat ca ultimul feature mare inainte de polish.
 - Colaborarea urmeaza stilul didactic al planului de authentication/cloud backup:
   explicatie, alegerea solutiei, implementare incrementala si review.
@@ -278,6 +285,21 @@ alternativa textuala pentru valori.
 
 ### Teste de recuperat la final
 
+- Schema favorite: instalare noua v2 si migrare v1 -> v2, cu pastrarea datelor
+  existente; favorite initial goale, ID unic, foreign key si stergere cascade.
+- Consolidarea ulterioara in v1: verificare pe o baza deja migrata la v2,
+  fara resetarea bazei sau pierdere de date.
+- Backup favorite: export/import/JSON round-trip cu favorite, lista goala si
+  backup vechi v1 fara sectiunea `favorite_exercises`; sectiune prezenta dar
+  invalida respinsa, inclusiv ID duplicat si referinta catre exercitiu inexistent.
+- Restore favorite: inlocuirea favoritelor locale cu cele din snapshot, curatarea
+  lor la restore-ul unui backup vechi si rollback complet la esuarea importului.
+- Provider favorite: adaugare/eliminare idempotenta, erori SQL propagate,
+  refresh dupa scriere/restore/stergerea exercitiului; modificarea favoritelor
+  nu declanseaza backup si nu schimba `backup_pending`.
+- Stele favorite: contur/plin in editor si chart, aceeasi stare la revenire,
+  blocare la incarcare/salvare si feedback la eroare; apasarea stelei dezactivate
+  din editor nu trebuie sa activeze layer-ul Add Set de dedesubt.
 - SQLite real: query-ul intoarce doar seturile exercitiului cerut, din sesiuni
   completed cu finished_at; exclude active, alte exercitii si warm-up-uri.
   Verifica ordinea, sesiuni cu acelasi timestamp, conversia secundelor Unix,
@@ -302,8 +324,7 @@ alternativa textuala pentru valori.
 
 ## Intrebari deschise
 
-1. Includem favoritele in backup? Acceptam carousel-ul
-   cu mini-chart Best set in Spotlight?
+1. Acceptam carousel-ul cu mini-chart Best set in Spotlight?
 2. Cum navigam istoricul si cate puncte sunt vizibile initial?
 3. Confirmam excluderea warm-up-urilor si pentru cele doua moduri agregate,
    data punctului, regulile pentru valori zero si departajarea produselor egale?
@@ -320,6 +341,62 @@ alternativa textuala pentru valori.
   direct; analyzer-ul si testele se raporteaza separat, conform AGENTS.md.
 
 ## Implementation Log
+
+### 2026-10-28 - Stele favorite conectate in editor si chart
+
+- `FavoriteExerciseAction` reutilizeaza logica de salvare, blocare a apasarilor
+  repetate si raportare a erorilor, fara sa impuna un layout pentru buton.
+- In editor, iconita Phosphor ramane in layer-ul vizual al footer-ului, iar
+  InkWell-ul transparent ramane in layer-ul interactiv, la aceeasi pozitie.
+  AbsorbPointer blocheaza trecerea apasarilor catre Add Set cand steaua e dezactivata.
+- In chart, IconButton pastreaza steaua Material rotunjita. Ambele variante
+  folosesc contur pentru nefavorit si forma plina pentru favorit.
+- Ambele puncte de acces urmaresc acelasi provider si asteapta reimprospatarea
+  lui dupa scriere inainte de a permite o noua apasare. Backup-ul nu este declansat.
+
+**Urmatorul pas:** Progress Spotlight din Home si verificarile finale ale feature-ului.
+
+### 2026-10-28 - Metode SQLite si provider comun pentru favorite
+
+- Adaugate citirea ID-urilor si comenzile de adaugare/eliminare din SQLite.
+  Adaugarea repetata este ignorata, iar eliminarea repetata este sigura.
+- `favoriteExerciseIdsProvider` expune un set nemodificabil de ID-uri si metoda
+  `setFavorite(exerciseId, isFavorite: ...)`, apoi reciteste tabela dupa scriere.
+- Providerul este invalidat dupa restore si dupa stergerea unui exercitiu,
+  astfel incat stergerea SQL prin cascade sa fie reflectata si in UI.
+- La cererea utilizatorului, nu se declanseaza backup la modificarea favoritelor
+  si nu se schimba mecanismul existent sau flag-ul `backup_pending`.
+
+**Urmatorul pas:** conectarea stelelor din chart si workout editor la provider,
+apoi afisarea favoritelor in Progress Spotlight.
+
+### 2026-10-28 - Favorite in snapshot si backup
+
+- Adaugat `FavoriteExercisesBackupRecord` si lista `BackupData.favoriteExercises`.
+- Formatul backup ramane v1, cu o extensie aditiva: sectiunea lipsa din JSON
+  este citita ca lista goala, iar sectiunea prezenta este validata strict.
+- Exportul citeste favoritele in aceeasi tranzactie cu restul snapshot-ului.
+  Importul sterge favoritele locale si le insereaza dupa exercitii, atomic.
+- Validatorul respinge ID-urile favorite duplicate si referintele inexistente.
+- Actualizat fixture-ul existent cu lista goala; testele noi si executarea lor
+  raman amanate pentru finalul feature-ului.
+- Transportul Firebase foloseste deja serializarea si validarea snapshot-ului.
+  Refresh-ul providerului de favorite dupa restore se adauga cand acesta exista.
+
+**Urmatorul pas:** metodele si providerul favoritelor, apoi legarea stelelor;
+declansatoarele backup-ului automat raman cele existente.
+
+### 2026-10-28 - Schema pentru favorite si migrare DB v2
+
+- Adaugata tabela `favorite_exercises`, cu un singur camp `exercise_id`.
+- Acelasi helper de creare este folosit de `onCreate` si de migrarea v1 -> v2.
+  Migrarea adauga doar tabela, fara a rescrie sau sterge datele existente.
+- Integrarea in backup si metodele/providerii favoritelor urmeaza separat.
+- Consolidarea in v1 este amanata pana dupa actualizarea telefonului si trebuie
+  sa trateze explicit trecerea din v2; simpla scadere a constantei nu este suficienta.
+- Testele de migrare sunt notate mai sus si raman amanate la finalul feature-ului.
+
+**Urmatorul pas:** metodele de citire, adaugare si eliminare a favoritelor.
 
 ### 2026-10-22 - Granularitate per sesiune
 

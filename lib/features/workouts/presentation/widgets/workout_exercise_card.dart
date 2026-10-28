@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:lifting_tracker_app/core/errors/snack_bar_error.dart';
 import 'package:lifting_tracker_app/core/theme/app_spacing.dart';
 import 'package:lifting_tracker_app/features/progress/presentation/pages/exercise_chart_page.dart';
+import 'package:lifting_tracker_app/features/progress/presentation/widgets/favorite_exercise_action.dart';
 import 'package:lifting_tracker_app/features/workouts/application/session_editor/workout_session_exercises_controller.dart';
 import 'package:lifting_tracker_app/core/theme/app_colors.dart';
 import 'package:lifting_tracker_app/features/workouts/domain/workout_exercise.dart';
@@ -378,11 +379,24 @@ class _WorkoutExerciseCardState extends ConsumerState<WorkoutExerciseCard> {
         right: 8,
         height: _iconTouchTarget,
         width: _iconTouchTarget,
-        child: Material(
-          color: Colors.transparent,
-          child: InkWell(
-            borderRadius: BorderRadius.circular(_iconTouchTarget / 2),
-            onTap: () {},
+        child: FavoriteExerciseAction(
+          exerciseId: exercise.catalogExercise.id,
+          builder: (isFavorite, onPressed) => Semantics(
+            button: true,
+            toggled: isFavorite,
+            enabled: onPressed != null,
+            label: isFavorite ? 'Remove from favorites' : 'Add to favorites',
+            child: AbsorbPointer(
+              // Disabled taps must not reach the Add Set layer underneath.
+              absorbing: onPressed == null,
+              child: Material(
+                color: Colors.transparent,
+                child: InkWell(
+                  borderRadius: BorderRadius.circular(_iconTouchTarget / 2),
+                  onTap: onPressed,
+                ),
+              ),
+            ),
           ),
         ),
       ),

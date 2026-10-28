@@ -2,12 +2,13 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:lifting_tracker_app/core/errors/snack_bar_error.dart';
 import 'package:lifting_tracker_app/core/theme/app_spacing.dart';
+import 'package:lifting_tracker_app/features/progress/application/favorite_exercise_ids_controller.dart';
 import 'package:lifting_tracker_app/features/workouts/application/session_editor/workout_session_exercises_controller.dart';
 import 'package:lifting_tracker_app/core/theme/app_colors.dart';
 import 'package:lifting_tracker_app/features/workouts/domain/workout_exercise.dart';
 import 'package:phosphor_flutter/phosphor_flutter.dart';
 
-class ExerciseTileFooter extends StatelessWidget {
+class ExerciseTileFooter extends ConsumerWidget {
   const ExerciseTileFooter(this.exercise, {super.key});
 
   final WorkoutExercise exercise;
@@ -47,7 +48,14 @@ class ExerciseTileFooter extends StatelessWidget {
   }
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
+    final isFavorite =
+        ref
+            .watch(favoriteExerciseIdsProvider)
+            .value
+            ?.contains(exercise.catalogExercise.id) ??
+        false;
+
     return Row(
       children: [
         Icon(
@@ -71,7 +79,9 @@ class ExerciseTileFooter extends StatelessWidget {
         ),
         const SizedBox(width: AppSpacing.s24),
         PhosphorIcon(
-          PhosphorIcons.star(PhosphorIconsStyle.fill),
+          PhosphorIcons.star(
+            isFavorite ? PhosphorIconsStyle.fill : PhosphorIconsStyle.regular,
+          ),
           size: 24,
           color: AppColors.secondary,
         ),

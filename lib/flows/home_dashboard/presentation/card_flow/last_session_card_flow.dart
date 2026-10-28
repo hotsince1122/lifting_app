@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:lifting_tracker_app/core/theme/app_colors.dart';
+import 'package:lifting_tracker_app/core/theme/app_gradients.dart';
 import 'package:lifting_tracker_app/flows/home_dashboard/application/last_workout_completed_provider.dart';
 import 'package:lifting_tracker_app/flows/home_dashboard/presentation/card_flow/home_summary_card_flow.dart';
 import 'package:lifting_tracker_app/flows/home_dashboard/presentation/widgets/home_summary_card.dart';
@@ -8,6 +9,9 @@ import 'package:phosphor_flutter/phosphor_flutter.dart';
 
 class LastSessionCardFlow extends HomeSummaryCardFlow {
   const LastSessionCardFlow();
+
+  @override
+  final gradient = AppGradients.softCard;
 
   @override
   Widget buildHeader(BuildContext context, WidgetRef ref) {

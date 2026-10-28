@@ -10,6 +10,7 @@ import 'package:lifting_tracker_app/features/progress/application/exercise_progr
 import 'package:lifting_tracker_app/features/progress/domain/exercise_progress_calculations.dart';
 import 'package:lifting_tracker_app/features/progress/domain/exercise_progress_set.dart';
 import 'package:lifting_tracker_app/features/progress/presentation/widgets/cupertino_sliding_segmented_control_custom.dart';
+import 'package:lifting_tracker_app/features/progress/presentation/widgets/favorite_exercise_action.dart';
 import 'package:syncfusion_flutter_charts/charts.dart';
 
 enum ChartMetric { maxWeight, bestSet, allSets }
@@ -536,21 +537,24 @@ class _BackButton extends StatelessWidget {
   }
 }
 
-class _FavoriteButton extends ConsumerStatefulWidget {
+class _FavoriteButton extends StatelessWidget {
   const _FavoriteButton(this.exercise);
 
   final CatalogExercise exercise;
 
   @override
-  ConsumerState<ConsumerStatefulWidget> createState() => _FavoriteButtonState();
-}
-
-class _FavoriteButtonState extends ConsumerState {
-  @override
   Widget build(BuildContext context) {
-    return IconButton(
-      onPressed: () {},
-      icon: Icon(Icons.star_rounded, color: AppColors.primary),
+    return FavoriteExerciseAction(
+      exerciseId: exercise.id,
+      builder: (isFavorite, onPressed) => IconButton(
+        onPressed: onPressed,
+        isSelected: isFavorite,
+        tooltip: isFavorite ? 'Remove from favorites' : 'Add to favorites',
+        icon: Icon(
+          isFavorite ? Icons.star_rounded : Icons.star_border_rounded,
+          color: AppColors.primary,
+        ),
+      ),
     );
   }
 }
